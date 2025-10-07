@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
+  static const String _fontFamily = 'PlusJakartaSans';
+
   // Heading Styles
   static const TextStyle h1 = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 32,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
@@ -11,6 +14,7 @@ class AppTextStyles {
   );
 
   static const TextStyle h2 = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 28,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
@@ -18,6 +22,7 @@ class AppTextStyles {
   );
 
   static const TextStyle h3 = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 24,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
@@ -25,6 +30,7 @@ class AppTextStyles {
   );
 
   static const TextStyle h4 = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -32,6 +38,7 @@ class AppTextStyles {
   );
 
   static const TextStyle h5 = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -39,6 +46,7 @@ class AppTextStyles {
   );
 
   static const TextStyle h6 = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -47,6 +55,7 @@ class AppTextStyles {
 
   // Body Styles
   static const TextStyle bodyLarge = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
@@ -54,6 +63,7 @@ class AppTextStyles {
   );
 
   static const TextStyle bodyMedium = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
@@ -61,6 +71,7 @@ class AppTextStyles {
   );
 
   static const TextStyle bodySmall = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
@@ -69,6 +80,7 @@ class AppTextStyles {
 
   // Label Styles
   static const TextStyle labelLarge = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
@@ -76,6 +88,7 @@ class AppTextStyles {
   );
 
   static const TextStyle labelMedium = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
@@ -83,6 +96,7 @@ class AppTextStyles {
   );
 
   static const TextStyle labelSmall = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 11,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
@@ -91,6 +105,7 @@ class AppTextStyles {
 
   // Caption & Hint
   static const TextStyle caption = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
@@ -98,6 +113,7 @@ class AppTextStyles {
   );
 
   static const TextStyle hint = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: AppColors.textHint,
@@ -106,6 +122,7 @@ class AppTextStyles {
 
   // Button Styles
   static const TextStyle button = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.white,
@@ -114,6 +131,7 @@ class AppTextStyles {
   );
 
   static const TextStyle buttonLarge = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: AppColors.white,
@@ -123,6 +141,7 @@ class AppTextStyles {
 
   // Link Style
   static const TextStyle link = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: AppColors.primary,
@@ -132,6 +151,7 @@ class AppTextStyles {
 
   // Error Style
   static const TextStyle error = TextStyle(
+    fontFamily: _fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.error,

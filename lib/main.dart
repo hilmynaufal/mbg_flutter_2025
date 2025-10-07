@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/core/theme/app_theme.dart';
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
@@ -16,6 +17,9 @@ Future<void> main() async {
 }
 
 Future<void> initServices() async {
+  // Initialize date formatting for Indonesian locale
+  await initializeDateFormatting('id_ID', null);
+
   // Initialize StorageService
   await Get.putAsync(() => StorageService().init());
 

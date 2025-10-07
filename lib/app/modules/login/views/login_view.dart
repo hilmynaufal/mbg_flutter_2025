@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/login_controller.dart';
+import '../../../core/widgets/gradient_button.dart';
 
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
@@ -122,27 +123,11 @@ class LoginView extends GetView<LoginController> {
 
                           // Login Button
                           Obx(
-                            () => ElevatedButton(
-                              onPressed: controller.isLoading.value
-                                  ? null
-                                  : controller.login,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                              ),
-                              child: controller.isLoading.value
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white,
-                                        ),
-                                      ),
-                                    )
-                                  : const Text('Login'),
+                            () => GradientButton(
+                              text: 'Login',
+                              onPressed: controller.login,
+                              isLoading: controller.isLoading.value,
+                              icon: Icons.login,
                             ),
                           ),
                         ],

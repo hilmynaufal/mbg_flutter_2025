@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import '../models/form_response_model.dart';
+import '../models/form_submit_response_model.dart';
+import '../models/form_view_response_model.dart';
 import '../../core/values/constants.dart';
 
 class FormProvider {
@@ -58,7 +60,8 @@ class FormProvider {
   /// Submit form data
   /// Endpoint: /form/create/{slug}
   /// Body format: { "uri": "full_url", "answers[id]": "value" }
-  Future<bool> submitForm({
+  /// Returns FormSubmitResponseModel with ID that needs to be saved locally
+  Future<FormSubmitResponseModel> submitForm({
     required String slug,
     required Map<String, dynamic> formData,
   }) async {
@@ -71,11 +74,75 @@ class FormProvider {
         ),
       );
 
-      return response.statusCode == 200;
+      // Parse response to get the ID
+      if (response.data['status'] == 'success' && response.data['data'] != null) {
+        return FormSubmitResponseModel.fromJson(response.data['data']);
+      } else {
+        throw Exception('Failed to parse submit response');
+      }
     } on DioException catch (e) {
       if (e.response != null) {
         throw Exception(
           'Failed to submit form: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else {
+        throw Exception(
+          'Network error: ${e.message}. Please check your internet connection.',
+        );
+      }
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// View form detail by ID
+  /// Endpoint: GET /api/form/view/{id}
+  Future<FormViewResponseModel> viewForm(int id) async {
+    try {
+      final response = await _dio.get(
+        '/form/view/$id',
+      );
+
+      if (response.data['status'] == 'success') {
+        return FormViewResponseModel.fromJson(response.data);
+      } else {
+        throw Exception('Failed to load form detail');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        // Handle 404 or other errors
+        if (e.response?.statusCode == 404) {
+          throw Exception('Laporan tidak ditemukan atau sudah dihapus');
+        }
+        throw Exception(
+          'Failed to load form detail: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else {
+        throw Exception(
+          'Network error: ${e.message}. Please check your internet connection.',
+        );
+      }
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// Delete form by ID
+  /// Endpoint: DELETE /api/form/delete/{id}
+  Future<bool> deleteForm(int id) async {
+    try {
+      final response = await _dio.delete(
+        '/form/delete/$id',
+      );
+
+      return response.data['status'] == 'success';
+    } on DioException catch (e) {
+      if (e.response != null) {
+        if (e.response?.statusCode == 404) {
+          throw Exception('Laporan tidak ditemukan');
+        }
+        throw Exception(
+          'Failed to delete form: ${e.response?.data['message'] ?? e.message}',
         );
       } else {
         throw Exception(

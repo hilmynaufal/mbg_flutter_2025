@@ -6,6 +6,7 @@ import 'package:dio/dio.dart'
     as dio; // Menggunakan alias 'dio' untuk menghindari konflik nama
 import '../../../data/providers/form_provider.dart';
 import '../../../data/models/form_response_model.dart';
+import '../../../data/services/storage_service.dart';
 import '../../../core/values/constants.dart';
 
 class FormSppgController extends GetxController {
@@ -131,16 +132,27 @@ class FormSppgController extends GetxController {
       }
 
       // Submit to API
-      log('test: ${submitData.toString()}');
-      await _formProvider.submitForm(slug: formSlug, formData: submitData);
+      log('Submitting form data: ${submitData.toString()}');
+      final response = await _formProvider.submitForm(
+        slug: formSlug,
+        formData: submitData,
+      );
+
+      // Save report ID to local storage
+      final storage = Get.find<StorageService>();
+      List<int> reportIds = storage.readIntList(AppConstants.keyReportIds) ?? [];
+      reportIds.add(response.id);
+      await storage.writeIntList(AppConstants.keyReportIds, reportIds);
+
+      log('Report saved with ID: ${response.id}');
 
       Get.snackbar(
         'Success',
-        'Laporan berhasil dikirim!',
+        'Laporan berhasil dikirim!\nID Laporan: ${response.id}',
         backgroundColor: Get.theme.colorScheme.primary,
         colorText: Get.theme.colorScheme.onPrimary,
         snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 4),
       );
 
       // Navigate back to home

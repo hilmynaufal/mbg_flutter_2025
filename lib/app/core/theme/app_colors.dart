@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary Colors - Hijau untuk branding MBG Kabupaten Bandung
-  static const Color primary = Color(0xFF2E7D32);
-  static const Color primaryLight = Color(0xFF60AD5E);
-  static const Color primaryDark = Color(0xFF005005);
+  // Primary Colors - Teal untuk branding MBG Kabupaten Bandung
+  static const Color primary = Color(0xFF14B8A6); // teal-500
+  static const Color primaryLight = Color(0xFF5EEAD4); // teal-300
+  static const Color primaryDark = Color(0xFF0F766E); // teal-700
+
+  // Gradient Colors
+  static const Color gradientStart = Color(0xFF2DD4BF); // teal-400
+  static const Color gradientEnd = Color(0xFF14B8A6); // teal-500
 
   // Secondary Colors
   static const Color secondary = Color(0xFF1976D2);
@@ -36,7 +40,7 @@ class AppColors {
 
   // Input Colors
   static const Color inputBorder = Color(0xFFE0E0E0);
-  static const Color inputFocusBorder = Color(0xFF2E7D32);
+  static const Color inputFocusBorder = Color(0xFF14B8A6);
   static const Color inputFill = Color(0xFFFAFAFA);
 
   // Divider

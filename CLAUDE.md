@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Flutter application project named `mbg_flutter_2025` with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows standard Flutter project conventions.
+This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
+
+**Current Version:** 0.2.0-alpha+20251007
 
 ## Development Commands
 
@@ -44,17 +46,112 @@ flutter pub upgrade            # Upgrade dependencies
 
 ## Architecture
 
-### Project Structure
-- `lib/` - Application source code
-  - `main.dart` - Application entry point with MyApp and MyHomePage widgets
-- `test/` - Widget and unit tests
-- `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/` - Platform-specific code
-- `pubspec.yaml` - Project dependencies and configuration
+### Project Structure (GetX Pattern)
+```
+lib/
+├── main.dart                          # Application entry point
+├── app/
+    ├── core/
+    │   ├── theme/                     # App theming (colors, text styles)
+    │   │   ├── app_colors.dart
+    │   │   ├── app_text_styles.dart
+    │   │   └── app_theme.dart
+    │   ├── widgets/                   # Reusable widgets
+    │   │   ├── banner_carousel_widget.dart
+    │   │   ├── news_card_widget.dart
+    │   │   ├── service_grid_item.dart
+    │   │   ├── gradient_button.dart
+    │   │   └── dynamic_form_builder.dart
+    │   └── values/
+    │       └── constants.dart
+    ├── data/
+    │   ├── models/                    # Data models
+    │   │   ├── user_model.dart
+    │   │   ├── news_model.dart
+    │   │   └── form_response_model.dart
+    │   ├── providers/                 # API providers
+    │   │   ├── auth_provider.dart
+    │   │   └── form_provider.dart
+    │   ├── services/                  # Business logic services
+    │   │   ├── auth_service.dart
+    │   │   └── storage_service.dart
+    │   └── dummy/                     # Dummy data for development
+    │       └── news_dummy_data.dart
+    ├── modules/                       # Feature modules (GetX pattern)
+    │   ├── login/
+    │   │   ├── controllers/
+    │   │   ├── views/
+    │   │   └── bindings/
+    │   ├── home/
+    │   ├── form_sppg/
+    │   ├── report_history/
+    │   └── report_detail/
+    └── routes/
+        ├── app_pages.dart             # Route definitions
+        └── app_routes.dart            # Route constants
+```
+
+### Key Dependencies
+- **State Management:** GetX (get: ^4.6.6)
+- **HTTP Client:** Dio (dio: ^5.4.0)
+- **Local Storage:** SharedPreferences (shared_preferences: ^2.2.2)
+- **UI Components:**
+  - font_awesome_flutter: ^10.7.0
+  - carousel_slider: ^5.0.0
+  - flutter_spinkit: ^5.2.0
+- **Maps:** google_maps_flutter: ^2.5.3
+- **Date/Time:** intl: ^0.19.0
+- **Image Picker:** image_picker: ^1.0.7
+
+### Design System
+- **Font:** Plus Jakarta Sans (all weights)
+- **Primary Color:** Teal (#14B8A6) - MBG Kabupaten Bandung branding
+- **Gradient:** Linear gradient (#2DD4BF → #14B8A6)
+- **Design Style:** Flat design with borders, white background
+- **Icons:** FontAwesome Flutter
+- **Theme:** Material Design 3 (useMaterial3: true)
 
 ### Code Quality
-- Linting is enforced via `flutter_lints` package (configured in `analysis_options.yaml`)
-- Uses Material Design with Cupertino icons support
-- Default theme uses `ColorScheme.fromSeed` with deep purple seed color
+- Linting enforced via `flutter_lints` package
+- Date formatting initialized for Indonesian locale (id_ID)
+- GetX pattern for clean architecture
+- Reactive programming with Obx observers
 
-### Current State
-This is a fresh Flutter project with the default counter app demo implementation. The app is a simple stateful widget demonstrating basic Flutter concepts.
+### Current Features
+1. **Authentication System**
+   - Login with username/password
+   - Token-based authentication
+   - User session management
+
+2. **Home Dashboard**
+   - Banner carousel (auto-play)
+   - Report statistics (Total, Pending, Approved, Rejected)
+   - Services grid (3 columns, no subtitle)
+   - Latest news section (3 articles)
+   - Flat design with bordered cards
+
+3. **SPPG Form**
+   - Dynamic form builder from API
+   - Field validation
+   - Image upload
+   - Map coordinate picker
+   - Regional data (Kecamatan/Desa)
+
+4. **Report History**
+   - View submitted reports
+   - Report detail page
+
+5. **News System**
+   - News model with dummy data
+   - Horizontal and vertical card layouts
+   - Category badges
+   - Indonesian date formatting
+
+### Recent Changes (v0.2.0-alpha)
+- Added banner carousel with auto-play
+- Implemented news feature with dummy data
+- Created gradient button component
+- Updated to flat design (no elevation, bordered cards)
+- Changed to 3-column services grid
+- Hidden user info card (moved to future Profile page)
+- Fixed LocaleDataException for Indonesian date formatting

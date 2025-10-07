@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/form_sppg_controller.dart';
 import '../../../core/widgets/dynamic_form_builder.dart';
+import '../../../core/widgets/gradient_button.dart';
 
 class FormSppgView extends GetView<FormSppgController> {
   const FormSppgView({super.key});
@@ -50,10 +51,11 @@ class FormSppgView extends GetView<FormSppgController> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
+                  GradientButton(
+                    text: 'Coba Lagi',
                     onPressed: controller.retryLoadForm,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Coba Lagi'),
+                    icon: Icons.refresh,
+                    width: 200,
                   ),
                 ],
               ),
@@ -106,25 +108,12 @@ class FormSppgView extends GetView<FormSppgController> {
                 ],
               ),
               child: Obx(
-                () => ElevatedButton(
-                  onPressed: controller.isSubmitting.value
-                      ? null
-                      : controller.submitForm,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                  child: controller.isSubmitting.value
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                      : const Text('Kirim Laporan'),
+                () => GradientButton(
+                  text: 'Kirim Laporan',
+                  onPressed: controller.submitForm,
+                  isLoading: controller.isSubmitting.value,
+                  icon: Icons.send,
+                  height: 48,
                 ),
               ),
             ),

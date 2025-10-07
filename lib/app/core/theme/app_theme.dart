@@ -7,6 +7,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'PlusJakartaSans',
 
       // Color Scheme
       colorScheme: const ColorScheme.light(
@@ -21,7 +22,7 @@ class AppTheme {
       ),
 
       // Scaffold
-      scaffoldBackgroundColor: AppColors.scaffoldBackground,
+      scaffoldBackgroundColor: AppColors.white,
 
       // AppBar Theme
       appBarTheme: const AppBarTheme(
@@ -30,6 +31,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
+          fontFamily: 'PlusJakartaSans',
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.white,
@@ -160,9 +162,13 @@ class AppTheme {
       // Card Theme
       cardTheme: CardTheme(
         color: AppColors.surface,
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(
+            color: AppColors.greyLight,
+            width: 1,
+          ),
         ),
         margin: const EdgeInsets.all(8),
       ),

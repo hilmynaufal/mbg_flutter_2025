@@ -11,6 +11,7 @@ class AppConstants {
   static const String keyUser = 'user';
   static const String keyIsLoggedIn = 'is_logged_in';
   static const String keyToken = 'token';
+  static const String keyReportIds = 'report_ids';
 
   // Timeouts
   static const int connectionTimeout = 30000; // 30 seconds

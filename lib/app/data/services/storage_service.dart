@@ -54,6 +54,21 @@ class StorageService extends GetxService {
     return _prefs.getInt(key);
   }
 
+  // Save list of integers
+  Future<bool> writeIntList(String key, List<int> value) async {
+    final stringList = value.map((e) => e.toString()).toList();
+    return await _prefs.setStringList(key, stringList);
+  }
+
+  // Read list of integers
+  List<int>? readIntList(String key) {
+    final stringList = _prefs.getStringList(key);
+    if (stringList != null) {
+      return stringList.map((e) => int.parse(e)).toList();
+    }
+    return null;
+  }
+
   // Remove single key
   Future<bool> remove(String key) async {
     return await _prefs.remove(key);
