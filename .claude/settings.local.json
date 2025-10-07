@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(move \"lib\\app\\modules\\form_sppg\" \"lib\\app\\modules\\dynamic_form\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -8,8 +8,9 @@ import '../../../data/providers/form_provider.dart';
 import '../../../data/models/form_response_model.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../core/values/constants.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
-class FormSppgController extends GetxController {
+class DynamicFormController extends GetxController {
   final FormProvider _formProvider = FormProvider();
 
   // Form key
@@ -24,12 +25,14 @@ class FormSppgController extends GetxController {
   Rx<FormResponseModel?> formStructure = Rx<FormResponseModel?>(null);
   final RxMap<int, dynamic> formValues = <int, dynamic>{}.obs;
 
-  // Form slug
-  final String formSlug = 'pelaporan-tugas-satgas-mbg';
+  // Form slug - dynamically set from route arguments
+  late final String formSlug;
 
   @override
   void onInit() {
     super.onInit();
+    // Get slug from route arguments
+    formSlug = Get.arguments as String? ?? 'pelaporan-tugas-satgas-mbg';
     _loadFormStructure();
   }
 
@@ -43,12 +46,9 @@ class FormSppgController extends GetxController {
       formStructure.value = response;
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
-      Get.snackbar(
-        'Error',
-        errorMessage.value,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
+      CustomSnackbar.error(
+        title: 'Error',
+        message: errorMessage.value,
       );
     } finally {
       isLoading.value = false;
@@ -59,12 +59,9 @@ class FormSppgController extends GetxController {
   Future<void> submitForm() async {
     // Validate form
     if (!formKey.currentState!.validate()) {
-      Get.snackbar(
-        'Validasi Gagal',
-        'Mohon lengkapi semua field yang wajib diisi',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
+      CustomSnackbar.warning(
+        title: 'Validasi Gagal',
+        message: 'Mohon lengkapi semua field yang wajib diisi',
       );
       return;
     }
@@ -146,24 +143,18 @@ class FormSppgController extends GetxController {
 
       log('Report saved with ID: ${response.id}');
 
-      Get.snackbar(
-        'Success',
-        'Laporan berhasil dikirim!\nID Laporan: ${response.id}',
-        backgroundColor: Get.theme.colorScheme.primary,
-        colorText: Get.theme.colorScheme.onPrimary,
-        snackPosition: SnackPosition.TOP,
+      CustomSnackbar.success(
+        title: 'Success',
+        message: 'Laporan berhasil dikirim!\nID Laporan: ${response.id}',
         duration: const Duration(seconds: 4),
       );
 
       // Navigate back to home
       Get.back();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
+      CustomSnackbar.error(
+        title: 'Error',
+        message: e.toString().replaceAll('Exception: ', ''),
       );
     } finally {
       isSubmitting.value = false;

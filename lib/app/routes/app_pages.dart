@@ -3,8 +3,8 @@ import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
-import '../modules/form_sppg/bindings/form_sppg_binding.dart';
-import '../modules/form_sppg/views/form_sppg_view.dart';
+import '../modules/dynamic_form/bindings/dynamic_form_binding.dart';
+import '../modules/dynamic_form/views/dynamic_form_view.dart';
 import '../modules/report_history/bindings/report_history_binding.dart';
 import '../modules/report_history/views/report_history_view.dart';
 import '../modules/report_detail/bindings/report_detail_binding.dart';
@@ -24,9 +24,9 @@ class AppPages {
       binding: HomeBinding(),
     ),
     GetPage(
-      name: Routes.FORM_SPPG,
-      page: () => const FormSppgView(),
-      binding: FormSppgBinding(),
+      name: Routes.DYNAMIC_FORM,
+      page: () => const DynamicFormView(),
+      binding: DynamicFormBinding(),
     ),
     GetPage(
       name: Routes.REPORT_HISTORY,

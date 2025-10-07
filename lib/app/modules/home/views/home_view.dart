@@ -6,6 +6,7 @@ import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../core/widgets/service_grid_item.dart';
 import '../../../core/widgets/news_card_widget.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -37,20 +38,9 @@ class HomeView extends GetView<HomeController> {
                         height: 180,
                         onBannerTap: (banner) {
                           // TODO: Handle banner tap
-                          // Get.snackbar(
-                          //   'Banner',
-                          //   banner.title ?? 'Banner tapped',
-                          //   snackPosition: SnackPosition.BOTTOM,
-                          // );
-
-                          Get.showSnackbar(
-                            GetSnackBar(
-                              title: 'Banner',
-                              message: banner.title ?? 'Banner tapped',
-                              backgroundColor: Get.theme.colorScheme.primary,
-                              snackPosition: SnackPosition.BOTTOM,
-                              duration: const Duration(seconds: 3),
-                            ),
+                          CustomSnackbar.info(
+                            title: 'Banner',
+                            message: banner.title ?? 'Banner tapped',
                           );
                         },
                       )
@@ -233,15 +223,22 @@ class HomeView extends GetView<HomeController> {
                     crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.0,
+                    crossAxisSpacing: 4,
+                    mainAxisSpacing: 4,
+                    childAspectRatio: 0.85,
                     children: [
                       ServiceGridItem(
                         icon: FontAwesomeIcons.fileCirclePlus,
                         title: 'Buat Laporan',
                         description: 'Laporan SPPG baru',
-                        onTap: controller.navigateToFormSppg,
+                        onTap: () => controller.navigateToDynamicForm('pelaporan-tugas-satgas-mbg'),
+                        showDescription: false,
+                      ),
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.fileMedical,
+                        title: 'Laporan IKL',
+                        description: 'Laporan IKL Dinkes',
+                        onTap: () => controller.navigateToDynamicForm('pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl'),
                         showDescription: false,
                       ),
                       ServiceGridItem(
@@ -268,10 +265,9 @@ class HomeView extends GetView<HomeController> {
                       TextButton.icon(
                         onPressed: () {
                           // TODO: Navigate to news list page
-                          Get.snackbar(
-                            'Berita',
-                            'Halaman semua berita akan segera hadir',
-                            snackPosition: SnackPosition.BOTTOM,
+                          CustomSnackbar.info(
+                            title: 'Berita',
+                            message: 'Halaman semua berita akan segera hadir',
                           );
                         },
                         icon: const FaIcon(
@@ -322,11 +318,9 @@ class HomeView extends GetView<HomeController> {
                                 isHorizontal: true,
                                 onTap: () {
                                   // TODO: Navigate to news detail page
-                                  Get.snackbar(
-                                    news.title,
-                                    news.description,
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    duration: const Duration(seconds: 3),
+                                  CustomSnackbar.info(
+                                    title: news.title,
+                                    message: news.description,
                                   );
                                 },
                               ),

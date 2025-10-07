@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.2.0-alpha+20251007
+**Current Version:** 0.2.1-alpha+20251007
 
 ## Development Commands
 
@@ -61,6 +61,7 @@ lib/
     │   │   ├── news_card_widget.dart
     │   │   ├── service_grid_item.dart
     │   │   ├── gradient_button.dart
+    │   │   ├── custom_snackbar.dart
     │   │   └── dynamic_form_builder.dart
     │   └── values/
     │       └── constants.dart
@@ -83,7 +84,7 @@ lib/
     │   │   ├── views/
     │   │   └── bindings/
     │   ├── home/
-    │   ├── form_sppg/
+    │   ├── dynamic_form/
     │   ├── report_history/
     │   └── report_detail/
     └── routes/
@@ -130,8 +131,9 @@ lib/
    - Latest news section (3 articles)
    - Flat design with bordered cards
 
-3. **SPPG Form**
-   - Dynamic form builder from API
+3. **Dynamic Form System**
+   - Dynamic form builder from API with slug-based routing
+   - Multiple form types (SPPG, Laporan IKL Dinkes)
    - Field validation
    - Image upload
    - Map coordinate picker
@@ -146,6 +148,20 @@ lib/
    - Horizontal and vertical card layouts
    - Category badges
    - Indonesian date formatting
+
+### Recent Changes (v0.2.1-alpha)
+- **Refactored form_sppg module to dynamic_form** for better reusability
+  - Renamed `FormSppgController` → `DynamicFormController`
+  - Renamed `FormSppgView` → `DynamicFormView`
+  - Renamed `FormSppgBinding` → `DynamicFormBinding`
+  - Routes updated: `FORM_SPPG` → `DYNAMIC_FORM`
+  - Form slug now passed via route arguments
+- **Added new menu item**: Laporan IKL Dinkes form
+- **Created custom snackbar widget** (`CustomSnackbar`)
+  - Success, error, warning, and info snackbar types
+  - Consistent styling across the app
+  - Replaced all `Get.snackbar()` calls with `CustomSnackbar` helper
+- Updated version to 0.2.1-alpha+20251007
 
 ### Recent Changes (v0.2.0-alpha)
 - Added banner carousel with auto-play

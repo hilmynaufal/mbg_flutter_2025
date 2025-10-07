@@ -8,7 +8,7 @@ class AppColors {
 
   // Gradient Colors
   static const Color gradientStart = Color(0xFF2DD4BF); // teal-400
-  static const Color gradientEnd = Color(0xFF14B8A6); // teal-500
+  static const Color gradientEnd = Color(0xFF0F766E); // teal-700
 
   // Secondary Colors
   static const Color secondary = Color(0xFF1976D2);

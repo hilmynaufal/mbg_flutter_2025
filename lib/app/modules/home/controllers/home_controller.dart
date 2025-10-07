@@ -7,6 +7,7 @@ import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
 import '../../../data/dummy/news_dummy_data.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class HomeController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -107,9 +108,9 @@ class HomeController extends GetxController {
     _loadReportCount();
   }
 
-  // Navigate to Form SPPG
-  void navigateToFormSppg() {
-    Get.toNamed(Routes.FORM_SPPG);
+  // Navigate to Dynamic Form with slug
+  void navigateToDynamicForm(String slug) {
+    Get.toNamed(Routes.DYNAMIC_FORM, arguments: slug);
   }
 
   // Logout
@@ -135,10 +136,9 @@ class HomeController extends GetxController {
     if (confirmed == true) {
       await _authService.logout();
       Get.offAllNamed(Routes.LOGIN);
-      Get.snackbar(
-        'Logout Berhasil',
-        'Anda telah keluar dari aplikasi',
-        snackPosition: SnackPosition.TOP,
+      CustomSnackbar.success(
+        title: 'Logout Berhasil',
+        message: 'Anda telah keluar dari aplikasi',
       );
     }
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/form_sppg_controller.dart';
+import '../controllers/dynamic_form_controller.dart';
 import '../../../core/widgets/dynamic_form_builder.dart';
 import '../../../core/widgets/gradient_button.dart';
 
-class FormSppgView extends GetView<FormSppgController> {
-  const FormSppgView({super.key});
+class DynamicFormView extends GetView<DynamicFormController> {
+  const DynamicFormView({super.key});
 
   @override
   Widget build(BuildContext context) {

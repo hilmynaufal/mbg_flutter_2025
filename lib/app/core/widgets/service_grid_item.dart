@@ -24,10 +24,8 @@ class ServiceGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveIconColor =
-        iconColor ?? Theme.of(context).colorScheme.primary;
-    final effectiveBgColor =
-        backgroundColor ?? effectiveIconColor.withOpacity(0.1);
+    final effectiveIconColor = Colors.white;
+    final effectiveBgColor = iconColor ?? Theme.of(context).colorScheme.primary;
 
     return Card(
       // elevation: 2,
@@ -41,17 +39,17 @@ class ServiceGridItem extends StatelessWidget {
             children: [
               // Icon Container
               Container(
-                width: 64,
-                height: 64,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: effectiveBgColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: FaIcon(icon, size: 32, color: effectiveIconColor),
+                  child: FaIcon(icon, size: 24, color: effectiveIconColor),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Title
               Text(
@@ -65,18 +63,18 @@ class ServiceGridItem extends StatelessWidget {
               ),
 
               // Description (conditional)
-              if (showDescription) ...[
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+              // if (showDescription) ...[
+              //   const SizedBox(height: 4),
+              //   Text(
+              //     description,
+              //     style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              //       color: AppColors.textSecondary,
+              //     ),
+              //     textAlign: TextAlign.center,
+              //     maxLines: 2,
+              //     overflow: TextOverflow.ellipsis,
+              //   ),
+              // ],
             ],
           ),
         ),
