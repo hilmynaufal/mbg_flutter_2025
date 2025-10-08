@@ -33,14 +33,14 @@ class NewsCardWidget extends StatelessWidget {
 
   Widget _buildHorizontalLayout(BuildContext context) {
     return SizedBox(
-      height: 120,
+      height: 128,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image
           Container(
             width: 120,
-            height: 120,
+            height: 128,
             decoration: BoxDecoration(
               color: AppColors.greyLight,
               image: DecorationImage(
@@ -80,6 +80,7 @@ class NewsCardWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const Spacer(),
+                  // const SizedBox(height: 8),
                   _buildMetaInfo(context),
                 ],
               ),

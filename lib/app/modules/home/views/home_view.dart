@@ -219,26 +219,65 @@ class HomeView extends GetView<HomeController> {
                   const SizedBox(height: 12),
 
                   // Services Grid
-                  GridView.count(
-                    crossAxisCount: 3,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 4,
-                    mainAxisSpacing: 4,
-                    childAspectRatio: 0.85,
+                  // GridView.count(
+                  //   crossAxisCount: 3,
+                  //   shrinkWrap: true,
+                  //   physics: const NeverScrollableScrollPhysics(),
+                  //   crossAxisSpacing: 4,
+                  //   mainAxisSpacing: 4,
+                  //   childAspectRatio: 0.85,
+                  //   children: [
+                  //     ServiceGridItem(
+                  //       icon: FontAwesomeIcons.fileCirclePlus,
+                  //       title: 'Buat Laporan',
+                  //       description: 'Laporan SPPG baru',
+                  //       onTap:
+                  //           () => controller.navigateToDynamicForm(
+                  //             'pelaporan-tugas-satgas-mbg',
+                  //           ),
+                  //       showDescription: false,
+                  //     ),
+                  //     ServiceGridItem(
+                  //       icon: FontAwesomeIcons.fileMedical,
+                  //       title: 'Laporan IKL',
+                  //       description: 'Laporan IKL Dinkes',
+                  //       onTap:
+                  //           () => controller.navigateToDynamicForm(
+                  //             'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
+                  //           ),
+                  //       showDescription: false,
+                  //     ),
+                  //     ServiceGridItem(
+                  //       icon: FontAwesomeIcons.clockRotateLeft,
+                  //       title: 'Lihat Laporan',
+                  //       description: 'Riwayat laporan',
+                  //       onTap: () => Get.toNamed(Routes.REPORT_HISTORY),
+                  //       showDescription: false,
+                  //     ),
+                  //   ],
+                  // ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       ServiceGridItem(
-                        icon: FontAwesomeIcons.fileCirclePlus,
-                        title: 'Buat Laporan',
+                        icon: FontAwesomeIcons.fileContract,
+                        title: 'Laporan SPPG',
                         description: 'Laporan SPPG baru',
-                        onTap: () => controller.navigateToDynamicForm('pelaporan-tugas-satgas-mbg'),
+                        onTap:
+                            () => controller.navigateToDynamicForm(
+                              'pelaporan-tugas-satgas-mbg',
+                            ),
                         showDescription: false,
                       ),
                       ServiceGridItem(
                         icon: FontAwesomeIcons.fileMedical,
                         title: 'Laporan IKL',
                         description: 'Laporan IKL Dinkes',
-                        onTap: () => controller.navigateToDynamicForm('pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl'),
+                        onTap:
+                            () => controller.navigateToDynamicForm(
+                              'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
+                            ),
                         showDescription: false,
                       ),
                       ServiceGridItem(
@@ -312,7 +351,7 @@ class HomeView extends GetView<HomeController> {
                       children:
                           controller.latestNews.map((news) {
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0),
+                              padding: const EdgeInsets.only(bottom: 0.0),
                               child: NewsCardWidget(
                                 news: news,
                                 isHorizontal: true,
