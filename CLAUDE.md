@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.2.1-alpha+20251007
+**Current Version:** 0.3.0-alpha+20251008
 
 ## Development Commands
 
@@ -62,7 +62,15 @@ lib/
     │   │   ├── service_grid_item.dart
     │   │   ├── gradient_button.dart
     │   │   ├── custom_snackbar.dart
-    │   │   └── dynamic_form_builder.dart
+    │   │   ├── dynamic_form_builder.dart
+    │   │   ├── custom_text_field.dart
+    │   │   ├── custom_number_field.dart
+    │   │   ├── custom_textarea.dart
+    │   │   ├── custom_dropdown.dart
+    │   │   ├── custom_radio_group.dart
+    │   │   ├── custom_date_picker.dart
+    │   │   ├── custom_image_picker.dart
+    │   │   └── map_picker_widget.dart
     │   └── values/
     │       └── constants.dart
     ├── data/
@@ -134,9 +142,10 @@ lib/
 3. **Dynamic Form System**
    - Dynamic form builder from API with slug-based routing
    - Multiple form types (SPPG, Laporan IKL Dinkes)
-   - Field validation
-   - Image upload
-   - Map coordinate picker
+   - **Supported field types:** text, number, textarea, dropdown, radio, date, map, image
+   - Field validation (required, min/max length, min/max value, regex)
+   - Image upload with preview
+   - Map coordinate picker with Google Maps
    - Regional data (Kecamatan/Desa)
 
 4. **Report History**
@@ -148,6 +157,17 @@ lib/
    - Horizontal and vertical card layouts
    - Category badges
    - Indonesian date formatting
+
+### Recent Changes (v0.3.0-alpha)
+- **Radio Button Support in Dynamic Form**
+  - Created `CustomRadioGroup` widget for radio button fields
+  - Added support for `question_type: "radio"` in `DynamicFormBuilder`
+  - Uses `RadioListTile` for better UX with bordered container
+  - Parses options from API with format `{"text": "...", "value": "..."}`
+  - Full validation support (required field)
+  - Consistent styling with label, description, and required indicator (*)
+- **Dynamic form now supports 8 field types**: text, number, textarea, dropdown, **radio**, date, map, image
+- Updated version to 0.3.0-alpha+20251008
 
 ### Recent Changes (v0.2.1-alpha)
 - **Refactored form_sppg module to dynamic_form** for better reusability

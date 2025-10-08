@@ -8,6 +8,7 @@ import 'custom_dropdown.dart';
 import 'custom_date_picker.dart';
 import 'map_picker_widget.dart';
 import 'custom_image_picker.dart';
+import 'custom_radio_group.dart';
 
 class DynamicFormBuilder extends StatefulWidget {
   final List<FormFieldModel> fields;
@@ -157,6 +158,18 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
                   }
                 }
               }
+            });
+          },
+          validator: (value) => _validateField(field, value),
+        );
+
+      case 'radio':
+        return CustomRadioGroup(
+          field: field,
+          value: widget.formValues[field.id] as String?,
+          onChanged: (value) {
+            setState(() {
+              widget.formValues[field.id] = value;
             });
           },
           validator: (value) => _validateField(field, value),

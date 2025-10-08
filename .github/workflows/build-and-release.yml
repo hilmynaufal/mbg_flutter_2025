@@ -1,0 +1,81 @@
+name: Build and Release Flutter APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    name: Build Debug APK and Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.2'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Get current date
+        id: date
+        run: |
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.extract_version.outputs.version }}
+          name: Release ${{ steps.extract_version.outputs.version }}
+          body: |
+            **MBG Flutter 2025 - Debug Release**
+
+            Version: `${{ steps.extract_version.outputs.version }}`
+            Build Date: `${{ steps.date.outputs.date }}`
+
+            ## Download
+            - Debug APK: `mbg-flutter-${{ steps.extract_version.outputs.version }}-debug.apk`
+
+            ## Changes
+            This release was automatically generated from the latest commit to the main branch.
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
+          files: |
+            build/app/outputs/flutter-apk/app-debug.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: true
+
+      - name: Rename and upload APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-debug.apk mbg-flutter-${{ steps.extract_version.outputs.version }}-debug.apk
+          echo "APK renamed to: mbg-flutter-${{ steps.extract_version.outputs.version }}-debug.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mbg-flutter-${{ steps.extract_version.outputs.version }}-debug
+          path: mbg-flutter-${{ steps.extract_version.outputs.version }}-debug.apk
+          retention-days: 90

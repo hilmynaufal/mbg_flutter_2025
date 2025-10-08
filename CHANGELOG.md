@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0-alpha] - 2025-10-08
+
+### Added
+- **Radio Button Support in Dynamic Form**
+  - New widget: `CustomRadioGroup` (`lib/app/core/widgets/custom_radio_group.dart`)
+  - Support for `question_type: "radio"` in dynamic form builder
+  - Uses `RadioListTile` for better UX
+  - Displays options from API with format `{"text": "...", "value": "..."}`
+  - Full validation support (required field, etc.)
+  - Consistent styling with label, description, and required indicator (*)
+
+### Changed
+- **Updated DynamicFormBuilder**
+  - Added `case 'radio'` in `_buildField()` method
+  - Imported `custom_radio_group.dart`
+  - Radio field values stored as String in formValues
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.3.0-alpha+20251008
+- Dynamic form now supports 8 field types: text, number, textarea, dropdown, radio, date, map, image
+
+---
+
 ## [0.2.1-alpha] - 2025-10-07
 
 ### Added
