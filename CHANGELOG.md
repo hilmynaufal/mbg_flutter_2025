@@ -5,6 +5,89 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0-alpha] - 2025-10-08
+
+### Added
+- **API Integration for Carousel/Slides**
+  - New model: `SlideModel` (`lib/app/data/models/slide_model.dart`)
+  - Carousel now loads real-time data from API endpoint: `GET /api/site/12/slides`
+  - Loading states with spinner indicator during API calls
+  - Error handling with user-friendly error messages
+  - Filters to show only active slides (status = 1)
+
+- **API Integration for News/Posts**
+  - Updated `NewsModel` to match API response structure
+  - News list now loads from API endpoint: `GET /api/site/12/posts` (limited to 3 items)
+  - Added new fields: `idPost`, `url` (slug), `imageSmallUrl`, `imageMiddleUrl`, `tags`, `createdAt`, `descriptionText`
+  - Legacy compatibility with backward-compatible getters (`id`, `publishedDate`)
+  - HTML tag stripping helper for plain text descriptions
+  - Loading states with spinner indicator
+
+- **News Detail Page**
+  - New module: `news_detail` with GetX controller, view, and binding
+  - Full news article display with HTML content rendering
+  - Uses `flutter_html` package for rich content display
+  - Hero image with loading and error states
+  - Article metadata (date, author, category)
+  - Tags display
+  - Slug-based routing for SEO-friendly URLs
+  - Fetches article data from API: `GET /api/site/12/post/{slug}`
+  - Error handling with retry functionality
+
+- **ContentProvider API Client**
+  - New provider: `ContentProvider` (`lib/app/data/providers/content_provider.dart`)
+  - Dio-based HTTP client with base URL configuration
+  - Logging interceptor for debugging
+  - Three API methods:
+    - `getSlides()` - Fetch carousel slides
+    - `getPosts({int? limit})` - Fetch news posts with optional limit
+    - `getPostBySlug(String slug)` - Fetch single post by slug
+  - Comprehensive error handling (timeout, connection errors, server errors)
+  - Response parsing with success/data validation
+
+### Changed
+- **HomeController Updates**
+  - Replaced dummy data with live API calls
+  - Added loading states: `isLoadingBanners`, `isLoadingNews`
+  - `_loadBanners()` now async, fetches from API
+  - `_loadLatestNews()` now async, fetches from API
+  - Converts `SlideModel` to `BannerItem` format
+  - Error snackbars for failed API calls
+  - Removed dependency on `NewsDummyData`
+
+- **Home View Updates**
+  - Carousel wrapped with loading indicator
+  - News section wrapped with loading indicator
+  - News cards now navigate to detail page on tap
+  - Updated to use `news.imageSmallUrl` for thumbnails in horizontal layout
+  - Navigation: `Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url)`
+
+- **Routes**
+  - Added `NEWS_DETAIL` route constant in `app_routes.dart`
+  - Registered `NewsDetailView` with `NewsDetailBinding` in `app_pages.dart`
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.4.0-alpha+20251008
+- Added dependency: `flutter_html: ^3.0.0-beta.2` for HTML content rendering
+- Initialized `ContentProvider` in `main.dart` dependency injection
+- API base URL: `https://api.bandungkab.go.id/api`
+- API timeout: 10 seconds (connect and receive)
+- All API endpoints use site ID: 12
+- Added `dart:developer` logging for API debugging
+- Fixed `AppTextStyles` to include Material Design 3 headline styles
+
+### UI/UX Improvements
+- **News Detail AppBar**: Transparent background with black foreground for cleaner look
+- **News Card (Horizontal)**: Simplified layout - removed category badge overlay for better readability
+- News card uses main `imageUrl` instead of `imageSmallUrl` to ensure better quality
+
+### API Endpoints
+- **Slides**: `GET https://api.bandungkab.go.id/api/site/12/slides`
+- **Posts**: `GET https://api.bandungkab.go.id/api/site/12/posts`
+- **Post Detail**: `GET https://api.bandungkab.go.id/api/site/12/post/{slug}`
+
+---
+
 ## [0.3.0-alpha] - 2025-10-08
 
 ### Added

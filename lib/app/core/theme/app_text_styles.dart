@@ -53,6 +53,11 @@ class AppTextStyles {
     height: 1.4,
   );
 
+  // Material Design 3 headline styles
+  static const TextStyle headlineLarge = h1;
+  static const TextStyle headlineMedium = h2;
+  static const TextStyle headlineSmall = h3;
+
   // Body Styles
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: _fontFamily,

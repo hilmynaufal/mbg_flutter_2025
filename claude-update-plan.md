@@ -1,554 +1,280 @@
-# Plan Implementasi Fitur Baru - MBG Flutter 2025
-
-## Overview
-Implementasi 3 fitur utama berdasarkan plan.md:
-1. **Fitur View Laporan** - Lihat detail laporan yang sudah dibuat
-2. **Fitur Delete Laporan** - Hapus laporan
-3. **Update Theme** - Ganti warna primary menjadi #14b8a6 (teal)
-
----
+# Update Version 0.4.0-alpha: API Integration for Carousel & News
 
 ## Progress Tracking
 
-### ✅ Step 1: Update Theme (Warna Primary)
-**Status**: Completed
-**File**: `lib/app/core/theme/app_colors.dart`
-
-**Changes**:
-- ✅ Ganti primary color dari `#2E7D32` (hijau) ke `#14B8A6` (teal)
-- ✅ Update primaryLight menjadi `#5EEAD4` (teal-300)
-- ✅ Update primaryDark menjadi `#0F766E` (teal-700)
-- ✅ Update inputFocusBorder ke `#14B8A6` untuk konsistensi
-
-**Estimasi**: 5 menit
-**Actual**: 5 menit
+- [ ] 1. Create/Update Data Models
+- [ ] 2. Create API Provider
+- [ ] 3. Update HomeController
+- [ ] 4. Create News Detail Module
+- [ ] 5. Update Routes
+- [ ] 6. Update News Card Widget
+- [ ] 7. Update Home View
+- [ ] 8. Version & Documentation
 
 ---
 
-### ✅ Step 2: Buat Models untuk Response API
-**Status**: Completed
+## 1. Create/Update Data Models
 
-#### 2.1 FormSubmitResponseModel
-**File**: `lib/app/data/models/form_submit_response_model.dart`
+### Create `lib/app/data/models/slide_model.dart`
+- [ ] Create new file
+- [ ] Map API response from `/api/site/12/slides`
+- [ ] Fields needed:
+  - `int id_slide`
+  - `String name`
+  - `String? description`
+  - `String image_url`
+  - `String? link`
+  - `int status`
+  - `DateTime created_at`
+  - `int site_id`
+- [ ] Implement `fromJson` factory
+- [ ] Implement `toJson` method
 
-**Purpose**: Model untuk response setelah create form berhasil
-
-**Fields**:
-```dart
-- ✅ id (int) - ID laporan yang baru dibuat
-- ✅ token (String)
-- ✅ formId (int)
-- ✅ userId (int?)
-- ✅ submittedAt (String)
-- ✅ skpdId (int?)
-- ✅ skpdNama (String?)
-- ✅ description (String)
-- ✅ createdAt (String)
-- ✅ updatedAt (String)
-- ✅ fromJson() & toJson() methods
-```
-
-#### 2.2 FormViewResponseModel
-**File**: `lib/app/data/models/form_view_response_model.dart`
-
-**Purpose**: Model untuk response view detail laporan
-
-**Fields**:
-```dart
-- ✅ id (int)
-- ✅ submittedAt (String)
-- ✅ submittedBy (String)
-- ✅ skpdNama (String?)
-- ✅ answers (List<QuestionAnswer>) - array of question-answer pairs
-  - ✅ question (String)
-  - ✅ answer (String) - bisa text, URL gambar, atau data lainnya
-- ✅ QuestionAnswer class dengan helper method isImageUrl
-- ✅ fromJson() & toJson() methods
-```
-
-**Estimasi**: 20 menit
-**Actual**: 15 menit
+### Update `lib/app/data/models/news_model.dart`
+- [ ] Add new fields to match API:
+  - `int id_post` (change id from String to int)
+  - `String url` (slug for routing)
+  - `String image_small_url`
+  - `String image_middle_url`
+  - `DateTime created_at`
+  - `String? content` (HTML content)
+  - `String? description_text` (plain text version)
+- [ ] Update `fromJson` to parse API response structure
+- [ ] Add helper to strip HTML tags from description
+- [ ] Keep backward compatibility if needed
 
 ---
 
-### ✅ Step 3: Update Storage Service
-**Status**: Completed
-**File**: `lib/app/data/services/storage_service.dart`
+## 2. Create API Provider
 
-**New Methods**:
-```dart
-// ✅ Save list of integers (report IDs)
-Future<bool> writeIntList(String key, List<int> value) async {
-  final stringList = value.map((e) => e.toString()).toList();
-  return await _prefs.setStringList(key, stringList);
-}
-
-// ✅ Read list of integers
-List<int>? readIntList(String key) {
-  final stringList = _prefs.getStringList(key);
-  if (stringList != null) {
-    return stringList.map((e) => int.parse(e)).toList();
-  }
-  return null;
-}
-```
-
-**Purpose**: Simpan list ID laporan yang sudah dibuat oleh user
-
-**Estimasi**: 10 menit
-**Actual**: 8 menit
+### Create `lib/app/data/providers/content_provider.dart`
+- [ ] Create new file
+- [ ] Setup Dio with base URL: `https://api.bandungkab.go.id/api`
+- [ ] Add logging interceptor
+- [ ] Implement methods:
+  - [ ] `Future<List<SlideModel>> getSlides()` - GET `/site/12/slides`
+  - [ ] `Future<List<NewsModel>> getPosts({int? limit})` - GET `/site/12/posts`
+  - [ ] `Future<NewsModel> getPostBySlug(String slug)` - GET `/site/12/post/{slug}`
+- [ ] Add error handling (DioException, network errors)
+- [ ] Parse `{"success": true, "message": "...", "data": [...]}`
 
 ---
 
-### ✅ Step 4: Update Constants
-**Status**: Completed
-**File**: `lib/app/core/values/constants.dart`
+## 3. Update HomeController
 
-**Add**:
-```dart
-✅ static const String keyReportIds = 'report_ids';
-```
-
-**Estimasi**: 2 menit
-**Actual**: 2 menit
-
----
-
-### ✅ Step 5: Update FormProvider (API Methods)
-**Status**: Completed
-**File**: `lib/app/data/providers/form_provider.dart`
-
-**New Methods**:
-```dart
-/// ✅ View form detail by ID
-/// Endpoint: GET /api/form/view/{id}
-Future<FormViewResponseModel> viewForm(int id)
-- Handle 404 error dengan message "Laporan tidak ditemukan atau sudah dihapus"
-- Parse response.data dengan FormViewResponseModel.fromJson()
-
-/// ✅ Delete form by ID
-/// Endpoint: DELETE /api/form/delete/{id}
-Future<bool> deleteForm(int id)
-- Handle 404 error dengan message "Laporan tidak ditemukan"
-- Return true jika status == 'success'
-```
-
-**Update submitForm()**:
-- ✅ Changed return type dari `Future<bool>` ke `Future<FormSubmitResponseModel>`
-- ✅ Parse response.data['data'] dengan FormSubmitResponseModel.fromJson()
-- ✅ Return response data yang berisi ID laporan untuk disimpan
-
-**New Imports**:
-- ✅ import '../models/form_submit_response_model.dart'
-- ✅ import '../models/form_view_response_model.dart'
-
-**Estimasi**: 25 menit
-**Actual**: 20 menit
+### Modify `lib/app/modules/home/controllers/home_controller.dart`
+- [ ] Add ContentProvider injection: `final ContentProvider _contentProvider = Get.find<ContentProvider>();`
+- [ ] Add loading states:
+  - [ ] `RxBool isLoadingBanners = false.obs`
+  - [ ] `RxBool isLoadingNews = false.obs`
+- [ ] Update `_loadBanners()`:
+  - [ ] Call `_contentProvider.getSlides()`
+  - [ ] Convert `List<SlideModel>` to `List<BannerItem>`
+  - [ ] Handle errors with try-catch
+  - [ ] Show error message if failed
+- [ ] Update `_loadLatestNews()`:
+  - [ ] Call `_contentProvider.getPosts(limit: 3)`
+  - [ ] Parse to `NewsModel` list
+  - [ ] Handle errors with try-catch
+- [ ] Remove dependency on `NewsDummyData`
 
 ---
 
-### ✅ Step 6: Update FormSppgController
-**Status**: Completed
-**File**: `lib/app/modules/form_sppg/controllers/form_sppg_controller.dart`
+## 4. Create News Detail Module
 
-**Changes in submitForm() method**:
-1. ✅ Import StorageService
-2. ✅ Ubah dari `await` menjadi `final response = await _formProvider.submitForm()`
-3. ✅ Ambil ID dari response: `response.id`
-4. ✅ Load existing report IDs dari local storage
-5. ✅ Add new ID to list: `reportIds.add(response.id)`
-6. ✅ Save back to local storage dengan `writeIntList()`
-7. ✅ Update success message: "Laporan berhasil dikirim!\nID Laporan: ${response.id}"
-8. ✅ Add logging untuk debugging
+### Create `lib/app/modules/news_detail/controllers/news_detail_controller.dart`
+- [ ] Create GetX controller
+- [ ] Add properties:
+  - [ ] `Rx<NewsModel?> newsDetail = Rx<NewsModel?>(null)`
+  - [ ] `RxBool isLoading = false.obs`
+  - [ ] `RxString errorMessage = ''.obs`
+- [ ] Inject ContentProvider
+- [ ] Implement `fetchNewsDetail(String slug)` method
+- [ ] Handle loading states and errors
 
-**New Import**:
-```dart
-✅ import '../../../data/services/storage_service.dart';
-```
+### Create `lib/app/modules/news_detail/views/news_detail_view.dart`
+- [ ] Create StatelessWidget with GetView<NewsDetailController>
+- [ ] Get slug from route arguments: `Get.arguments as String`
+- [ ] Design layout:
+  - [ ] AppBar with title
+  - [ ] Hero image (full width)
+  - [ ] Article title (large, bold)
+  - [ ] Metadata (date, author, category)
+  - [ ] HTML content rendering with `flutter_html` package
+  - [ ] Loading indicator
+  - [ ] Error message handling
+- [ ] Add Obx for reactive updates
 
-**Storage Logic**:
-```dart
-✅ final storage = Get.find<StorageService>();
-✅ List<int> reportIds = storage.readIntList(AppConstants.keyReportIds) ?? [];
-✅ reportIds.add(response.id);
-✅ await storage.writeIntList(AppConstants.keyReportIds, reportIds);
-```
-
-**Estimasi**: 15 menit
-**Actual**: 12 menit
-
----
-
-### ✅ Step 7: Buat Report History Module (Riwayat Laporan)
-**Status**: Completed
-
-#### 7.1 Controller
-**File**: `lib/app/modules/report_history/controllers/report_history_controller.dart`
-
-**Features**:
-```dart
-✅ RxList<int> reportIds = <int>[].obs
-✅ RxBool isLoading = false.obs
-✅ loadReportIds() - load dari local storage (sorted newest first)
-✅ deleteReport(int id) - dengan confirmation dialog
-✅ refreshList() - reload data
-```
-
-#### 7.2 View
-**File**: `lib/app/modules/report_history/views/report_history_view.dart`
-
-**UI Components**:
-- ✅ AppBar dengan title "Riwayat Laporan"
-- ✅ RefreshIndicator untuk pull-to-refresh
-- ✅ ListView.builder dengan card untuk setiap laporan
-- ✅ Setiap card berisi:
-  - ✅ Icon document
-  - ✅ Text "Laporan #ID"
-  - ✅ Subtitle "Klik untuk lihat detail"
-  - ✅ Row buttons: View (primary) & Delete (error color)
-- ✅ Empty state widget jika `reportIds.isEmpty`
-- ✅ Loading indicator
-
-#### 7.3 Binding
-**File**: `lib/app/modules/report_history/bindings/report_history_binding.dart`
-✅ Created
-
-**Estimasi**: 1 jam
-**Actual**: 1 jam
+### Create `lib/app/modules/news_detail/bindings/news_detail_binding.dart`
+- [ ] Create binding class
+- [ ] Bind NewsDetailController
+- [ ] Bind ContentProvider if not already global
 
 ---
 
-### ✅ Step 8: Buat Report Detail Module (View Laporan)
-**Status**: Completed
+## 5. Update Routes
 
-#### 8.1 Controller
-**File**: `lib/app/modules/report_detail/controllers/report_detail_controller.dart`
+### Modify `lib/app/routes/app_routes.dart`
+- [ ] Add constant: `static const NEWS_DETAIL = '/news-detail';`
 
-**Features**:
-```dart
-✅ int reportId (from Get.arguments)
-✅ Rx<FormViewResponseModel?> reportDetail = Rx<FormViewResponseModel?>(null)
-✅ RxBool isLoading = true.obs
-✅ RxString errorMessage = ''.obs
-✅ loadReportDetail() - fetch dari API
-✅ deleteReport() - dengan confirmation, navigate back setelah success
-✅ retryLoad() - retry jika error
-```
-
-#### 8.2 View
-**File**: `lib/app/modules/report_detail/views/report_detail_view.dart`
-
-**UI Components**:
-- ✅ AppBar dengan title "Detail Laporan #ID"
-  - ✅ Action: Delete IconButton
-- ✅ ScrollView dengan:
-  - ✅ Card info header dengan icon:
-    - ✅ ID: xxx
-    - ✅ Submitted at: yyyy-MM-dd HH:mm:ss
-    - ✅ Submitted by: nama
-    - ✅ SKPD (jika ada)
-  - ✅ Divider
-  - ✅ List semua questions & answers dalam card:
-    - ✅ Label question (bold, primary color)
-    - ✅ Answer value
-    - ✅ Jika answer adalah URL gambar (isImageUrl helper):
-      - ✅ Show image dengan loading & error builder
-      - ✅ InkWell → full screen viewer dengan InteractiveViewer (pinch to zoom)
-      - ✅ Close button di full screen
-    - ✅ Spacing antar items
-- ✅ Loading & error states dengan retry button
-
-#### 8.3 Binding
-**File**: `lib/app/modules/report_detail/bindings/report_detail_binding.dart`
-✅ Created
-
-**Estimasi**: 1 jam 15 menit
-**Actual**: 1 jam 15 menit
+### Modify `lib/app/routes/app_pages.dart`
+- [ ] Import NewsDetail module files
+- [ ] Add GetPage for NEWS_DETAIL:
+  ```dart
+  GetPage(
+    name: Routes.NEWS_DETAIL,
+    page: () => const NewsDetailView(),
+    binding: NewsDetailBinding(),
+  )
+  ```
 
 ---
 
-### ✅ Step 9: Update Routing
-**Status**: Completed
+## 6. Update News Card Widget
 
-**File**: `lib/app/routes/app_routes.dart`
-```dart
-✅ static const REPORT_HISTORY = '/report-history';
-✅ static const REPORT_DETAIL = '/report-detail';
-```
-
-**File**: `lib/app/routes/app_pages.dart`
-```dart
-✅ import '../modules/report_history/bindings/report_history_binding.dart';
-✅ import '../modules/report_history/views/report_history_view.dart';
-✅ import '../modules/report_detail/bindings/report_detail_binding.dart';
-✅ import '../modules/report_detail/views/report_detail_view.dart';
-
-✅ GetPage(
-  name: Routes.REPORT_HISTORY,
-  page: () => const ReportHistoryView(),
-  binding: ReportHistoryBinding(),
-),
-✅ GetPage(
-  name: Routes.REPORT_DETAIL,
-  page: () => const ReportDetailView(),
-  binding: ReportDetailBinding(),
-),
-```
-
-**Estimasi**: 10 menit
-**Actual**: 10 menit
+### Modify `lib/app/core/widgets/news_card_widget.dart`
+- [ ] Add `VoidCallback? onTap` parameter to constructor
+- [ ] Wrap card in GestureDetector/InkWell
+- [ ] Call onTap when card is tapped
+- [ ] Add visual feedback (splash effect)
 
 ---
 
-### ✅ Step 10: Update Home View (Tambah Menu Riwayat)
-**Status**: Completed
-**File**: `lib/app/modules/home/views/home_view.dart`
+## 7. Update Home View
 
-**Changes**:
-- ✅ Import app_routes.dart
-- ✅ Tambah Card menu kedua di bawah "Pelaporan SPPG"
-- ✅ Title: "Riwayat Laporan"
-- ✅ Subtitle: "Lihat laporan yang sudah dibuat"
-- ✅ Icon: Icons.history (size 32)
-- ✅ Color: Primary color dengan opacity 0.1 untuk background
-- ✅ OnTap: `Get.toNamed(Routes.REPORT_HISTORY)`
-- ✅ Styling konsisten dengan menu Pelaporan SPPG
-
-**Estimasi**: 10 menit
-**Actual**: 10 menit
-
----
-
-### ✅ Step 11: Create Image Viewer Widget (Optional)
-**Status**: Skipped - Already implemented in Step 8
-
-**Note**: Full screen image viewer sudah diimplementasikan langsung di `ReportDetailView` (Step 8) dengan fitur:
-- ✅ Full screen dialog dengan InteractiveViewer (pinch to zoom)
-- ✅ Image.network dengan loading & error builder
-- ✅ Close button (IconButton top-right)
-- ✅ Background hitam semi-transparent (Colors.black87)
-- ✅ Gesture support untuk zoom & pan
-
-**Estimasi**: 20 menit (Optional - bisa skip jika waktu terbatas)
-**Actual**: 0 menit (already included in Step 8)
+### Modify `lib/app/modules/home/views/home_view.dart`
+- [ ] Wrap carousel with Obx:
+  - [ ] Show loading indicator when `controller.isLoadingBanners.value`
+  - [ ] Show banners when loaded
+  - [ ] Show error message if load failed
+- [ ] Wrap news section with Obx:
+  - [ ] Show loading indicator when `controller.isLoadingNews.value`
+  - [ ] Show news cards when loaded
+- [ ] Add onTap to news cards:
+  ```dart
+  onTap: () => Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url)
+  ```
+- [ ] Update to use `news.image_small_url` for thumbnails
 
 ---
 
-### ✅ Step 12: Testing & Polish
-**Status**: Completed
+## 8. Version & Documentation
 
-**Checklist**:
-- ✅ Theme color #14b8a6 applied di semua tempat (buttons, AppBar, etc)
-- ✅ Submit form → ID tersimpan di local storage (Step 6)
-- ✅ Riwayat laporan → list tampil dengan benar (Step 7)
-- ✅ View detail → semua data tampil (text, date, images) (Step 8)
-- ✅ Image URL load dengan benar dengan loading & error states
-- ✅ Delete → confirmation dialog → berhasil hapus dari local & server
-- ✅ Delete → list di history ter-update otomatis
-- ✅ Empty states tampil dengan baik (history & detail)
-- ✅ Error handling (network error, API error) dengan retry button
-- ✅ Loading indicators di semua async operations
-- ✅ Flutter analyze - Fixed unused variable warning
-- ✅ Code quality check - 15 info messages (non-critical)
+### Update `pubspec.yaml`
+- [ ] Change version: `0.3.1-alpha+20251008` � `0.4.0-alpha+20251008`
+- [ ] Add dependency: `flutter_html: ^3.0.0-beta.2`
+- [ ] Run `flutter pub get`
 
-**Issues Fixed**:
-- Fixed unused variable 'index' in report_detail_view.dart
+### Update CHANGELOG.md
+- [ ] Add section for v0.4.0-alpha
+- [ ] Document features:
+  - API integration for carousel (slides)
+  - API integration for news/posts
+  - News detail page with HTML rendering
+  - Replace dummy data with live API data
+- [ ] List endpoints used
+- [ ] Technical changes
 
-**Remaining Info Messages** (non-critical):
-- withOpacity deprecated warnings (9) - Will migrate to .withValues() in future
-- Constant naming (6) - Standard pattern for routes, acceptable
-
-**Estimasi**: 30 menit
-**Actual**: 30 menit
-
----
-
-## Timeline Estimasi
-
-| Step | Task | Time |
-|------|------|------|
-| 1 | Update Theme | 5 min |
-| 2 | Buat Models | 20 min |
-| 3 | Update Storage Service | 10 min |
-| 4 | Update Constants | 2 min |
-| 5 | Update FormProvider | 25 min |
-| 6 | Update FormSppgController | 15 min |
-| 7 | Report History Module | 60 min |
-| 8 | Report Detail Module | 75 min |
-| 9 | Update Routing | 10 min |
-| 10 | Update Home View | 10 min |
-| 11 | Image Viewer (Optional) | 20 min |
-| 12 | Testing & Polish | 30 min |
-| **TOTAL** | | **~4 jam 42 menit** |
+### Update CLAUDE.md
+- [ ] Update current version to 0.4.0-alpha
+- [ ] Add to project structure:
+  - `slide_model.dart`
+  - `content_provider.dart`
+  - `news_detail/` module
+- [ ] Update "Current Features" section:
+  - Real-time carousel from API
+  - Real-time news from API
+  - News detail page
+- [ ] Add API endpoints documentation
 
 ---
 
-## File Summary
+## Testing Checklist
 
-### New Files (14)
-1. `lib/app/data/models/form_submit_response_model.dart`
-2. `lib/app/data/models/form_view_response_model.dart`
-3. `lib/app/modules/report_history/controllers/report_history_controller.dart`
-4. `lib/app/modules/report_history/views/report_history_view.dart`
-5. `lib/app/modules/report_history/bindings/report_history_binding.dart`
-6. `lib/app/modules/report_detail/controllers/report_detail_controller.dart`
-7. `lib/app/modules/report_detail/views/report_detail_view.dart`
-8. `lib/app/modules/report_detail/bindings/report_detail_binding.dart`
-9. `lib/app/core/widgets/image_viewer.dart` (optional)
-
-### Modified Files (7)
-1. `lib/app/core/theme/app_colors.dart` - Update primary color
-2. `lib/app/core/values/constants.dart` - Add keyReportIds
-3. `lib/app/data/services/storage_service.dart` - Add int list methods
-4. `lib/app/data/providers/form_provider.dart` - Add view & delete methods
-5. `lib/app/modules/form_sppg/controllers/form_sppg_controller.dart` - Save ID after submit
-6. `lib/app/routes/app_routes.dart` & `lib/app/routes/app_pages.dart` - Add new routes
-7. `lib/app/modules/home/views/home_view.dart` - Add menu button
+- [ ] Test carousel loads from API
+- [ ] Test carousel shows loading state
+- [ ] Test carousel handles errors gracefully
+- [ ] Test news list loads from API (limit 3)
+- [ ] Test news card navigation to detail
+- [ ] Test news detail page displays correctly
+- [ ] Test HTML content renders properly
+- [ ] Test back navigation from news detail
+- [ ] Test app behavior when offline
+- [ ] Test app behavior when API returns errors
 
 ---
 
-## API Endpoints Reference
+## Commit & Release
 
-### 1. Submit Form (Already Implemented)
-- **Method**: POST
-- **Endpoint**: `/api/form/create/pelaporan-tugas-satgas-mbg`
-- **Response**: Contains `id` field yang akan disimpan
+- [ ] Test on real device/emulator
+- [ ] Fix any bugs found
+- [ ] Run `flutter analyze` - ensure no issues
+- [ ] Commit changes with clear message
+- [ ] Push to GitHub
+- [ ] Create git tag: `v0.4.0-alpha+20251008`
+- [ ] Verify GitHub Actions builds successfully
+- [ ] Verify release is created with APK
 
-### 2. View Form Detail (New)
-- **Method**: GET
-- **Endpoint**: `/api/form/view/{id}`
-- **Response**:
+---
+
+## API Reference (from plan.md)
+
+### Carousel/Slides API
+**Endpoint:** `GET https://api.bandungkab.go.id/api/site/12/slides`
+
+**Response:**
 ```json
 {
-  "status": "success",
-  "message": "Detail respons berhasil diambil.",
-  "data": {
-    "id": 34453,
-    "submitted_at": "2025-10-06 13:30:23",
-    "submitted_by": "Guest",
-    "skpd_nama": null,
-    "answers": [
-      {
-        "question": "Dokumentasi Foto 1",
-        "answer": "https://storageapi.bandungkab.go.id/..."
-      }
-    ]
-  }
+  "success": true,
+  "message": "Data ditemukan",
+  "data": [
+    {
+      "id_slide": 36,
+      "name": "Slide 2",
+      "description": "Slide 2",
+      "image": "frontend/slides/12/...",
+      "link": null,
+      "status": 1,
+      "created_at": "2025-10-08T07:09:54.000000Z",
+      "updated_at": "2025-10-08T07:09:54.000000Z",
+      "site_id": 12,
+      "image_url": "https://storageapi.bandungkab.go.id/..."
+    }
+  ]
 }
 ```
 
-### 3. Delete Form (New)
-- **Method**: DELETE
-- **Endpoint**: `/api/form/delete/{id}`
-- **Response**:
+### News/Posts List API
+**Endpoint:** `GET https://api.bandungkab.go.id/api/site/12/posts`
+
+**Response:**
 ```json
 {
-  "status": "success",
-  "message": "Data berhasil dihapus.",
-  "data": null
+  "success": true,
+  "message": "Data ditemukan",
+  "data": [
+    {
+      "id_post": 314,
+      "title": "...",
+      "description": "...",
+      "image": "...",
+      "image_small": "...",
+      "image_middle": "...",
+      "url": "sukses-jalankan-program-mbg-kabupaten-bandung-jadi-percontohan",
+      "tags": "...",
+      "created_at": "2025-10-07T17:00:00.000000Z",
+      "content": "<p>HTML content...</p>",
+      "image_url": "https://...",
+      "image_small_url": "https://...",
+      "image_middle_url": "https://..."
+    }
+  ]
 }
 ```
 
----
+### News Detail API
+**Endpoint:** `GET https://api.bandungkab.go.id/api/site/12/post/{slug}`
 
-## Important Notes
+**Example:** `GET https://api.bandungkab.go.id/api/site/12/post/sukses-jalankan-program-mbg-kabupaten-bandung-jadi-percontohan`
 
-1. **Local Storage Strategy**:
-   - Karena belum ada API untuk get all reports by user
-   - Simpan list ID laporan di SharedPreferences
-   - Key: `report_ids`
-   - Format: List<int>
-
-2. **Image Handling**:
-   - URL gambar dari API sudah full URL: `https://storageapi.bandungkab.go.id/...`
-   - Gunakan `Image.network()` dengan `loadingBuilder` dan `errorBuilder`
-
-3. **Delete Flow**:
-   - Delete dari server dulu via API
-   - Jika berhasil, remove ID dari local storage
-   - Update UI (refresh list atau pop back)
-
-4. **Error Handling**:
-   - Network errors
-   - 404 jika laporan sudah dihapus
-   - API errors
-   - Show user-friendly messages
-
----
-
-## Dependencies
-Semua dependencies sudah ada, tidak perlu tambahan baru.
-
----
-
----
-
-## 🎉 Implementation Complete!
-
-### Summary
-All 12 steps have been successfully completed! The MBG Flutter 2025 application now has the following new features:
-
-### ✨ New Features Implemented:
-
-1. **📋 View Report (Detail Laporan)**
-   - API endpoint: `GET /api/form/view/{id}`
-   - View all report details including questions & answers
-   - Image viewer with zoom capability
-   - Full screen image viewer with InteractiveViewer
-
-2. **🗑️ Delete Report (Hapus Laporan)**
-   - API endpoint: `DELETE /api/form/delete/{id}`
-   - Confirmation dialog before delete
-   - Auto update local storage & UI after delete
-   - Error handling for 404 & network errors
-
-3. **🎨 Theme Update**
-   - Primary color changed from green (#2E7D32) to teal (#14B8A6)
-   - Updated primaryLight (#5EEAD4) & primaryDark (#0F766E)
-   - Applied consistently across all UI components
-
-4. **📱 New Modules Created**:
-   - Report History Module (List riwayat laporan)
-   - Report Detail Module (View detail laporan)
-   - Full routing & navigation support
-
-5. **💾 Local Storage Strategy**:
-   - Save report IDs locally after successful submission
-   - Read/write List<int> to SharedPreferences
-   - Auto sync with server for delete operations
-
-### 📊 Implementation Stats:
-- **Total Steps**: 12
-- **Steps Completed**: 12 (100%)
-- **Files Created**: 8 new files
-- **Files Modified**: 8 existing files
-- **Code Quality**: ✅ Pass (15 non-critical info messages)
-- **Total Time**: ~3.5 hours
-
-### 📁 New Files Created:
-1. `lib/app/data/models/form_submit_response_model.dart`
-2. `lib/app/data/models/form_view_response_model.dart`
-3. `lib/app/modules/report_history/controllers/report_history_controller.dart`
-4. `lib/app/modules/report_history/views/report_history_view.dart`
-5. `lib/app/modules/report_history/bindings/report_history_binding.dart`
-6. `lib/app/modules/report_detail/controllers/report_detail_controller.dart`
-7. `lib/app/modules/report_detail/views/report_detail_view.dart`
-8. `lib/app/modules/report_detail/bindings/report_detail_binding.dart`
-
-### 📝 Files Modified:
-1. `lib/app/core/theme/app_colors.dart` - Theme colors
-2. `lib/app/core/values/constants.dart` - Storage keys
-3. `lib/app/data/services/storage_service.dart` - List<int> methods
-4. `lib/app/data/providers/form_provider.dart` - View & delete API
-5. `lib/app/modules/form_sppg/controllers/form_sppg_controller.dart` - Save IDs
-6. `lib/app/routes/app_routes.dart` - New routes
-7. `lib/app/routes/app_pages.dart` - Route pages
-8. `lib/app/modules/home/views/home_view.dart` - Menu button
-
-### 🚀 Ready to Use!
-The application is now ready for testing and deployment. All features have been implemented with proper error handling, loading states, and user-friendly UI.
-
----
-
-**Last Updated**: 2025-10-06
-**Status**: ✅ All Features Completed
+**Response:** Same structure as posts list but returns single item in data array

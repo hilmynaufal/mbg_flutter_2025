@@ -30,22 +30,32 @@ class HomeView extends GetView<HomeController> {
           children: [
             // Banner Carousel
             const SizedBox(height: 16),
-            Obx(
-              () =>
-                  controller.banners.isNotEmpty
-                      ? BannerCarouselWidget(
-                        banners: controller.banners,
-                        height: 180,
-                        onBannerTap: (banner) {
-                          // TODO: Handle banner tap
-                          CustomSnackbar.info(
-                            title: 'Banner',
-                            message: banner.title ?? 'Banner tapped',
-                          );
-                        },
-                      )
-                      : const SizedBox.shrink(),
-            ),
+            Obx(() {
+              if (controller.isLoadingBanners.value) {
+                return SizedBox(
+                  height: 180,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (controller.banners.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return BannerCarouselWidget(
+                banners: controller.banners,
+                height: 180,
+                onBannerTap: (banner) {
+                  // TODO: Handle banner tap
+                  CustomSnackbar.info(
+                    title: 'Banner',
+                    message: banner.title ?? 'Banner tapped',
+                  );
+                },
+              );
+            }),
             const SizedBox(height: 24),
 
             // Content with padding
@@ -321,6 +331,18 @@ class HomeView extends GetView<HomeController> {
 
                   // Latest News List
                   Obx(() {
+                    if (controller.isLoadingNews.value) {
+                      return Card(
+                        elevation: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      );
+                    }
+
                     if (controller.latestNews.isEmpty) {
                       return Card(
                         elevation: 0,
@@ -355,13 +377,10 @@ class HomeView extends GetView<HomeController> {
                               child: NewsCardWidget(
                                 news: news,
                                 isHorizontal: true,
-                                onTap: () {
-                                  // TODO: Navigate to news detail page
-                                  CustomSnackbar.info(
-                                    title: news.title,
-                                    message: news.description,
-                                  );
-                                },
+                                onTap: () => Get.toNamed(
+                                  Routes.NEWS_DETAIL,
+                                  arguments: news.url,
+                                ),
                               ),
                             );
                           }).toList(),

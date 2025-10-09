@@ -23,10 +23,9 @@ class NewsCardWidget extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child:
-            isHorizontal
-                ? _buildHorizontalLayout(context)
-                : _buildVerticalLayout(context),
+        child: isHorizontal
+            ? _buildHorizontalLayout(context)
+            : _buildVerticalLayout(context),
       ),
     );
   }
@@ -49,11 +48,6 @@ class NewsCardWidget extends StatelessWidget {
                 onError: (exception, stackTrace) {},
               ),
             ),
-            child: Container(
-              alignment: Alignment.topLeft,
-              padding: const EdgeInsets.all(8),
-              child: _buildCategoryBadge(context),
-            ),
           ),
           // Content
           Expanded(
@@ -65,8 +59,8 @@ class NewsCardWidget extends StatelessWidget {
                   Text(
                     news.title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -74,8 +68,8 @@ class NewsCardWidget extends StatelessWidget {
                   Text(
                     news.description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                          color: AppColors.textSecondary,
+                        ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -155,9 +149,9 @@ class NewsCardWidget extends StatelessWidget {
       child: Text(
         news.category,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: AppColors.white,
-          fontWeight: FontWeight.w600,
-        ),
+              color: AppColors.white,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }

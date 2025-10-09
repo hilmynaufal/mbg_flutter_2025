@@ -2,25 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/storage_service.dart';
+import '../../../data/providers/content_provider.dart';
 import '../../../data/models/user_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
-import '../../../data/dummy/news_dummy_data.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 
 class HomeController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final StorageService _storageService = Get.find<StorageService>();
+  final ContentProvider _contentProvider = Get.find<ContentProvider>();
 
   // Observable user
   Rx<UserModel?> user = Rx<UserModel?>(null);
 
   // Observable banners
   RxList<BannerItem> banners = <BannerItem>[].obs;
+  RxBool isLoadingBanners = false.obs;
 
   // Observable news
   RxList<NewsModel> latestNews = <NewsModel>[].obs;
+  RxBool isLoadingNews = false.obs;
 
   // Observable report statistics
   RxInt reportCount = 0.obs;
@@ -42,39 +45,50 @@ class HomeController extends GetxController {
     user.value = _authService.getUser();
   }
 
-  // Load banners
-  void _loadBanners() {
-    banners.value = [
-      BannerItem(
-        id: '1',
-        imageUrl: 'https://via.placeholder.com/800x400/14B8A6/FFFFFF?text=Sistem+Pelaporan+SPPG',
-        title: 'Sistem Pelaporan SPPG',
-        description: 'Laporkan PHK dengan mudah dan cepat',
-      ),
-      BannerItem(
-        id: '2',
-        imageUrl: 'https://via.placeholder.com/800x400/2196F3/FFFFFF?text=Perlindungan+Pekerja',
-        title: 'Perlindungan Hak Pekerja',
-        description: 'Kami melindungi hak-hak ketenagakerjaan Anda',
-      ),
-      BannerItem(
-        id: '3',
-        imageUrl: 'https://via.placeholder.com/800x400/4CAF50/FFFFFF?text=Kabupaten+Bandung',
-        title: 'Dinas Tenaga Kerja Kab. Bandung',
-        description: 'Melayani dengan sepenuh hati',
-      ),
-      BannerItem(
-        id: '4',
-        imageUrl: 'https://via.placeholder.com/800x400/FF9800/FFFFFF?text=Konsultasi+Gratis',
-        title: 'Layanan Konsultasi Gratis',
-        description: 'Dapatkan bantuan hukum ketenagakerjaan',
-      ),
-    ];
+  // Load banners from API
+  Future<void> _loadBanners() async {
+    try {
+      isLoadingBanners.value = true;
+      final slides = await _contentProvider.getSlides();
+
+      // Convert SlideModel to BannerItem
+      banners.value = slides
+          .where((slide) => slide.status == 1) // Only active slides
+          .map((slide) => BannerItem(
+                id: slide.idSlide.toString(),
+                imageUrl: slide.imageUrl,
+                title: slide.name,
+                description: slide.description ?? '',
+              ))
+          .toList();
+    } catch (e) {
+      print('Error loading banners: $e');
+      CustomSnackbar.error(
+        title: 'Gagal Memuat Banner',
+        message: 'Tidak dapat memuat banner. $e',
+      );
+      // Fallback to empty list or keep existing banners
+    } finally {
+      isLoadingBanners.value = false;
+    }
   }
 
-  // Load latest news
-  void _loadLatestNews() {
-    latestNews.value = NewsDummyData.getLatestNews(limit: 3);
+  // Load latest news from API
+  Future<void> _loadLatestNews() async {
+    try {
+      isLoadingNews.value = true;
+      final posts = await _contentProvider.getPosts(limit: 3);
+      latestNews.value = posts;
+    } catch (e) {
+      print('Error loading news: $e');
+      CustomSnackbar.error(
+        title: 'Gagal Memuat Berita',
+        message: 'Tidak dapat memuat berita terbaru. $e',
+      );
+      // Fallback to empty list or keep existing news
+    } finally {
+      isLoadingNews.value = false;
+    }
   }
 
   // Load report count

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.3.0-alpha+20251008
+**Current Version:** 0.4.0-alpha+20251008
 
 ## Development Commands
 
@@ -77,10 +77,12 @@ lib/
     │   ├── models/                    # Data models
     │   │   ├── user_model.dart
     │   │   ├── news_model.dart
+    │   │   ├── slide_model.dart
     │   │   └── form_response_model.dart
     │   ├── providers/                 # API providers
     │   │   ├── auth_provider.dart
-    │   │   └── form_provider.dart
+    │   │   ├── form_provider.dart
+    │   │   └── content_provider.dart
     │   ├── services/                  # Business logic services
     │   │   ├── auth_service.dart
     │   │   └── storage_service.dart
@@ -93,6 +95,7 @@ lib/
     │   │   └── bindings/
     │   ├── home/
     │   ├── dynamic_form/
+    │   ├── news_detail/
     │   ├── report_history/
     │   └── report_detail/
     └── routes/
@@ -108,6 +111,7 @@ lib/
   - font_awesome_flutter: ^10.7.0
   - carousel_slider: ^5.0.0
   - flutter_spinkit: ^5.2.0
+  - flutter_html: ^3.0.0-beta.2
 - **Maps:** google_maps_flutter: ^2.5.3
 - **Date/Time:** intl: ^0.19.0
 - **Image Picker:** image_picker: ^1.0.7
@@ -133,10 +137,11 @@ lib/
    - User session management
 
 2. **Home Dashboard**
-   - Banner carousel (auto-play)
+   - Real-time banner carousel from API (auto-play, active slides only)
    - Report statistics (Total, Pending, Approved, Rejected)
    - Services grid (3 columns, no subtitle)
-   - Latest news section (3 articles)
+   - Latest news section (3 articles from API)
+   - Loading states with spinner indicators
    - Flat design with bordered cards
 
 3. **Dynamic Form System**
@@ -153,10 +158,41 @@ lib/
    - Report detail page
 
 5. **News System**
-   - News model with dummy data
+   - Real-time news list from API
+   - News detail page with HTML content rendering
    - Horizontal and vertical card layouts
-   - Category badges
+   - Category badges and tags
+   - Click-through navigation to full article
+   - SEO-friendly slug-based URLs
    - Indonesian date formatting
+   - Error handling with retry functionality
+
+### Recent Changes (v0.4.0-alpha)
+- **API Integration for Carousel and News**
+  - Created `ContentProvider` for API communication with Bandung Kab. API
+  - Carousel now loads real-time slides from `GET /api/site/12/slides`
+  - News list loads from `GET /api/site/12/posts` (limited to 3 items)
+  - Added loading states and error handling for all API calls
+  - Created `SlideModel` for carousel data structure
+  - Updated `NewsModel` to match API response (added `idPost`, `url`, `imageSmallUrl`, `imageMiddleUrl`, `tags`, `createdAt`)
+  - Legacy compatibility maintained with backward-compatible getters
+  - Added `dart:developer` logging for API debugging
+- **News Detail Page**
+  - New `news_detail` module with full article display
+  - HTML content rendering using `flutter_html` package
+  - Fetches article from API by slug: `GET /api/site/12/post/{slug}`
+  - Hero image with loading/error states
+  - Article metadata (date, author, category, tags)
+  - Error handling with retry functionality
+  - SEO-friendly slug-based routing
+  - Clean AppBar design with transparent background
+- **UI/UX Improvements**
+  - Simplified news card horizontal layout for better readability
+  - Added Material Design 3 headline text styles (`headlineLarge`, `headlineMedium`, `headlineSmall`)
+  - Transparent AppBar on news detail page for modern look
+- **API Base URL**: `https://api.bandungkab.go.id/api`
+- **Site ID**: 12 (all endpoints use site ID 12)
+- Updated version to 0.4.0-alpha+20251008
 
 ### Recent Changes (v0.3.0-alpha)
 - **Radio Button Support in Dynamic Form**

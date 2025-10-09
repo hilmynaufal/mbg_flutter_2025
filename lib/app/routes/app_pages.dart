@@ -9,6 +9,8 @@ import '../modules/report_history/bindings/report_history_binding.dart';
 import '../modules/report_history/views/report_history_view.dart';
 import '../modules/report_detail/bindings/report_detail_binding.dart';
 import '../modules/report_detail/views/report_detail_view.dart';
+import '../modules/news_detail/bindings/news_detail_binding.dart';
+import '../modules/news_detail/views/news_detail_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -37,6 +39,11 @@ class AppPages {
       name: Routes.REPORT_DETAIL,
       page: () => const ReportDetailView(),
       binding: ReportDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.NEWS_DETAIL,
+      page: () => const NewsDetailView(),
+      binding: NewsDetailBinding(),
     ),
   ];
 }

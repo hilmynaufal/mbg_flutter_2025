@@ -6,6 +6,7 @@ import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/data/services/storage_service.dart';
 import 'app/data/services/auth_service.dart';
+import 'app/data/providers/content_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,9 @@ Future<void> initServices() async {
 
   // Initialize AuthService
   Get.put(AuthService());
+
+  // Initialize ContentProvider
+  Get.put(ContentProvider());
 }
 
 class MyApp extends StatelessWidget {
