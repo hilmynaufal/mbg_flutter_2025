@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1-alpha] - 2025-10-09
+
+### Removed
+- **Home Dashboard - Report Statistics Card**
+  - Removed "Statistik Pelaporan" section from home view
+  - Removed display of Total, Pending, Approved, and Rejected reports counters
+  - Cleaned up unused `_buildStatItem()` helper method
+  - Simplified home page layout for better focus on main features
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.4.1-alpha+20251009
+- Code cleanup: removed 60+ lines of unused statistics UI code
+
+---
+
 ## [0.4.0-alpha] - 2025-10-08
 
 ### Added

@@ -140,85 +140,6 @@ class HomeView extends GetView<HomeController> {
                   // ),
                   // const SizedBox(height: 16),
 
-                  // Report Statistics Card
-                  Obx(
-                    () => Card(
-                      // elevation: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.analytics_outlined,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Statistik Pelaporan',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildStatItem(
-                                    context,
-                                    'Total',
-                                    controller.reportCount.value.toString(),
-                                    Icons.description_outlined,
-                                    Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildStatItem(
-                                    context,
-                                    'Pending',
-                                    controller.pendingReports.value.toString(),
-                                    Icons.hourglass_empty,
-                                    Colors.orange,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildStatItem(
-                                    context,
-                                    'Disetujui',
-                                    controller.approvedReports.value.toString(),
-                                    Icons.check_circle_outline,
-                                    Colors.green,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildStatItem(
-                                    context,
-                                    'Ditolak',
-                                    controller.rejectedReports.value.toString(),
-                                    Icons.cancel_outlined,
-                                    Colors.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
                   // Section Title
                   Text(
                     'Layanan Utama',
@@ -436,44 +357,6 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 }

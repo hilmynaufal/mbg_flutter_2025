@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.4.0-alpha+20251008
+**Current Version:** 0.4.1-alpha+20251009
 
 ## Development Commands
 
@@ -138,7 +138,6 @@ lib/
 
 2. **Home Dashboard**
    - Real-time banner carousel from API (auto-play, active slides only)
-   - Report statistics (Total, Pending, Approved, Rejected)
    - Services grid (3 columns, no subtitle)
    - Latest news section (3 articles from API)
    - Loading states with spinner indicators
@@ -166,6 +165,14 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.4.1-alpha)
+- **Home Dashboard Simplification**
+  - Removed "Statistik Pelaporan" section for cleaner UI
+  - Focus shifted to main features: carousel, services, and news
+  - Removed unused `_buildStatItem()` helper method
+  - Improved page performance with less reactive elements
+- Updated version to 0.4.1-alpha+20251009
 
 ### Recent Changes (v0.4.0-alpha)
 - **API Integration for Carousel and News**
