@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../models/slide_model.dart';
 import '../models/news_model.dart';
+import '../models/report_list_response_model.dart';
 import 'dart:developer';
 
 class ContentProvider {
@@ -162,6 +163,81 @@ class ContentProvider {
       }
     } catch (e) {
       throw Exception('Failed to load post: $e');
+    }
+  }
+
+  /// Get reports list for SPPG
+  /// GET /data/pelaporan-tugas-satgas-mbg
+  Future<ReportListResponseModel> getReportsSppg() async {
+    try {
+      final response = await _dio.get('/data/pelaporan-tugas-satgas-mbg');
+
+      log('SPPG Reports response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data['status'] == 'success') {
+          return ReportListResponseModel.fromJson(data);
+        } else {
+          throw Exception(
+              'Invalid response: ${data['message'] ?? 'Unknown error'}');
+        }
+      } else {
+        throw Exception('Failed to load reports: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception(
+            'Connection timeout. Please check your internet connection.');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('No internet connection.');
+      } else if (e.response != null) {
+        throw Exception('Server error: ${e.response?.statusCode}');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load SPPG reports: $e');
+    }
+  }
+
+  /// Get reports list for IKL Dinkes
+  /// GET /data/pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl
+  Future<ReportListResponseModel> getReportsIkl() async {
+    try {
+      final response = await _dio
+          .get('/data/pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl');
+
+      log('IKL Reports response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data['status'] == 'success') {
+          return ReportListResponseModel.fromJson(data);
+        } else {
+          throw Exception(
+              'Invalid response: ${data['message'] ?? 'Unknown error'}');
+        }
+      } else {
+        throw Exception('Failed to load reports: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception(
+            'Connection timeout. Please check your internet connection.');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('No internet connection.');
+      } else if (e.response != null) {
+        throw Exception('Server error: ${e.response?.statusCode}');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load IKL reports: $e');
     }
   }
 }

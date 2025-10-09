@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-alpha] - 2025-10-09
+
+### Added
+- **Report List Feature**
+  - New `report_list` module with GetX pattern (controller, view, binding)
+  - Two new data models:
+    - `ReportListItemModel` - individual report item structure
+    - `ReportListResponseModel` - API response wrapper
+  - API integration for fetching submitted reports:
+    - `getReportsSppg()` - GET `/data/pelaporan-tugas-satgas-mbg`
+    - `getReportsIkl()` - GET `/data/pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl`
+  - Report list view features:
+    - Pull-to-refresh functionality
+    - Loading indicators
+    - Empty state handling
+    - Error handling with retry button
+    - Report card displaying: ID, summary, location, date, created by
+    - Total count display
+  - New route: `REPORT_LIST` for viewing report lists
+
+### Changed
+- **Home Dashboard Menu Updates**
+  - Replaced "Lihat Laporan" with 2 specific report list menus
+  - New menu: "Buat Laporan" - shows dialog to choose form type (SPPG or IKL)
+  - New menu: "Laporan SPPG" - navigates to SPPG report list
+  - New menu: "Laporan IKL" - navigates to IKL Dinkes report list
+  - Updated icons: `fileCirclePlus` (create), `fileLines` (SPPG list), `notesMedical` (IKL list)
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.5.0-alpha+20251009
+- Added routing for report list with type argument (sppg/ikl)
+- Enhanced ContentProvider with 2 new API methods
+- Report detail navigation prepared (currently shows snackbar)
+- No local storage needed - reports fetched directly from API
+
+---
+
 ## [0.4.1-alpha] - 2025-10-09
 
 ### Removed

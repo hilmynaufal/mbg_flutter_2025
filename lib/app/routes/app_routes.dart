@@ -2,6 +2,7 @@ class Routes {
   static const LOGIN = '/login';
   static const HOME = '/home';
   static const DYNAMIC_FORM = '/dynamic-form';
+  static const REPORT_LIST = '/report-list';
   static const REPORT_HISTORY = '/report-history';
   static const REPORT_DETAIL = '/report-detail';
   static const NEWS_DETAIL = '/news-detail';

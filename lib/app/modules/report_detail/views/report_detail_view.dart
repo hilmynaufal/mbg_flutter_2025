@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/report_detail_controller.dart';
@@ -128,7 +130,6 @@ class ReportDetailView extends GetView<ReportDetailController> {
 
               // Questions & Answers
               ...report.answers.map((qa) {
-
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: Padding(

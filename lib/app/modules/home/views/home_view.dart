@@ -192,30 +192,56 @@ class HomeView extends GetView<HomeController> {
                     runSpacing: 8,
                     children: [
                       ServiceGridItem(
-                        icon: FontAwesomeIcons.fileContract,
+                        icon: FontAwesomeIcons.fileCirclePlus,
+                        title: 'Buat Laporan',
+                        description: 'Buat laporan baru',
+                        onTap: () {
+                          // Show dialog to choose form type
+                          Get.dialog(
+                            AlertDialog(
+                              title: const Text('Pilih Jenis Laporan'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(FontAwesomeIcons.fileContract),
+                                    title: const Text('Laporan SPPG'),
+                                    onTap: () {
+                                      Get.back();
+                                      controller.navigateToDynamicForm(
+                                        'pelaporan-tugas-satgas-mbg',
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(FontAwesomeIcons.fileMedical),
+                                    title: const Text('Laporan IKL Dinkes'),
+                                    onTap: () {
+                                      Get.back();
+                                      controller.navigateToDynamicForm(
+                                        'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        showDescription: false,
+                      ),
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.fileLines,
                         title: 'Laporan SPPG',
-                        description: 'Laporan SPPG baru',
-                        onTap:
-                            () => controller.navigateToDynamicForm(
-                              'pelaporan-tugas-satgas-mbg',
-                            ),
+                        description: 'Daftar Laporan SPPG',
+                        onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'sppg'),
                         showDescription: false,
                       ),
                       ServiceGridItem(
-                        icon: FontAwesomeIcons.fileMedical,
+                        icon: FontAwesomeIcons.notesMedical,
                         title: 'Laporan IKL',
-                        description: 'Laporan IKL Dinkes',
-                        onTap:
-                            () => controller.navigateToDynamicForm(
-                              'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
-                            ),
-                        showDescription: false,
-                      ),
-                      ServiceGridItem(
-                        icon: FontAwesomeIcons.clockRotateLeft,
-                        title: 'Lihat Laporan',
-                        description: 'Riwayat laporan',
-                        onTap: () => Get.toNamed(Routes.REPORT_HISTORY),
+                        description: 'Daftar Laporan IKL',
+                        onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
                         showDescription: false,
                       ),
                     ],

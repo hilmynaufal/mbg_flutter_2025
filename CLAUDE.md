@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.4.1-alpha+20251009
+**Current Version:** 0.5.0-alpha+20251009
 
 ## Development Commands
 
@@ -78,7 +78,9 @@ lib/
     │   │   ├── user_model.dart
     │   │   ├── news_model.dart
     │   │   ├── slide_model.dart
-    │   │   └── form_response_model.dart
+    │   │   ├── form_response_model.dart
+    │   │   ├── report_list_item_model.dart
+    │   │   └── report_list_response_model.dart
     │   ├── providers/                 # API providers
     │   │   ├── auth_provider.dart
     │   │   ├── form_provider.dart
@@ -95,6 +97,7 @@ lib/
     │   │   └── bindings/
     │   ├── home/
     │   ├── dynamic_form/
+    │   ├── report_list/
     │   ├── news_detail/
     │   ├── report_history/
     │   └── report_detail/
@@ -138,7 +141,10 @@ lib/
 
 2. **Home Dashboard**
    - Real-time banner carousel from API (auto-play, active slides only)
-   - Services grid (3 columns, no subtitle)
+   - Services grid with 3 main menus:
+     - "Buat Laporan" - dialog to choose form type (SPPG/IKL)
+     - "Laporan SPPG" - view SPPG report list
+     - "Laporan IKL" - view IKL Dinkes report list
    - Latest news section (3 articles from API)
    - Loading states with spinner indicators
    - Flat design with bordered cards
@@ -152,9 +158,15 @@ lib/
    - Map coordinate picker with Google Maps
    - Regional data (Kecamatan/Desa)
 
-4. **Report History**
-   - View submitted reports
-   - Report detail page
+4. **Report Management**
+   - **Report List** - view submitted reports by type (SPPG/IKL)
+     - Fetches data from API (no local storage)
+     - Pull-to-refresh functionality
+     - Displays: ID, summary, location, date, created by
+     - Total count display
+     - Empty state and error handling
+   - **Report History** - legacy report history view
+   - **Report Detail** - view individual report details
 
 5. **News System**
    - Real-time news list from API
@@ -165,6 +177,21 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.5.0-alpha)
+- **Report List Feature**
+  - New module to display submitted reports from API
+  - Separate lists for SPPG and IKL Dinkes reports
+  - Created `ReportListItemModel` and `ReportListResponseModel`
+  - API endpoints: `/data/pelaporan-tugas-satgas-mbg` and `/data/pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl`
+  - Pull-to-refresh, empty state, error handling
+  - Report card UI with ID, summary, location, timestamp
+- **Home Menu Redesign**
+  - Replaced static menus with dynamic report list navigation
+  - "Buat Laporan" menu shows dialog to choose form type
+  - Separate menus for viewing SPPG and IKL report lists
+  - Updated icons for better visual clarity
+- Updated version to 0.5.0-alpha+20251009
 
 ### Recent Changes (v0.4.1-alpha)
 - **Home Dashboard Simplification**
