@@ -166,12 +166,7 @@ class ReportListView extends GetView<ReportListController> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to report detail
-          Get.snackbar(
-            'Info',
-            'Detail laporan #${report.id}',
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          Get.toNamed('/report-detail', arguments: report.id);
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1-alpha] - 2025-10-09
+
+### Fixed
+- **Report List Navigation**
+  - Implemented navigation from report list to report detail page
+  - Fixed TODO in `lib/app/modules/report_list/views/report_list_view.dart:169`
+  - Users can now tap on any report card to view detailed information
+  - Report ID is properly passed as argument to ReportDetailController
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.5.1-alpha+20251009
+- Updated version in `CLAUDE.md`: 0.5.1-alpha+20251009
+
+---
+
 ## [0.6.0-alpha] - 2025-10-14
 
 ### Added
