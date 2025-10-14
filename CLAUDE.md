@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.5.0-alpha+20251009
+**Current Version:** 0.6.0-alpha+20251014
 
 ## Development Commands
 
@@ -115,7 +115,8 @@ lib/
   - carousel_slider: ^5.0.0
   - flutter_spinkit: ^5.2.0
   - flutter_html: ^3.0.0-beta.2
-- **Maps:** google_maps_flutter: ^2.5.3
+- **Maps:** flutter_map: ^7.0.2, latlong2: ^0.9.0
+- **Geolocation:** geolocator: ^11.0.0
 - **Date/Time:** intl: ^0.19.0
 - **Image Picker:** image_picker: ^1.0.7
 
@@ -155,7 +156,12 @@ lib/
    - **Supported field types:** text, number, textarea, dropdown, radio, date, map, image
    - Field validation (required, min/max length, min/max value, regex)
    - Image upload with preview
-   - Map coordinate picker with Google Maps
+   - **Interactive map coordinate picker** with flutter_map (OpenStreetMap)
+     - Full-screen map picker with tap-to-select
+     - Draggable marker for precise positioning
+     - "Use My Location" button with GPS integration
+     - Zoom controls and real-time coordinate display
+     - Default center: Bandung, Indonesia
    - Regional data (Kecamatan/Desa)
 
 4. **Report Management**
@@ -177,6 +183,30 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.6.0-alpha)
+- **Interactive Map Picker with flutter_map**
+  - Completely rewrote `MapPickerWidget` with flutter_map implementation
+  - **Replaced**: google_maps_flutter (unused) → flutter_map + latlong2
+  - **Features**:
+    - Full-screen interactive map using OpenStreetMap tiles
+    - Tap anywhere on map to select coordinates
+    - Real-time coordinate display (latitude/longitude with 6 decimal precision)
+    - "Use My Location" button with GPS/geolocation integration
+    - Zoom in/out controls with floating action buttons
+    - Instruction overlay for better UX
+    - Red marker pin for selected location
+    - Default center: Bandung, Indonesia (-6.9175, 107.6191)
+  - **Location Permissions**:
+    - Added ACCESS_FINE_LOCATION & ACCESS_COARSE_LOCATION for Android
+    - Added NSLocationWhenInUseUsageDescription for iOS
+  - **Benefits**:
+    - No Google Maps API key required (uses OpenStreetMap)
+    - Better UX: visual map instead of manual lat/lng input
+    - More accurate coordinate selection
+    - Free and open-source
+    - Multi-platform support (Android, iOS, Web, Desktop)
+- Updated version to 0.6.0-alpha+20251014
 
 ### Recent Changes (v0.5.0-alpha)
 - **Report List Feature**

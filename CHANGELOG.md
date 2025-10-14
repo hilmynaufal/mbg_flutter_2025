@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0-alpha] - 2025-10-14
+
+### Added
+- **Interactive Map Picker with flutter_map**
+  - Completely rewrote `MapPickerWidget` (`lib/app/core/widgets/map_picker_widget.dart`)
+  - Full-screen interactive map picker using OpenStreetMap tiles
+  - Tap anywhere on map to select coordinates
+  - Real-time coordinate display with 6 decimal precision (latitude/longitude)
+  - "Use My Location" button with GPS integration using geolocator package
+  - Zoom in/out controls with floating action buttons
+  - Instruction overlay for better user experience
+  - Red marker pin for selected location
+  - Default center: Bandung, Indonesia (-6.9175, 107.6191)
+  - Fallback AppBar with "Simpan" (Save) button
+
+- **Location Permissions**
+  - Android: `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` in AndroidManifest.xml
+  - iOS: `NSLocationWhenInUseUsageDescription` and `NSLocationAlwaysUsageDescription` in Info.plist
+  - Runtime permission handling with user-friendly error messages
+
+### Changed
+- **Replaced Map Dependencies**
+  - Removed: `google_maps_flutter: ^2.5.3` (was not being used)
+  - Added: `flutter_map: ^7.0.2` - Interactive map widget
+  - Added: `latlong2: ^0.9.0` - Coordinate handling
+  - Added: `geolocator: ^11.0.0` - GPS location services
+
+- **MapPickerWidget Behavior**
+  - Old: Dialog with manual latitude/longitude text input
+  - New: Full-screen map picker with visual coordinate selection
+  - More intuitive and accurate for users
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.6.0-alpha+20251014
+- No Google Maps API key required (uses free OpenStreetMap)
+- Multi-platform support: Android, iOS, Web, Desktop
+- Consistent with app design system (Teal theme, flat design)
+- Fixed deprecation warning: `withOpacity()` → `withValues(alpha:)`
+
+### Benefits
+- ✅ **Free & Open Source**: No API key fees (OpenStreetMap)
+- ✅ **Better UX**: Visual map selection vs manual input
+- ✅ **More Accurate**: Tap and visual feedback vs typing coordinates
+- ✅ **GPS Support**: Users can use their current location
+- ✅ **Multi-platform**: Works on all Flutter platforms
+
+---
+
 ## [0.5.0-alpha] - 2025-10-09
 
 ### Added
