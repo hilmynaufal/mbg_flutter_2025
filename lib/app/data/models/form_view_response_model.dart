@@ -33,6 +33,46 @@ class QuestionAnswer {
             lowerAnswer.contains('.jpeg?') ||
             lowerAnswer.contains('.png?')));
   }
+
+  /// Check if answer is a coordinate (latitude, longitude format)
+  /// Supports formats: "-6.9175, 107.6191" or "-6.9175,107.6191"
+  bool get isCoordinate {
+    if (answer.trim().isEmpty) return false;
+
+    // Regex pattern for coordinate format: number, number
+    // Supports: -6.9175, 107.6191 or -6.9175,107.6191
+    final coordRegex = RegExp(r'^-?\d+\.?\d*\s*,\s*-?\d+\.?\d*$');
+    return coordRegex.hasMatch(answer.trim());
+  }
+
+  /// Parse coordinate string to Map with latitude and longitude
+  /// Returns null if answer is not a valid coordinate
+  Map<String, double>? get coordinateValues {
+    if (!isCoordinate) return null;
+
+    try {
+      final parts = answer.split(',').map((e) => e.trim()).toList();
+      if (parts.length != 2) return null;
+
+      final lat = double.tryParse(parts[0]);
+      final lng = double.tryParse(parts[1]);
+
+      if (lat == null || lng == null) return null;
+
+      // Validate coordinate ranges
+      // Latitude: -90 to 90, Longitude: -180 to 180
+      if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return null;
+      }
+
+      return {
+        'latitude': lat,
+        'longitude': lng,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 class FormViewResponseModel {

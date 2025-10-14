@@ -5,18 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.1-alpha] - 2025-10-09
+## [0.6.1-alpha] - 2025-10-14
 
-### Fixed
-- **Report List Navigation**
-  - Implemented navigation from report list to report detail page
-  - Fixed TODO in `lib/app/modules/report_list/views/report_list_view.dart:169`
-  - Users can now tap on any report card to view detailed information
-  - Report ID is properly passed as argument to ReportDetailController
+### Added
+- **MapViewerWidget** - New read-only map viewer widget
+  - Created `lib/app/core/widgets/map_viewer_widget.dart`
+  - Displays coordinates on interactive OpenStreetMap
+  - Read-only mode (no tap-to-select, but allows pan/zoom)
+  - Shows red marker pin at exact location
+  - Compact 200px height with coordinate badge overlay
+  - Bordered with theme color for visual consistency
+  - Used in report detail to visualize coordinate answers
+
+- **Coordinate Detection in QuestionAnswer Model**
+  - New getter: `isCoordinate` - automatically detects coordinate format
+  - New getter: `coordinateValues` - parses lat/lng from string
+  - Supports formats: "-6.9175, 107.6191" or "-6.9175,107.6191"
+  - Validates coordinate ranges (lat: -90 to 90, lng: -180 to 180)
+  - Returns null if format is invalid
+
+### Changed
+- **Report Detail View - Unified Single Card Layout**
+  - Complete UI refactor of `lib/app/modules/report_detail/views/report_detail_view.dart`
+  - **Before**: Header info card + separate "Detail Jawaban" section with multiple cards
+  - **After**: Single card containing header info + all Q&A answers
+  - All items separated by dividers for consistent, clean appearance
+  - Removed section title "Detail Jawaban" for simpler layout
+
+- **Enhanced Answer Rendering**
+  - Three specialized answer renderers:
+    - `_buildAnswerRow` - for text-based answers
+    - `_buildMapAnswerRow` - for coordinate answers with map display (NEW!)
+    - `_buildImageAnswerRow` - for image answers with preview
+  - Each answer type has appropriate icon (question, location, image)
+  - Consistent format matching `_buildInfoRow` for header info
+
+- **Automatic Answer Type Detection**
+  - Priority order: Coordinate → Image → Text
+  - Coordinate answers now show visual map instead of just text
+  - More informative for users to see location on map
 
 ### Technical
-- Updated version in `pubspec.yaml`: 0.5.1-alpha+20251009
-- Updated version in `CLAUDE.md`: 0.5.1-alpha+20251009
+- Updated version in `pubspec.yaml`: 0.6.1-alpha+20251014
+- Removed unused import `dart:developer` from report_detail_view.dart
+- Added import for `MapViewerWidget`
+- No new dependencies added (reuses flutter_map from v0.6.0)
+
+### UI/UX Improvements
+- ✅ **Visual Coordinates**: Map shown for coordinate answers
+- ✅ **Cleaner Layout**: Single card instead of scattered cards
+- ✅ **Consistent Design**: All items use same format with dividers
+- ✅ **Better Context**: Icons indicate answer type at a glance
+- ✅ **More Compact**: Reduced vertical spacing, better use of screen space
 
 ---
 
@@ -65,6 +105,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ **More Accurate**: Tap and visual feedback vs typing coordinates
 - ✅ **GPS Support**: Users can use their current location
 - ✅ **Multi-platform**: Works on all Flutter platforms
+
+---
+
+## [0.5.1-alpha] - 2025-10-09
+
+### Fixed
+- **Report List Navigation**
+  - Implemented navigation from report list to report detail page
+  - Fixed TODO in `lib/app/modules/report_list/views/report_list_view.dart:169`
+  - Users can now tap on any report card to view detailed information
+  - Report ID is properly passed as argument to ReportDetailController
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.5.1-alpha+20251009
+- Updated version in `CLAUDE.md`: 0.5.1-alpha+20251009
 
 ---
 

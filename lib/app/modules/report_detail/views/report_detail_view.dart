@@ -1,7 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/widgets/map_viewer_widget.dart';
 import '../controllers/report_detail_controller.dart';
 
 class ReportDetailView extends GetView<ReportDetailController> {
@@ -75,94 +74,71 @@ class ReportDetailView extends GetView<ReportDetailController> {
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Info Card
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoRow(
-                        'ID Laporan',
-                        '#${report.id}',
-                        Icons.tag,
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        'Tanggal Submit',
-                        report.submittedAt,
-                        Icons.calendar_today,
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        'Submitted By',
-                        report.submittedBy,
-                        Icons.person,
-                      ),
-                      if (report.skpdNama != null) ...[
-                        const Divider(height: 24),
-                        _buildInfoRow(
-                          'SKPD',
-                          report.skpdNama!,
-                          Icons.business,
-                        ),
-                      ],
-                    ],
+          child: Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Info
+                  _buildInfoRow(
+                    'ID Laporan',
+                    '#${report.id}',
+                    Icons.tag,
                   ),
-                ),
-              ),
+                  const Divider(height: 24),
+                  _buildInfoRow(
+                    'Tanggal Submit',
+                    report.submittedAt,
+                    Icons.calendar_today,
+                  ),
+                  const Divider(height: 24),
+                  _buildInfoRow(
+                    'Submitted By',
+                    report.submittedBy,
+                    Icons.person,
+                  ),
+                  if (report.skpdNama != null) ...[
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      'SKPD',
+                      report.skpdNama!,
+                      Icons.business,
+                    ),
+                  ],
 
-              const SizedBox(height: 24),
+                  // Add divider before answers if there are any
+                  if (report.answers.isNotEmpty) const Divider(height: 24),
 
-              // Section Title
-              Text(
-                'Detail Jawaban',
-                style: Get.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+                  // All Answers (Q&A)
+                  ...report.answers.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final qa = entry.value;
+                    final isLast = index == report.answers.length - 1;
 
-              const SizedBox(height: 12),
-
-              // Questions & Answers
-              ...report.answers.map((qa) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Question
-                        Text(
-                          qa.question,
-                          style: Get.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Get.theme.colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Answer
-                        if (qa.isImageUrl)
-                          // Image Answer
-                          _buildImageAnswer(qa.answer)
+                        // Determine answer type and render accordingly
+                        if (qa.isCoordinate && qa.coordinateValues != null)
+                          // Coordinate answer with map
+                          _buildMapAnswerRow(qa)
+                        else if (qa.isImageUrl)
+                          // Image answer
+                          _buildImageAnswerRow(qa)
                         else
-                          // Text Answer
-                          Text(
-                            qa.answer.isEmpty ? '-' : qa.answer,
-                            style: Get.textTheme.bodyLarge,
-                          ),
+                          // Text answer
+                          _buildAnswerRow(qa),
+
+                        // Divider (except for last item)
+                        if (!isLast) const Divider(height: 24),
                       ],
-                    ),
-                  ),
-                );
-              }),
-            ],
+                    );
+                  }),
+                ],
+              ),
+            ),
           ),
         );
       }),
@@ -196,6 +172,117 @@ class ReportDetailView extends GetView<ReportDetailController> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build answer row for text-based answers
+  Widget _buildAnswerRow(dynamic qa) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.help_outline,
+          size: 20,
+          color: Get.theme.colorScheme.primary,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                qa.question,
+                style: Get.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                qa.answer.isEmpty ? '-' : qa.answer,
+                style: Get.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build answer row for coordinate answers with map display
+  Widget _buildMapAnswerRow(dynamic qa) {
+    final coords = qa.coordinateValues!;
+    final lat = coords['latitude']!;
+    final lng = coords['longitude']!;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.location_on,
+          size: 20,
+          color: Get.theme.colorScheme.primary,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                qa.question,
+                style: Get.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                qa.answer,
+                style: Get.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Map viewer
+              MapViewerWidget(
+                latitude: lat,
+                longitude: lng,
+                height: 200,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build answer row for image answers
+  Widget _buildImageAnswerRow(dynamic qa) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.image,
+          size: 20,
+          color: Get.theme.colorScheme.primary,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                qa.question,
+                style: Get.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildImageAnswer(qa.answer),
             ],
           ),
         ),

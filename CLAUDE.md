@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.6.0-alpha+20251014
+**Current Version:** 0.6.1-alpha+20251014
 
 ## Development Commands
 
@@ -70,7 +70,8 @@ lib/
     │   │   ├── custom_radio_group.dart
     │   │   ├── custom_date_picker.dart
     │   │   ├── custom_image_picker.dart
-    │   │   └── map_picker_widget.dart
+    │   │   ├── map_picker_widget.dart
+    │   │   └── map_viewer_widget.dart
     │   └── values/
     │       └── constants.dart
     ├── data/
@@ -183,6 +184,33 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.6.1-alpha)
+- **Map Display in Report Detail**
+  - Created `MapViewerWidget` - read-only map viewer for displaying coordinates
+  - Report detail now shows interactive map for coordinate answers
+  - Automatically detects coordinate format (e.g., "-6.9175, 107.6191")
+  - Map displayed with marker at exact location using OpenStreetMap
+  - Compact 200px height with coordinate badge overlay
+
+- **UI Improvement: Unified Report Detail Layout**
+  - Refactored report detail view to use single card design
+  - Merged header info and Q&A answers into one cohesive card
+  - All items separated by consistent dividers for clean look
+  - Three specialized answer renderers:
+    - Text answers: using _buildAnswerRow
+    - Coordinate answers: using _buildMapAnswerRow with map display
+    - Image answers: using _buildImageAnswerRow with preview
+  - Icons for each answer type (question, location, image)
+  - Removed separate "Detail Jawaban" section for cleaner UI
+
+- **Enhanced QuestionAnswer Model**
+  - Added `isCoordinate` getter for automatic coordinate detection
+  - Added `coordinateValues` getter to parse lat/lng from string
+  - Validates coordinate ranges (lat: -90 to 90, lng: -180 to 180)
+  - Supports formats: "-6.9175, 107.6191" or "-6.9175,107.6191"
+
+- Updated version to 0.6.1-alpha+20251014
 
 ### Recent Changes (v0.6.0-alpha)
 - **Interactive Map Picker with flutter_map**
