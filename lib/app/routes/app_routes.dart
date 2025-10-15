@@ -6,6 +6,7 @@ class Routes {
   static const REPORT_HISTORY = '/report-history';
   static const REPORT_DETAIL = '/report-detail';
   static const NEWS_DETAIL = '/news-detail';
+  static const FORM_SUCCESS = '/form-success';
 
   // Initial route
   static const INITIAL = LOGIN;

@@ -13,6 +13,8 @@ import '../modules/report_detail/bindings/report_detail_binding.dart';
 import '../modules/report_detail/views/report_detail_view.dart';
 import '../modules/news_detail/bindings/news_detail_binding.dart';
 import '../modules/news_detail/views/news_detail_view.dart';
+import '../modules/form_success/bindings/form_success_binding.dart';
+import '../modules/form_success/views/form_success_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -51,6 +53,11 @@ class AppPages {
       name: Routes.NEWS_DETAIL,
       page: () => const NewsDetailView(),
       binding: NewsDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.FORM_SUCCESS,
+      page: () => const FormSuccessView(),
+      binding: FormSuccessBinding(),
     ),
   ];
 }
