@@ -5,6 +5,176 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.5-alpha] - 2025-10-16
+
+### Changed
+- **Banner Carousel Cleanup**
+  - Removed gradient overlay from banner carousel for clearer image display
+  - Removed title and description text overlay
+  - Banners now display images in full clarity without any visual obstructions
+  - Maintains rounded corners (12px) and shadow effects
+  - Better user experience with clean, unobstructed banner images
+
+### Fixed
+- **Splash Screen Navigation Issue**
+  - Fixed controller not being initialized in SplashBinding
+  - Changed `Get.lazyPut()` to `Get.put()` to ensure controller is created immediately
+  - Fixed navigation not triggering after 2 second delay
+  - Added comprehensive logging for debugging navigation flow
+  - Added try-catch error handling with fallback to LOGIN
+  - Controller now properly executes `onInit()` and navigates to appropriate screen
+
+- **Native Splash Screen Cleanup**
+  - Removed all remaining native splash screen files from v0.6.3:
+    - Deleted 19 Android splash images (splash.png, android12splash.png, background.png)
+    - Removed 5 dark mode drawable folders
+    - Removed Android 12+ values folders (values-v31, values-night-v31)
+    - Cleaned up iOS LaunchBackground.imageset
+    - Removed web/splash/ folder with 8 splash images
+  - Simplified launch_background.xml to plain white background
+  - Cleaned up styles.xml to remove fullscreen/dark mode configurations
+  - App now uses only Flutter widget splash screen (no native splash remnants)
+
+### Technical
+- Updated `SplashBinding` to use `Get.put()` instead of `Get.lazyPut()`
+- Added `dart:developer` import for logging in SplashController
+- Splash screen timing: 2 seconds (reduced from 2.5 seconds)
+- Enhanced error handling in splash navigation flow
+
+---
+
+## [0.6.4-alpha] - 2025-10-16
+
+### Added
+- **Manual Splash Screen Widget** - Custom Flutter widget for fullscreen splash screen
+  - New module: `lib/app/modules/splash/` (controller, view, binding)
+  - `SplashView` displays `assets/images/splash.jpg` in fullscreen (`BoxFit.cover`)
+  - `SplashController` handles auto-navigation after 2.5 second delay
+  - Smart navigation based on login status:
+    - If logged in → Navigate to HOME
+    - If not logged in → Navigate to LOGIN
+  - Uses GetX pattern for state management
+  - No additional dependencies required (pure Flutter)
+
+### Changed
+- **Initial Route**
+  - Changed `Routes.INITIAL` from `LOGIN` to `SPLASH`
+  - App now shows splash screen first, then navigates to appropriate page
+
+- **Route Configuration**
+  - Added `Routes.SPLASH = '/splash'` constant in `app_routes.dart`
+  - Registered `SplashView` with `SplashBinding` in `app_pages.dart`
+
+### Removed
+- **Native Splash Screen Package**
+  - Removed `flutter_native_splash: ^2.3.10` from dev dependencies
+  - Removed entire `flutter_native_splash` configuration section from `pubspec.yaml`
+  - Native splash implementation replaced with manual Flutter widget
+  - Reason: Native splash screen was not working properly, manual implementation provides better control
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.6.4-alpha+20251016
+- Splash screen now runs within Flutter framework (not platform-native)
+- Auto-navigation uses `Future.delayed` with 2.5 second duration
+- Checks `AuthService.isLoggedIn.value` for navigation decision
+- `Get.offAllNamed()` ensures splash screen is removed from navigation stack
+
+### UI/UX
+- ✅ **Fullscreen Display**: Splash image fills entire screen with `BoxFit.cover`
+- ✅ **Smart Navigation**: Auto-directs to appropriate page based on auth state
+- ✅ **No Manual Interaction**: User doesn't need to tap anything
+- ✅ **Clean Transition**: Splash removed from stack, can't go back to it
+
+---
+
+## [0.6.3-alpha] - 2025-10-15
+
+### Added
+- **Native Fullscreen Splash Screen Implementation**
+  - Integrated `flutter_native_splash ^2.3.10` package for platform-native splash screens
+  - Created **fullscreen** splash screens for **Android**, **iOS**, and **Web** platforms
+  - **Configuration**:
+    - Splash image: `assets/images/splash.jpg` (1.3MB, fullscreen image for mobile)
+    - Background color: `#FFFFFF` (white fallback, not visible when image fills screen)
+    - **Fullscreen mode enabled** - image fills entire screen without letterboxing
+    - Android gravity: `fill` - scales image to fill entire screen
+    - iOS content mode: `scaleAspectFill` - fills screen without distortion
+    - Web image mode: `center`
+    - Android 12+ support with fullscreen splash
+    - Dark mode support for Android splash screens
+  - **Platform-Specific Features**:
+    - **Android**:
+      - Fullscreen splash with `android:gravity="fill"` in launch_background.xml
+      - Status bar hidden during splash (`android:windowFullscreen="true"`)
+      - Android 12+ styled fullscreen splash
+      - Dark mode variants for Android 12+
+      - Drawable resources in multiple densities
+    - **iOS**:
+      - Launch screen with `scaleAspectFill` content mode
+      - Status bar hidden during splash (`UIStatusBarHidden=true`)
+      - Updated Info.plist and LaunchScreen.storyboard
+      - Launch images (1x, 2x, 3x)
+    - **Web**:
+      - CSS-based fullscreen splash screen
+      - Responsive images (1x, 2x, 3x, 4x) for different screen densities
+      - Updated index.html for splash integration
+  - Shows immediately on app launch (before Flutter engine initializes)
+  - Professional, fullscreen native experience across all platforms
+  - No dependencies on Flutter runtime for initial display
+
+- **Assets Added**
+  - `assets/images/logo.png` (334KB PNG) - branding logo for login page
+  - `assets/images/splash.jpg` (1.3MB JPG) - fullscreen splash image
+
+### Changed
+- **Login Page Redesign** (`lib/app/modules/login/views/login_view.dart`)
+  - **Background**: Changed from primary teal color to white for cleaner, modern look
+  - **Logo Display**:
+    - Replaced generic material icon (`Icons.account_balance`) with actual branding logo
+    - Using `assets/images/logo.png` (334KB PNG) for consistent branding
+    - **Removed circular container and shadow** - logo displayed directly
+    - **Removed ClipOval** - logo shows in full without clipping
+    - Size: **120px height** (increased from 80px) with `BoxFit.contain`
+  - **Removed Elements** for simpler, cleaner design:
+    - Removed "MBG" title text
+    - Removed "Pelaporan SPPG" subtitle
+    - Removed "Kabupaten Bandung" subtitle
+  - **Footer**: Changed text color from white to grey (`Colors.grey[600]`) for visibility on white background
+  - More professional, minimalist login screen
+
+- **Splash Screen Configuration in pubspec.yaml**
+  - Added `flutter_native_splash` configuration section with fullscreen settings
+  - Set `fullscreen: true` to fill entire screen
+  - Configured `android_gravity: fill` for Android
+  - Configured `ios_content_mode: scaleAspectFill` for iOS
+  - Configured `web_image_mode: center` for Web
+  - Android 12+ specific settings for modern Android devices
+
+### Technical
+- Updated version in `pubspec.yaml`: 0.6.3-alpha+20251015
+- Added dev dependency: `flutter_native_splash: ^2.3.10`
+- Generated platform-specific splash screen files via `dart run flutter_native_splash:create`
+- Files auto-generated:
+  - `android/app/src/main/res/drawable/launch_background.xml`
+  - `android/app/src/main/res/drawable-v21/launch_background.xml`
+  - `android/app/src/main/res/values-v31/styles.xml` (created)
+  - `android/app/src/main/res/values-night-v31/styles.xml` (created)
+  - `android/app/src/main/res/values/styles.xml` (updated)
+  - `android/app/src/main/res/values-night/styles.xml` (updated)
+  - `ios/Runner/Info.plist` (updated)
+  - Web splash screen files (CSS and images)
+- Updated `CLAUDE.md` with version and recent changes
+- No breaking changes
+
+### UI/UX Improvements
+- ✅ **Instant Splash Screen**: Appears immediately (before Flutter loads)
+- ✅ **Professional Look**: Platform-native splash screens
+- ✅ **Brand Consistency**: Logo on login + splash image on launch
+- ✅ **Better UX**: No blank white screen during app initialization
+- ✅ **Multi-Platform**: Works on Android, iOS, and Web
+
+---
+
 ## [0.6.2-alpha] - 2025-10-14
 
 ### Added

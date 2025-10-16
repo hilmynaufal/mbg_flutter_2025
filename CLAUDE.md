@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.6.2-alpha+20251014
+**Current Version:** 0.6.5-alpha+20251016
 
 ## Development Commands
 
@@ -92,6 +92,10 @@ lib/
     │   └── dummy/                     # Dummy data for development
     │       └── news_dummy_data.dart
     ├── modules/                       # Feature modules (GetX pattern)
+    │   ├── splash/
+    │   │   ├── controllers/
+    │   │   ├── views/
+    │   │   └── bindings/
     │   ├── login/
     │   │   ├── controllers/
     │   │   ├── views/
@@ -185,6 +189,74 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.6.5-alpha)
+- **Banner Carousel Cleanup**
+  - Removed gradient overlay and text from banner carousel
+  - Banners now display images in full clarity without obstructions
+  - Maintains clean design with rounded corners and shadows
+  - Better visual clarity for banner content
+
+- **Splash Screen Navigation Fix**
+  - Fixed controller initialization issue (changed `Get.lazyPut()` → `Get.put()`)
+  - Navigation now works correctly after 2 second delay
+  - Added comprehensive logging for debugging
+  - Enhanced error handling with try-catch
+
+- **Complete Native Splash Cleanup**
+  - Removed all remaining native splash files (19 Android images, iOS assets, web splash)
+  - Cleaned up Android/iOS configuration files
+  - App now uses only Flutter widget splash screen
+  - Version updated to 0.6.5-alpha+20251016
+
+### Recent Changes (v0.6.4-alpha)
+- **Manual Splash Screen Implementation**
+  - Created new `splash` module with GetX pattern (controller, view, binding)
+  - **Replaced native splash screen with Flutter widget implementation**
+  - `SplashView` displays `assets/images/splash.jpg` in fullscreen with `BoxFit.cover`
+  - `SplashController` handles auto-navigation after 2 second delay
+  - **Smart navigation** based on authentication status:
+    - If logged in → Navigate to HOME
+    - If not logged in → Navigate to LOGIN
+  - Initial route changed from `LOGIN` to `SPLASH`
+  - Added `Routes.SPLASH = '/splash'` route constant
+  - **Removed `flutter_native_splash` package** - native implementation wasn't working properly
+  - Pure Flutter implementation for better control and consistency
+  - Version updated to 0.6.4-alpha+20251016
+
+### Recent Changes (v0.6.3-alpha)
+- **Native Fullscreen Splash Screen Implementation** *(Replaced in v0.6.4)*
+  - Added `flutter_native_splash ^2.3.10` package for native splash screen generation
+  - Created **fullscreen** platform-native splash screens for Android, iOS, and Web
+  - **Configuration**:
+    - Splash image: assets/images/splash.jpg (1.3MB fullscreen image)
+    - Background color: #FFFFFF (white fallback)
+    - **Fullscreen mode enabled** - image fills entire screen
+    - Android gravity: `fill` - splash image scales to fill screen
+    - iOS content mode: `scaleAspectFill` - splash fills screen without distortion
+    - Web image mode: `center`
+    - Android 12+ support with fullscreen splash
+    - Dark mode support for Android
+  - **Platform-Specific Features**:
+    - Android: Fullscreen splash with `android:gravity="fill"`, status bar hidden
+    - iOS: Launch screen with `scaleAspectFill`, status bar hidden
+    - Web: CSS-based fullscreen splash screen
+  - Shows immediately on app launch (before Flutter initialization)
+  - Professional, fullscreen native experience across all platforms
+
+- **Login Page Redesign**
+  - Replaced generic icon (Icons.account_balance) with actual logo image
+  - Using `assets/images/logo.png` (334KB) for branding consistency
+  - **Removed circular container** - logo displayed directly for better visibility
+  - **Changed background from teal to white** for cleaner, modern look
+  - Logo size: 120px height with `BoxFit.contain`
+  - Footer text color changed to grey for visibility on white background
+  - Removed title texts (MBG, Pelaporan SPPG, Kabupaten Bandung) for simpler design
+
+- **Assets & Configuration**
+  - Added splash screen fullscreen configuration in pubspec.yaml
+  - Logo and splash images properly referenced in assets
+  - Version updated to 0.6.3-alpha+20251015
 
 ### Recent Changes (v0.6.2-alpha)
 - **Success Screen for Form Submission**

@@ -1,4 +1,5 @@
 class Routes {
+  static const SPLASH = '/splash';
   static const LOGIN = '/login';
   static const HOME = '/home';
   static const DYNAMIC_FORM = '/dynamic-form';
@@ -9,5 +10,5 @@ class Routes {
   static const FORM_SUCCESS = '/form-success';
 
   // Initial route
-  static const INITIAL = LOGIN;
+  static const INITIAL = SPLASH;
 }
