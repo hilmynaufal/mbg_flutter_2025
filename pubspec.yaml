@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.6.5-alpha+20251016
+version: 0.6.6-alpha+20251024
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -80,6 +80,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+  # Launcher icons generator
+  flutter_launcher_icons: ^0.13.1
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -117,3 +120,19 @@ flutter:
           weight: 700
         - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
           weight: 800
+
+# Flutter Launcher Icons Configuration
+flutter_launcher_icons:
+  image_path: "assets/images/logo.png"
+  android:
+    notification_icon: "notification_icon"
+  ios:
+    generate: true
+  macos:
+    generate: true
+  windows:
+    generate: true
+  linux:
+    generate: true
+  web:
+    generate: true
