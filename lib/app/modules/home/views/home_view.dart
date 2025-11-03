@@ -188,12 +188,33 @@ class HomeView extends GetView<HomeController> {
                   //   ],
                   // ),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 0,
+                    runSpacing: 0,
                     children: [
+                      // New menus first with NEW badge
                       ServiceGridItem(
                         icon: FontAwesomeIcons.fileCirclePlus,
-                        title: 'Buat Laporan',
+                        title: 'Buat Laporan \nHarian',
+                        description: 'Buat laporan penerima MBG',
+                        onTap: () => controller.navigateToDynamicForm(
+                          'pelaporan-penerima-mbg',
+                        ),
+                        showDescription: false,
+                        showNewBadge: true,
+                      ),
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.clipboardCheck,
+                        title: 'Laporan Harian\n Saya',
+                        description: 'Daftar Laporan Penerima MBG',
+                        onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'penerima-mbg'),
+                        showDescription: false,
+                        showNewBadge: true,
+                      ),
+
+                      // Existing menus
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.fileCirclePlus,
+                        title: 'Buat Laporan\nLainnya',
                         description: 'Buat laporan baru',
                         onTap: () {
                           // Show dialog to choose form type

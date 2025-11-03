@@ -83,4 +83,19 @@ class StorageService extends GetxService {
   bool containsKey(String key) {
     return _prefs.containsKey(key);
   }
+
+  // Save list of objects as JSON
+  Future<bool> writeObjectList(String key, List<Map<String, dynamic>> value) async {
+    return await _prefs.setString(key, jsonEncode(value));
+  }
+
+  // Read list of objects from JSON
+  List<Map<String, dynamic>>? readObjectList(String key) {
+    final data = _prefs.getString(key);
+    if (data != null) {
+      final List<dynamic> jsonList = jsonDecode(data);
+      return jsonList.map((item) => item as Map<String, dynamic>).toList();
+    }
+    return null;
+  }
 }

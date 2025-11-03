@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:developer';
 import '../../../data/providers/form_provider.dart';
+import '../../../data/providers/fallback_api_provider.dart';
 import '../../../data/models/form_view_response_model.dart';
+import '../../../data/models/fallback_image_model.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../core/values/constants.dart';
 
@@ -9,11 +12,13 @@ class ReportDetailController extends GetxController {
   final FormProvider _formProvider = FormProvider();
   final StorageService _storage = Get.find<StorageService>();
 
-  // Get report ID from arguments
+  // Get report ID and slug from arguments
   late int reportId;
+  String? reportSlug;
 
   // Observable states
   final Rx<FormViewResponseModel?> reportDetail = Rx<FormViewResponseModel?>(null);
+  final Rx<FallbackImageModel?> fallbackImages = Rx<FallbackImageModel?>(null);
   final RxBool isLoading = true.obs;
   final RxString errorMessage = ''.obs;
 
@@ -21,8 +26,17 @@ class ReportDetailController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // Get report ID from route arguments
-    reportId = Get.arguments as int;
+    // Get report ID and slug from route arguments
+    final args = Get.arguments;
+
+    if (args is Map<String, dynamic>) {
+      // New format: {id: int, slug: string}
+      reportId = args['id'] as int;
+      reportSlug = args['slug'] as String?;
+    } else {
+      // Old format: just int (for backward compatibility)
+      reportId = args as int;
+    }
 
     loadReportDetail();
   }
@@ -35,6 +49,15 @@ class ReportDetailController extends GetxController {
 
       final response = await _formProvider.viewForm(reportId);
       reportDetail.value = response;
+      log('response: ${response.toJson()}');
+      log('Total answers count: ${response.answers.length}');
+
+      // Load fallback images if this is a pelaporan-penerima-mbg report
+      // Use reportSlug from arguments (API doesn't return slug)
+      if (reportSlug == 'pelaporan-penerima-mbg') {
+        log('Loading fallback images for report $reportId');
+        _loadFallbackImages();
+      }
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
       Get.snackbar(
@@ -46,6 +69,24 @@ class ReportDetailController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Load fallback images from fallback API (for pelaporan-penerima-mbg only)
+  Future<void> _loadFallbackImages() async {
+    try {
+      final fallbackProvider = FallbackApiProvider();
+      final images = await fallbackProvider.getImagePaths(reportId);
+
+      if (images != null) {
+        fallbackImages.value = images;
+        log('Fallback images loaded for report $reportId');
+      } else {
+        log('No fallback images found for report $reportId');
+      }
+    } catch (e) {
+      // Silently fail - fallback is optional
+      log('Failed to load fallback images: $e');
     }
   }
 

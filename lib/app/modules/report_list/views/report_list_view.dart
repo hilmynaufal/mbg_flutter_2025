@@ -166,7 +166,10 @@ class ReportListView extends GetView<ReportListController> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Get.toNamed('/report-detail', arguments: report.id);
+          Get.toNamed('/report-detail', arguments: {
+            'id': report.id,
+            'slug': controller.slug,
+          });
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),

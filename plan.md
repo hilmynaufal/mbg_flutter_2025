@@ -1,6 +1,4 @@
-# Update Version 0.6.3-alpha+{{ build number }}
+# Plan
 
-beberapa perbaikan pada versi ini
-
-## Penambahan Splashscreen dan logo login
-saya mempunyai 2 images baru, pertama splash.jpg untuk splash screen dan juga logo.png yang akan digunakan di halaman login (sekarang halaman login masih menggunakan icon), implementasikan kedua hal ini
+<!-- Planning notes will be added here for future updates -->
+1. khusus untuk report slug pelaporan-penerima-mbg, kita akan melakukan penyimpanan local, jadi setiap submission, akan tersimpan di lokal, dan data yang muncul di report list juga data dari lokal tersebut, yang ketika di klik detail baru datanya daimbil dari api

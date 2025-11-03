@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/widgets/map_viewer_widget.dart';
+import '../../../core/widgets/fallback_image_widget.dart';
 import '../controllers/report_detail_controller.dart';
 
 class ReportDetailView extends GetView<ReportDetailController> {
@@ -112,30 +115,34 @@ class ReportDetailView extends GetView<ReportDetailController> {
                   if (report.answers.isNotEmpty) const Divider(height: 24),
 
                   // All Answers (Q&A)
-                  ...report.answers.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final qa = entry.value;
-                    final isLast = index == report.answers.length - 1;
+                  ...() {
+                    log('Rendering ${report.answers.length} answers');
+                    return report.answers.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final qa = entry.value;
+                      final isLast = index == report.answers.length - 1;
+                      log('Rendering answer #$index: ${qa.question}');
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Determine answer type and render accordingly
-                        if (qa.isCoordinate && qa.coordinateValues != null)
-                          // Coordinate answer with map
-                          _buildMapAnswerRow(qa)
-                        else if (qa.isImageUrl)
-                          // Image answer
-                          _buildImageAnswerRow(qa)
-                        else
-                          // Text answer
-                          _buildAnswerRow(qa),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Determine answer type and render accordingly
+                          if (qa.isCoordinate && qa.coordinateValues != null)
+                            // Coordinate answer with map
+                            _buildMapAnswerRow(qa)
+                          else if (qa.isImageUrl)
+                            // Image answer
+                            _buildImageAnswerRow(qa)
+                          else
+                            // Text answer
+                            _buildAnswerRow(qa),
 
-                        // Divider (except for last item)
-                        if (!isLast) const Divider(height: 24),
-                      ],
-                    );
-                  }),
+                          // Divider (except for last item)
+                          if (!isLast) const Divider(height: 24),
+                        ],
+                      );
+                    });
+                  }(),
                 ],
               ),
             ),
@@ -282,7 +289,7 @@ class ReportDetailView extends GetView<ReportDetailController> {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildImageAnswer(qa.answer),
+              _buildImageAnswer(qa.answer, qa.question),
             ],
           ),
         ),
@@ -290,112 +297,77 @@ class ReportDetailView extends GetView<ReportDetailController> {
     );
   }
 
-  Widget _buildImageAnswer(String imageUrl) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: InkWell(
-            onTap: () => _showFullScreenImage(imageUrl),
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  height: 200,
-                  alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 200,
-                  color: Colors.grey[200],
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.broken_image,
-                        size: 48,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Gagal memuat gambar',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                );
-              },
+  Widget _buildImageAnswer(String imageUrl, String questionText) {
+    // Wrap in Obx to ensure reactivity to fallbackImages changes
+    return Obx(() {
+      // Get fallback URL if available
+      String? fallbackUrl;
+
+      // Only use fallback for pelaporan-penerima-mbg reports
+      // Use reportSlug from controller (API doesn't return slug)
+      if (controller.reportSlug == 'pelaporan-penerima-mbg' &&
+          controller.fallbackImages.value != null) {
+        final questionLower = questionText.toLowerCase();
+
+        // Determine which fallback URL to use based on question text
+        if (questionLower.contains('dokumentasi_foto') ||
+            questionLower.contains('dokumentasi foto')) {
+          if (questionLower.contains('1')) {
+            log('controller.fallbackImages.value?.dokumentasiFoto1Url: ${controller.fallbackImages.value?.dokumentasiFoto1Url}');
+            fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto1Url;
+          } else if (questionLower.contains('2')) {
+            log('controller.fallbackImages.value?.dokumentasiFoto2Url: ${controller.fallbackImages.value?.dokumentasiFoto2Url}');
+            fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto2Url;
+          } else if (questionLower.contains('3')) {
+            log('controller.fallbackImages.value?.dokumentasiFoto3Url: ${controller.fallbackImages.value?.dokumentasiFoto3Url}');
+            fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto3Url;
+          }
+        }
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: InkWell(
+              onTap: () => _showFullScreenImage(imageUrl, fallbackUrl),
+              child: FallbackImageWidget(
+                primaryUrl: imageUrl,
+                fallbackUrl: fallbackUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 200,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Tap untuk melihat ukuran penuh',
-          style: Get.textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-            fontStyle: FontStyle.italic,
+          const SizedBox(height: 8),
+          Text(
+            'Tap untuk melihat ukuran penuh',
+            style: Get.textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+              fontStyle: FontStyle.italic,
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
-  void _showFullScreenImage(String imageUrl) {
+  void _showFullScreenImage(String primaryUrl, String? fallbackUrl) {
     Get.dialog(
       Dialog(
         backgroundColor: Colors.black87,
         insetPadding: const EdgeInsets.all(0),
         child: Stack(
           children: [
-            // Full screen image
+            // Full screen image with fallback support
             Center(
               child: InteractiveViewer(
-                child: Image.network(
-                  imageUrl,
+                child: FallbackImageWidget(
+                  primaryUrl: primaryUrl,
+                  fallbackUrl: fallbackUrl,
                   fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                        color: Colors.white,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.broken_image,
-                            size: 64,
-                            color: Colors.white54,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Gagal memuat gambar',
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
                 ),
               ),
             ),

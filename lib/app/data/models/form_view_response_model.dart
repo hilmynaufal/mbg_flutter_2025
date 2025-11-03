@@ -77,6 +77,7 @@ class QuestionAnswer {
 
 class FormViewResponseModel {
   final int id;
+  final String? slug;
   final String submittedAt;
   final String submittedBy;
   final String? skpdNama;
@@ -84,6 +85,7 @@ class FormViewResponseModel {
 
   FormViewResponseModel({
     required this.id,
+    this.slug,
     required this.submittedAt,
     required this.submittedBy,
     this.skpdNama,
@@ -95,6 +97,7 @@ class FormViewResponseModel {
 
     return FormViewResponseModel(
       id: data['id'] as int,
+      slug: data['slug'] as String?,
       submittedAt: data['submitted_at'] as String,
       submittedBy: data['submitted_by'] as String,
       skpdNama: data['skpd_nama'] as String?,
@@ -108,6 +111,7 @@ class FormViewResponseModel {
     return {
       'data': {
         'id': id,
+        'slug': slug,
         'submitted_at': submittedAt,
         'submitted_by': submittedBy,
         'skpd_nama': skpdNama,

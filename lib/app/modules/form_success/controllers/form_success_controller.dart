@@ -5,15 +5,25 @@ import '../../../routes/app_routes.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 
 class FormSuccessController extends GetxController {
-  // Get report data from arguments
+  // Get report data and slug from arguments
   late final FormSubmitResponseModel reportData;
+  String? reportSlug;
 
   @override
   void onInit() {
     super.onInit();
 
-    // Get report data from route arguments
-    reportData = Get.arguments as FormSubmitResponseModel;
+    // Get report data and slug from route arguments
+    final args = Get.arguments;
+
+    if (args is Map<String, dynamic>) {
+      // New format: {response: FormSubmitResponseModel, slug: string}
+      reportData = args['response'] as FormSubmitResponseModel;
+      reportSlug = args['slug'] as String?;
+    } else {
+      // Old format: just FormSubmitResponseModel (for backward compatibility)
+      reportData = args as FormSubmitResponseModel;
+    }
   }
 
   /// Copy text to clipboard with feedback
@@ -30,7 +40,10 @@ class FormSuccessController extends GetxController {
   void viewReportDetail() {
     Get.offNamed(
       Routes.REPORT_DETAIL,
-      arguments: reportData.id,
+      arguments: {
+        'id': reportData.id,
+        'slug': reportSlug,
+      },
     );
   }
 

@@ -5,8 +5,11 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart'
     as dio; // Menggunakan alias 'dio' untuk menghindari konflik nama
 import '../../../data/providers/form_provider.dart';
+import '../../../data/providers/fallback_api_provider.dart';
 import '../../../data/models/form_response_model.dart';
+import '../../../data/models/report_list_item_model.dart';
 import '../../../data/services/storage_service.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../core/values/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 
@@ -143,10 +146,26 @@ class DynamicFormController extends GetxController {
 
       log('Report saved with ID: ${response.id}');
 
+      // Save full report to local storage if this is pelaporan-penerima-mbg form
+      if (formSlug == 'pelaporan-penerima-mbg') {
+        await _saveReportToLocalStorage(response);
+      }
+
+      // Upload images to fallback API if this is pelaporan-penerima-mbg form
+      if (formSlug == 'pelaporan-penerima-mbg') {
+        _uploadToFallbackApi(response.id).catchError((error) {
+          // Log error but don't block user flow
+          log('Fallback API upload failed: $error');
+        });
+      }
+
       // Navigate to success screen
       Get.offNamed(
         '/form-success',
-        arguments: response,
+        arguments: {
+          'response': response,
+          'slug': formSlug,
+        },
       );
     } catch (e) {
       CustomSnackbar.error(
@@ -161,5 +180,141 @@ class DynamicFormController extends GetxController {
   // Retry loading form
   void retryLoadForm() {
     _loadFormStructure();
+  }
+
+  // Upload images to fallback API for pelaporan-penerima-mbg
+  Future<void> _uploadToFallbackApi(int formId) async {
+    try {
+      // Get user ID from AuthService
+      final authService = Get.find<AuthService>();
+      final userId = authService.currentUser?.id;
+
+      if (userId == null) {
+        log('User ID not found, skipping fallback upload');
+        return;
+      }
+
+      // Extract image files that match dokumentasi_foto pattern
+      final Map<String, File?> imageFiles = {
+        'dokumentasi_foto_1': null,
+        'dokumentasi_foto_2': null,
+        'dokumentasi_foto_3': null,
+      };
+
+      // Match field IDs with field names containing 'dokumentasi_foto'
+      if (formStructure.value != null) {
+        for (var field in formStructure.value!.data) {
+          if (field.questionType == 'image') {
+            final questionTextLower = field.questionText.toLowerCase();
+
+            // Check if field name contains dokumentasi_foto
+            if (questionTextLower.contains('dokumentasi_foto') ||
+                questionTextLower.contains('dokumentasi foto')) {
+              // Get the file from formValues
+              final fileValue = formValues[field.id];
+
+              if (fileValue is File) {
+                // Determine which dokumentasi_foto this is based on question text
+                if (questionTextLower.contains('1') ||
+                    (imageFiles['dokumentasi_foto_1'] == null &&
+                     !questionTextLower.contains('2') &&
+                     !questionTextLower.contains('3'))) {
+                  imageFiles['dokumentasi_foto_1'] = fileValue;
+                } else if (questionTextLower.contains('2')) {
+                  imageFiles['dokumentasi_foto_2'] = fileValue;
+                } else if (questionTextLower.contains('3')) {
+                  imageFiles['dokumentasi_foto_3'] = fileValue;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Only upload if at least one image exists
+      if (imageFiles.values.any((file) => file != null)) {
+        final fallbackProvider = FallbackApiProvider();
+        await fallbackProvider.uploadImages(
+          id: formId,
+          idUser: userId,
+          dokumentasiFoto1: imageFiles['dokumentasi_foto_1'],
+          dokumentasiFoto2: imageFiles['dokumentasi_foto_2'],
+          dokumentasiFoto3: imageFiles['dokumentasi_foto_3'],
+        );
+        log('Fallback API upload successful for form ID: $formId');
+      } else {
+        log('No dokumentasi_foto images found, skipping fallback upload');
+      }
+    } catch (e) {
+      log('Error uploading to fallback API: $e');
+      // Don't rethrow - we don't want to block the main flow
+    }
+  }
+
+  // Save report to local storage for pelaporan-penerima-mbg
+  Future<void> _saveReportToLocalStorage(dynamic response) async {
+    try {
+      final storage = Get.find<StorageService>();
+      final authService = Get.find<AuthService>();
+      final currentUser = authService.currentUser;
+
+      // Construct detail map from formValues
+      final Map<String, dynamic> detail = {};
+
+      if (formStructure.value != null) {
+        for (var field in formStructure.value!.data) {
+          final value = formValues[field.id];
+
+          if (value != null) {
+            // Convert value to storable format
+            if (value is DateTime) {
+              detail[field.questionText] = value.toIso8601String().split('T')[0];
+            } else if (value is Map<String, double>) {
+              detail[field.questionText] = '${value['latitude']},${value['longitude']}';
+            } else if (value is File) {
+              // Store file path for local reference (won't work after file deletion)
+              detail[field.questionText] = value.path;
+            } else {
+              detail[field.questionText] = value.toString();
+            }
+          }
+        }
+      }
+
+      // Create ReportListItemModel
+      final report = ReportListItemModel(
+        id: response.id,
+        departmentId: response.skpdId?.toString() ?? '',
+        departmentNama: response.skpdNama ?? '',
+        asistantNama: '', // Not available in response
+        createdBy: currentUser?.nmLengkap ?? currentUser?.username ?? '',
+        createdAt: DateTime.parse(response.createdAt),
+        updatedBy: currentUser?.nmLengkap ?? currentUser?.username ?? '',
+        updatedAt: DateTime.parse(response.updatedAt),
+        detail: detail,
+      );
+
+      // Load existing reports from local storage
+      List<ReportListItemModel> reports = [];
+      final existingData = storage.readObjectList(AppConstants.keyPenerimaMbgReports);
+
+      if (existingData != null) {
+        reports = existingData
+            .map((json) => ReportListItemModel.fromJson(json))
+            .toList();
+      }
+
+      // Add new report at the beginning (most recent first)
+      reports.insert(0, report);
+
+      // Save back to local storage
+      final reportsJson = reports.map((r) => r.toJson()).toList();
+      await storage.writeObjectList(AppConstants.keyPenerimaMbgReports, reportsJson);
+
+      log('Report saved to local storage: ${report.id}');
+    } catch (e) {
+      log('Error saving report to local storage: $e');
+      // Don't throw - this shouldn't block the submission flow
+    }
   }
 }

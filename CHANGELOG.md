@@ -5,6 +5,206 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.9-alpha] - 2025-11-04
+
+### Added
+- **Local Storage for Pelaporan Penerima MBG Reports**
+  - Created local storage system specifically for `pelaporan-penerima-mbg` reports
+  - Reports automatically saved to local storage on every successful submission
+  - Report list ("Laporan Harian Saya") now loads from local storage instead of API
+  - Significantly faster load times for report list (instant access)
+  - Offline access to submitted reports
+  - Most recent reports displayed first (insert at beginning of list)
+
+- **Storage Service Enhancements**
+  - Added `writeObjectList()` method - save list of objects as JSON to SharedPreferences
+  - Added `readObjectList()` method - read list of objects from JSON in SharedPreferences
+  - Uses `jsonEncode()` and `jsonDecode()` for serialization
+  - Type-safe conversion with `List<Map<String, dynamic>>`
+
+- **New Storage Constant**
+  - Added `AppConstants.keyPenerimaMbgReports = 'penerima_mbg_reports'`
+  - Dedicated storage key for local report caching
+
+### Changed
+- **DynamicFormController - Local Save on Submit**
+  - Added `_saveReportToLocalStorage()` method (lines 254-319)
+  - Automatically saves full report data after successful submission
+  - Extracts all form values from `formValues` Map
+  - Converts different value types to storable format:
+    - DateTime → ISO date string (yyyy-MM-dd)
+    - Map<String, double> (coordinates) → "lat,lng" string
+    - File (images) → file path string
+    - Other types → string conversion
+  - Constructs complete `ReportListItemModel` with all metadata
+  - Loads existing reports, prepends new report, saves back to storage
+  - Error handling doesn't block submission flow (silent failure with logging)
+  - Only runs for `formSlug == 'pelaporan-penerima-mbg'`
+
+- **ReportListController - Load from Local Storage**
+  - Updated `loadReports()` method to check report type
+  - If `reportType == 'penerima-mbg'`, loads from local storage instead of API
+  - No network request required for penerima-mbg reports
+  - Custom metadata for local storage:
+    - Page title: "Laporan Harian Saya"
+    - Description: "Daftar laporan penerima MBG yang tersimpan di perangkat Anda"
+    - Total count: based on local storage length
+  - Other report types (SPPG, IKL) continue using API as before
+  - Added imports: `StorageService`, `AppConstants`
+
+### Technical Details
+- Local storage uses SharedPreferences via StorageService
+- JSON encoding format for list of objects
+- Report detail field constructed from form structure and values
+- File paths stored for images (limitation: won't work if files deleted)
+- Data persists across app restarts
+- No API dependency for penerima-mbg report list
+- Report detail page still fetches from API (as designed)
+- Updated version to 0.6.9-alpha+20251104
+
+### Benefits
+- ✅ **Instant Load**: No API delay for report list
+- ✅ **Offline Access**: View reports without internet connection
+- ✅ **Reduced API Calls**: Less server load for frequent list views
+- ✅ **Better UX**: Faster, smoother user experience
+- ✅ **Data Persistence**: Reports saved locally for reliable access
+
+### Known Limitations
+- Image file paths stored as strings (won't display if original files deleted)
+- Local storage only for penerima-mbg reports (SPPG/IKL still use API)
+- Report detail still fetched from API for complete data accuracy
+
+---
+
+## [0.6.8-alpha] - 2025-11-04
+
+### Changed
+- **Service Grid Item UI Improvements**
+  - Reduced grid item size for more compact layout
+  - Padding reduced: 16px → 12px
+  - Icon container size: 48x48 → 40x40
+  - Icon size: 24 → 20
+  - Spacing between icon and title: 8px → 6px
+  - Grid items now look smaller and more tightly packed
+
+- **Menu Reordering with NEW Badges**
+  - Moved "Pelaporan Penerima MBG" to first position
+  - Moved "Laporan Harian Saya" to second position
+  - Added red "NEW" badge to both new menu items
+  - Badge positioned at top-right corner of grid item
+  - Existing menus (Buat Laporan, Laporan SPPG, Laporan IKL) moved down
+
+### Fixed
+- **Slug Detection for Fallback Images**
+  - Fixed bug where API doesn't return slug in report detail response
+  - Now passing slug from report list page to report detail page
+  - Added `slug` getter in ReportListController (converts report type to slug)
+  - Updated navigation to pass Map with `{id, slug}` instead of just id
+  - Updated ReportDetailController to accept both formats (backward compatible)
+  - Updated FormSuccessController to pass slug to report detail
+  - Fallback image detection now works correctly for pelaporan-penerima-mbg
+
+- **Fallback Images Display on First Load**
+  - Wrapped `_buildImageAnswer()` with Obx for proper reactivity
+  - Fallback images now appear correctly on first page load
+  - FallbackImageWidget properly updates when fallbackUrl becomes available
+  - No need to refresh page to see fallback images
+
+- **Full Screen Image View with Fallback Support**
+  - Updated `_showFullScreenImage()` to accept and use fallback URL
+  - Full screen dialog now uses FallbackImageWidget instead of Image.network
+  - Tap on image now properly shows fallback if primary fails
+  - Consistent fallback behavior across thumbnail and full screen views
+
+- **Added Debugging Logs for Duplicate Fields Issue**
+  - Added logging to track answer rendering count
+  - Added logging for each individual answer being rendered
+  - Helps diagnose if duplication is from API or rendering
+
+### Added
+- **Fallback API Integration for Image Uploads**
+  - Created `FallbackApiProvider` for fallback image storage
+  - Automatic upload to fallback API after successful form submission (pelaporan-penerima-mbg only)
+  - Fallback API endpoint: `http://hirumi.xyz/fallback_api/api/image-paths`
+  - Supports 3 image fields: dokumentasi_foto_1, dokumentasi_foto_2, dokumentasi_foto_3
+  - Multipart/form-data upload format
+  - Errors in fallback API don't block main submission flow
+
+- **Image Display with Fallback Support**
+  - Created `FallbackImageWidget` - tries primary URL first, then fallback URL on error
+  - Automatic fallback image loading if primary image fails
+  - Only shows error if both primary and fallback fail
+  - Includes loading indicators and error states
+
+- **"Laporan Harian Saya" Menu**
+  - New menu item in home dashboard (5th menu)
+  - Title: "Laporan Harian Saya"
+  - Icon: clipboard-check (FontAwesome)
+  - Displays list of pelaporan-penerima-mbg reports
+  - Shows all reports (no user filtering)
+
+- **Report List for Penerima MBG**
+  - Added `getReportsPenerimaMbg()` method to ContentProvider
+  - API endpoint: `GET /data/pelaporan-penerima-mbg`
+  - Integrated with existing ReportListController
+  - Supports pull-to-refresh and error handling
+
+### Changed
+- **DynamicFormController Enhancement**
+  - Added automatic fallback API upload for pelaporan-penerima-mbg form
+  - Intelligently matches image fields by question text
+  - Uses AuthService to get current user ID
+  - Fallback upload runs asynchronously (doesn't block success screen)
+
+- **ReportDetailController Enhancement**
+  - Added fallback image fetching for pelaporan-penerima-mbg reports
+  - Loads fallback images automatically when viewing report detail
+  - Fallback data stored in reactive variable
+  - Silent failure if fallback API unavailable
+
+- **ReportDetailView Image Display**
+  - Updated to use FallbackImageWidget for all images
+  - Automatic fallback for pelaporan-penerima-mbg reports
+  - Maintains existing functionality for other report types
+  - Better error handling and user experience
+
+- **ReportListController**
+  - Added support for 'penerima-mbg' report type
+  - Three report types now supported: sppg, ikl, penerima-mbg
+  - Consistent error handling across all types
+
+### Technical Details
+- New files:
+  - `lib/app/data/providers/fallback_api_provider.dart`
+  - `lib/app/data/models/fallback_image_model.dart`
+  - `lib/app/core/widgets/fallback_image_widget.dart`
+- Fallback scope: Only for `pelaporan-penerima-mbg` form/reports
+- No breaking changes to existing forms (SPPG, IKL)
+- Performance: Fallback only triggered on image load failure
+- Updated pubspec.yaml version to 0.6.8-alpha+20251104
+
+---
+
+## [0.6.7-alpha] - 2025-11-03
+
+### Added
+- **New Menu Item: Pelaporan Penerima MBG**
+  - Added 4th menu item to home dashboard services grid
+  - Title: "Pelaporan Penerima MBG"
+  - Icon: clipboard-list (FontAwesome)
+  - Type: Form submission (dynamic form)
+  - Form slug: `pelaporan-penerima-mbg`
+  - Navigates to dynamic form builder with API-driven form structure
+  - Uses existing DynamicFormController for form handling
+
+### Technical
+- Updated `home_view.dart` to include 4th ServiceGridItem in Wrap widget
+- Form structure loaded from API endpoint: `/form/create/pelaporan-penerima-mbg`
+- Follows existing pattern with other form types (SPPG, IKL Dinkes)
+- Updated pubspec.yaml version to 0.6.7-alpha+20251103
+
+---
+
 ## [0.6.6-alpha] - 2025-10-24
 
 ### Changed
