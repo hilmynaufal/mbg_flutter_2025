@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.6.5-alpha+20251016
+**Current Version:** 0.6.6-alpha+20251024
 
 ## Development Commands
 
@@ -189,6 +189,27 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.6.6-alpha)
+- **Updated Application Launcher Icon**
+  - Changed launcher icon from default Flutter icon to `assets/images/logo.png`
+  - Generated platform-specific icons for Android, iOS, macOS, Windows, Linux, and Web
+  - Uses flutter_launcher_icons package for consistent icon generation
+  - MBG Kabupaten Bandung branding across all platforms
+
+- **Updated Application Display Name**
+  - Changed app name from "mbg_flutter_2025" to "Satgas MBG Kabupaten Bandung"
+  - Updated for all platforms:
+    - Android: Modified AndroidManifest.xml (android:label)
+    - iOS: Modified Info.plist (CFBundleDisplayName, CFBundleName)
+    - macOS: Modified Info.plist (CFBundleName)
+    - Windows: Modified main.cpp (window.Create() title)
+    - Linux: Modified my_application.cc (gtk_header_bar_set_title, gtk_window_set_title)
+    - Web: Modified index.html (title tag, apple-mobile-web-app-title meta)
+
+- **Dependencies Update**
+  - Added flutter_launcher_icons: ^0.13.1 to dev_dependencies
+  - Version bumped to 0.6.6-alpha+20251024
 
 ### Recent Changes (v0.6.5-alpha)
 - **Banner Carousel Cleanup**

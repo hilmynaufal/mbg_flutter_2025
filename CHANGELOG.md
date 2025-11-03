@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.6-alpha] - 2025-10-24
+
+### Changed
+- **Updated Application Launcher Icon**
+  - Changed launcher icon to `assets/images/logo.png` for all platforms
+  - Generated icons for Android, iOS, macOS, Windows, Linux, and Web
+  - Branding consistency across all platforms with MBG Kabupaten Bandung logo
+
+- **Updated Application Display Name**
+  - Changed application name from "mbg_flutter_2025" to "Satgas MBG Kabupaten Bandung"
+  - Updated for all platforms:
+    - Android: AndroidManifest.xml application label
+    - iOS: Info.plist CFBundleDisplayName and CFBundleName
+    - macOS: Info.plist CFBundleName
+    - Windows: window.Create() title parameter
+    - Linux: gtk_header_bar_set_title and gtk_window_set_title
+    - Web: HTML title tag and apple-mobile-web-app-title meta tag
+
+### Technical
+- Updated pubspec.yaml version to 0.6.6-alpha+20251024
+- Added flutter_launcher_icons dependency (^0.13.1) to dev_dependencies
+- Generated platform-specific launcher icons using flutter_launcher_icons tool
+- Configured launcher icons for all platforms in pubspec.yaml
+
+---
+
 ## [0.6.5-alpha] - 2025-10-16
 
 ### Changed

@@ -1,5 +1,6 @@
-# Update Version 0.5.1-alpha+{{ build number }}
+# Update Version 0.6.3-alpha+{{ build number }}
 
 beberapa perbaikan pada versi ini
 
-di module report list, ada TODO untuk navigasi ke report_detail, tolong implementasikan
+## Penambahan Splashscreen dan logo login
+saya mempunyai 2 images baru, pertama splash.jpg untuk splash screen dan juga logo.png yang akan digunakan di halaman login (sekarang halaman login masih menggunakan icon), implementasikan kedua hal ini
