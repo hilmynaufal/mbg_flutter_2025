@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.5.1-alpha+20251009
+**Current Version:** 0.6.5-alpha+20251016
 
 ## Development Commands
 
@@ -70,7 +70,8 @@ lib/
     │   │   ├── custom_radio_group.dart
     │   │   ├── custom_date_picker.dart
     │   │   ├── custom_image_picker.dart
-    │   │   └── map_picker_widget.dart
+    │   │   ├── map_picker_widget.dart
+    │   │   └── map_viewer_widget.dart
     │   └── values/
     │       └── constants.dart
     ├── data/
@@ -91,12 +92,17 @@ lib/
     │   └── dummy/                     # Dummy data for development
     │       └── news_dummy_data.dart
     ├── modules/                       # Feature modules (GetX pattern)
+    │   ├── splash/
+    │   │   ├── controllers/
+    │   │   ├── views/
+    │   │   └── bindings/
     │   ├── login/
     │   │   ├── controllers/
     │   │   ├── views/
     │   │   └── bindings/
     │   ├── home/
     │   ├── dynamic_form/
+    │   ├── form_success/
     │   ├── report_list/
     │   ├── news_detail/
     │   ├── report_history/
@@ -115,7 +121,8 @@ lib/
   - carousel_slider: ^5.0.0
   - flutter_spinkit: ^5.2.0
   - flutter_html: ^3.0.0-beta.2
-- **Maps:** google_maps_flutter: ^2.5.3
+- **Maps:** flutter_map: ^7.0.2, latlong2: ^0.9.0
+- **Geolocation:** geolocator: ^11.0.0
 - **Date/Time:** intl: ^0.19.0
 - **Image Picker:** image_picker: ^1.0.7
 
@@ -155,7 +162,12 @@ lib/
    - **Supported field types:** text, number, textarea, dropdown, radio, date, map, image
    - Field validation (required, min/max length, min/max value, regex)
    - Image upload with preview
-   - Map coordinate picker with Google Maps
+   - **Interactive map coordinate picker** with flutter_map (OpenStreetMap)
+     - Full-screen map picker with tap-to-select
+     - Draggable marker for precise positioning
+     - "Use My Location" button with GPS integration
+     - Zoom controls and real-time coordinate display
+     - Default center: Bandung, Indonesia
    - Regional data (Kecamatan/Desa)
 
 4. **Report Management**
@@ -177,6 +189,157 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.6.5-alpha)
+- **Banner Carousel Cleanup**
+  - Removed gradient overlay and text from banner carousel
+  - Banners now display images in full clarity without obstructions
+  - Maintains clean design with rounded corners and shadows
+  - Better visual clarity for banner content
+
+- **Splash Screen Navigation Fix**
+  - Fixed controller initialization issue (changed `Get.lazyPut()` → `Get.put()`)
+  - Navigation now works correctly after 2 second delay
+  - Added comprehensive logging for debugging
+  - Enhanced error handling with try-catch
+
+- **Complete Native Splash Cleanup**
+  - Removed all remaining native splash files (19 Android images, iOS assets, web splash)
+  - Cleaned up Android/iOS configuration files
+  - App now uses only Flutter widget splash screen
+  - Version updated to 0.6.5-alpha+20251016
+
+### Recent Changes (v0.6.4-alpha)
+- **Manual Splash Screen Implementation**
+  - Created new `splash` module with GetX pattern (controller, view, binding)
+  - **Replaced native splash screen with Flutter widget implementation**
+  - `SplashView` displays `assets/images/splash.jpg` in fullscreen with `BoxFit.cover`
+  - `SplashController` handles auto-navigation after 2 second delay
+  - **Smart navigation** based on authentication status:
+    - If logged in → Navigate to HOME
+    - If not logged in → Navigate to LOGIN
+  - Initial route changed from `LOGIN` to `SPLASH`
+  - Added `Routes.SPLASH = '/splash'` route constant
+  - **Removed `flutter_native_splash` package** - native implementation wasn't working properly
+  - Pure Flutter implementation for better control and consistency
+  - Version updated to 0.6.4-alpha+20251016
+
+### Recent Changes (v0.6.3-alpha)
+- **Native Fullscreen Splash Screen Implementation** *(Replaced in v0.6.4)*
+  - Added `flutter_native_splash ^2.3.10` package for native splash screen generation
+  - Created **fullscreen** platform-native splash screens for Android, iOS, and Web
+  - **Configuration**:
+    - Splash image: assets/images/splash.jpg (1.3MB fullscreen image)
+    - Background color: #FFFFFF (white fallback)
+    - **Fullscreen mode enabled** - image fills entire screen
+    - Android gravity: `fill` - splash image scales to fill screen
+    - iOS content mode: `scaleAspectFill` - splash fills screen without distortion
+    - Web image mode: `center`
+    - Android 12+ support with fullscreen splash
+    - Dark mode support for Android
+  - **Platform-Specific Features**:
+    - Android: Fullscreen splash with `android:gravity="fill"`, status bar hidden
+    - iOS: Launch screen with `scaleAspectFill`, status bar hidden
+    - Web: CSS-based fullscreen splash screen
+  - Shows immediately on app launch (before Flutter initialization)
+  - Professional, fullscreen native experience across all platforms
+
+- **Login Page Redesign**
+  - Replaced generic icon (Icons.account_balance) with actual logo image
+  - Using `assets/images/logo.png` (334KB) for branding consistency
+  - **Removed circular container** - logo displayed directly for better visibility
+  - **Changed background from teal to white** for cleaner, modern look
+  - Logo size: 120px height with `BoxFit.contain`
+  - Footer text color changed to grey for visibility on white background
+  - Removed title texts (MBG, Pelaporan SPPG, Kabupaten Bandung) for simpler design
+
+- **Assets & Configuration**
+  - Added splash screen fullscreen configuration in pubspec.yaml
+  - Logo and splash images properly referenced in assets
+  - Version updated to 0.6.3-alpha+20251015
+
+### Recent Changes (v0.6.2-alpha)
+- **Success Screen for Form Submission**
+  - Created new `form_success` module with GetX pattern
+  - Dedicated full-screen success view after form submission
+  - Comprehensive report information display:
+    - Report ID (bold, prominent, with copy button)
+    - Token (with copy button for easy tracking)
+    - Submission timestamp (formatted in Indonesian)
+    - SKPD name (if available)
+    - Report description
+  - **Animations**:
+    - Animated success icon with scale animation (Curves.elasticOut)
+    - Fade-in animation for content
+    - Staggered animations for buttons
+  - **Three Action Buttons**:
+    - "Lihat Detail Laporan" → Navigate to report detail page
+    - "Buat Laporan Lagi" → Create another report
+    - "Kembali ke Home" → Return to home page
+  - **Copy-to-clipboard functionality** for Report ID and Token
+  - Replaced simple snackbar notification with full-screen confirmation
+
+- **Updated DynamicFormController**
+  - Removed: CustomSnackbar.success + Get.back()
+  - Added: Get.offNamed(Routes.FORM_SUCCESS) with response data
+  - Better user experience with clear confirmation screen
+
+- **Routes Updates**
+  - Added `FORM_SUCCESS` route constant
+  - Registered FormSuccessView with FormSuccessBinding
+
+- Updated version to 0.6.2-alpha+20251014
+
+### Recent Changes (v0.6.1-alpha)
+- **Map Display in Report Detail**
+  - Created `MapViewerWidget` - read-only map viewer for displaying coordinates
+  - Report detail now shows interactive map for coordinate answers
+  - Automatically detects coordinate format (e.g., "-6.9175, 107.6191")
+  - Map displayed with marker at exact location using OpenStreetMap
+  - Compact 200px height with coordinate badge overlay
+
+- **UI Improvement: Unified Report Detail Layout**
+  - Refactored report detail view to use single card design
+  - Merged header info and Q&A answers into one cohesive card
+  - All items separated by consistent dividers for clean look
+  - Three specialized answer renderers:
+    - Text answers: using _buildAnswerRow
+    - Coordinate answers: using _buildMapAnswerRow with map display
+    - Image answers: using _buildImageAnswerRow with preview
+  - Icons for each answer type (question, location, image)
+  - Removed separate "Detail Jawaban" section for cleaner UI
+
+- **Enhanced QuestionAnswer Model**
+  - Added `isCoordinate` getter for automatic coordinate detection
+  - Added `coordinateValues` getter to parse lat/lng from string
+  - Validates coordinate ranges (lat: -90 to 90, lng: -180 to 180)
+  - Supports formats: "-6.9175, 107.6191" or "-6.9175,107.6191"
+
+- Updated version to 0.6.1-alpha+20251014
+
+### Recent Changes (v0.6.0-alpha)
+- **Interactive Map Picker with flutter_map**
+  - Completely rewrote `MapPickerWidget` with flutter_map implementation
+  - **Replaced**: google_maps_flutter (unused) → flutter_map + latlong2
+  - **Features**:
+    - Full-screen interactive map using OpenStreetMap tiles
+    - Tap anywhere on map to select coordinates
+    - Real-time coordinate display (latitude/longitude with 6 decimal precision)
+    - "Use My Location" button with GPS/geolocation integration
+    - Zoom in/out controls with floating action buttons
+    - Instruction overlay for better UX
+    - Red marker pin for selected location
+    - Default center: Bandung, Indonesia (-6.9175, 107.6191)
+  - **Location Permissions**:
+    - Added ACCESS_FINE_LOCATION & ACCESS_COARSE_LOCATION for Android
+    - Added NSLocationWhenInUseUsageDescription for iOS
+  - **Benefits**:
+    - No Google Maps API key required (uses OpenStreetMap)
+    - Better UX: visual map instead of manual lat/lng input
+    - More accurate coordinate selection
+    - Free and open-source
+    - Multi-platform support (Android, iOS, Web, Desktop)
+- Updated version to 0.6.0-alpha+20251014
 
 ### Recent Changes (v0.5.0-alpha)
 - **Report List Feature**

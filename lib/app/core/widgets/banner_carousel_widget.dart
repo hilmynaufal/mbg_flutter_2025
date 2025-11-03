@@ -95,85 +95,25 @@ class _BannerCarouselWidgetState extends State<BannerCarouselWidget> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Banner Image
-              Image.network(
-                banner.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: AppColors.greyLight,
-                    child: const Center(
-                      child: Icon(Icons.image, size: 64, color: AppColors.grey),
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: AppColors.greyLight,
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                },
-              ),
-              // Gradient Overlay (if title or description exists)
-              if (banner.title != null || banner.description != null)
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
+          child: Image.network(
+            banner.imageUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: AppColors.greyLight,
+                child: const Center(
+                  child: Icon(Icons.image, size: 64, color: AppColors.grey),
                 ),
-              // Text Content
-              if (banner.title != null || banner.description != null)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (banner.title != null)
-                          Text(
-                            banner.title!,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleMedium?.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        if (banner.description != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            banner.description!,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodySmall?.copyWith(
-                              color: AppColors.white.withOpacity(0.9),
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                color: AppColors.greyLight,
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            },
           ),
         ),
       ),

@@ -143,14 +143,11 @@ class DynamicFormController extends GetxController {
 
       log('Report saved with ID: ${response.id}');
 
-      CustomSnackbar.success(
-        title: 'Success',
-        message: 'Laporan berhasil dikirim!\nID Laporan: ${response.id}',
-        duration: const Duration(seconds: 4),
+      // Navigate to success screen
+      Get.offNamed(
+        '/form-success',
+        arguments: response,
       );
-
-      // Navigate back to home
-      Get.back();
     } catch (e) {
       CustomSnackbar.error(
         title: 'Error',
