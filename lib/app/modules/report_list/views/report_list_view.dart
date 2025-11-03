@@ -165,11 +165,17 @@ class ReportListView extends GetView<ReportListController> {
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Get.toNamed('/report-detail', arguments: {
+        onTap: () async {
+          // Navigate to detail page and wait for result
+          final result = await Get.toNamed('/report-detail', arguments: {
             'id': report.id,
             'slug': controller.slug,
           });
+
+          // If result is true (report was deleted), refresh the list
+          if (result == true) {
+            controller.loadReports();
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),

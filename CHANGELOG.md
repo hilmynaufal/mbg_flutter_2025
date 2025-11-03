@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.11-alpha] - 2025-11-04
+
+### Added
+- **Delete Report Feature with Local Storage Sync**
+  - Added delete button (trash icon) in report detail AppBar
+  - Confirmation dialog before deletion
+  - Delete from API server first
+  - If successful and report is pelaporan-penerima-mbg, also remove from local storage
+  - Automatic refresh of report list after deletion
+  - Custom success/error snackbar notifications
+
+### Changed
+- **ReportDetailController Enhancement**
+  - Added `_removeFromLocalStorage()` private method
+  - Automatically syncs local storage deletion for pelaporan-penerima-mbg reports
+  - Enhanced deleteReport() method with better error handling
+  - Returns result (true) to indicate successful deletion
+  - Uses CustomSnackbar for consistent UI feedback
+
+- **ReportListView Navigation Update**
+  - Changed onTap to async function to await navigation result
+  - Automatically refreshes report list if deletion occurred (result == true)
+  - Ensures UI stays in sync with backend and local storage
+
+### Technical Details
+- Delete API endpoint: DELETE /api/form/delete/{id}
+- Local storage sync only for pelaporan-penerima-mbg reports
+- Other report types (SPPG, IKL) only deleted from API (no local storage)
+- Error handling doesn't block if local storage removal fails
+- Added imports: ReportListItemModel, CustomSnackbar
+- Updated version to 0.6.11-alpha+20251104
+
+### Benefits
+- ✅ **Data Consistency**: Local storage always in sync with server
+- ✅ **Better UX**: Immediate feedback and automatic list refresh
+- ✅ **Safe Operation**: Confirmation dialog prevents accidental deletion
+- ✅ **Graceful Degradation**: Local storage errors don't fail the operation
+
+---
+
+## [0.6.10-alpha] - 2025-11-04
+
+### Changed
+- **Updated Application Launcher Icon**
+  - Regenerated launcher icons for all platforms with new logo
+  - Updated `assets/images/logo.png` with new branding design
+  - Icons generated for:
+    - Android - default launcher icon
+    - iOS - app icon
+    - Web - favicon and app icons
+    - Windows - application icon
+    - MacOS - app icon
+  - Consistent branding across all platforms
+
+### Technical
+- Updated version to 0.6.10-alpha+20251104
+- Used flutter_launcher_icons v0.13.1 for icon generation
+- All platform-specific icon files regenerated automatically
+
+---
+
 ## [0.6.9-alpha] - 2025-11-04
 
 ### Added

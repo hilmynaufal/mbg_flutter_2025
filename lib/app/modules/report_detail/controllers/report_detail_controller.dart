@@ -5,8 +5,10 @@ import '../../../data/providers/form_provider.dart';
 import '../../../data/providers/fallback_api_provider.dart';
 import '../../../data/models/form_view_response_model.dart';
 import '../../../data/models/fallback_image_model.dart';
+import '../../../data/models/report_list_item_model.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../core/values/constants.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class ReportDetailController extends GetxController {
   final FormProvider _formProvider = FormProvider();
@@ -119,33 +121,59 @@ class ReportDetailController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Delete from server
+      // Delete from API server
       await _formProvider.deleteForm(reportId);
 
-      // Remove from local storage
+      // Remove from report IDs list
       List<int> reportIds = _storage.readIntList(AppConstants.keyReportIds) ?? [];
       reportIds.remove(reportId);
       await _storage.writeIntList(AppConstants.keyReportIds, reportIds);
 
-      Get.snackbar(
-        'Success',
-        'Laporan #$reportId berhasil dihapus',
-        backgroundColor: Get.theme.colorScheme.primary,
-        colorText: Get.theme.colorScheme.onPrimary,
-        snackPosition: SnackPosition.TOP,
+      // If this is pelaporan-penerima-mbg, also remove from local storage
+      if (reportSlug == 'pelaporan-penerima-mbg') {
+        await _removeFromLocalStorage();
+      }
+
+      CustomSnackbar.success(
+        title: 'Berhasil',
+        message: 'Laporan #$reportId berhasil dihapus',
       );
 
-      // Navigate back to history
-      Get.back();
+      // Navigate back to list
+      Get.back(result: true); // Pass true to indicate deletion success
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
+      CustomSnackbar.error(
+        title: 'Error',
+        message: e.toString().replaceAll('Exception: ', ''),
       );
       isLoading.value = false;
+    }
+  }
+
+  /// Remove report from local storage (for pelaporan-penerima-mbg only)
+  Future<void> _removeFromLocalStorage() async {
+    try {
+      // Load existing reports from local storage
+      final existingData = _storage.readObjectList(AppConstants.keyPenerimaMbgReports);
+
+      if (existingData != null) {
+        // Parse to ReportListItemModel
+        List<ReportListItemModel> reports = existingData
+            .map((json) => ReportListItemModel.fromJson(json))
+            .toList();
+
+        // Remove report with matching ID
+        reports.removeWhere((report) => report.id == reportId);
+
+        // Save back to local storage
+        final reportsJson = reports.map((r) => r.toJson()).toList();
+        await _storage.writeObjectList(AppConstants.keyPenerimaMbgReports, reportsJson);
+
+        log('Report $reportId removed from local storage. Remaining: ${reports.length}');
+      }
+    } catch (e) {
+      log('Error removing report from local storage: $e');
+      // Don't throw - local storage removal is not critical
     }
   }
 

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import '../models/form_response_model.dart';
 import '../models/form_submit_response_model.dart';
@@ -65,6 +67,8 @@ class FormProvider {
     required String slug,
     required Map<String, dynamic> formData,
   }) async {
+    log('submitForm: $slug');
+    log('formData: $formData');
     try {
       final response = await _dio.post(
         '/form/create/$slug',
