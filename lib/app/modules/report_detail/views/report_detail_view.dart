@@ -298,60 +298,68 @@ class ReportDetailView extends GetView<ReportDetailController> {
   }
 
   Widget _buildImageAnswer(String imageUrl, String questionText) {
-    // Wrap in Obx to ensure reactivity to fallbackImages changes
-    return Obx(() {
-      // Get fallback URL if available
-      String? fallbackUrl;
+    // Only use Obx for pelaporan-penerima-mbg to avoid "improper use of getx" error
+    if (controller.reportSlug == 'pelaporan-penerima-mbg') {
+      // Wrap in Obx to ensure reactivity to fallbackImages changes
+      return Obx(() {
+        // Get fallback URL if available
+        String? fallbackUrl;
 
-      // Only use fallback for pelaporan-penerima-mbg reports
-      // Use reportSlug from controller (API doesn't return slug)
-      if (controller.reportSlug == 'pelaporan-penerima-mbg' &&
-          controller.fallbackImages.value != null) {
-        final questionLower = questionText.toLowerCase();
+        if (controller.fallbackImages.value != null) {
+          final questionLower = questionText.toLowerCase();
 
-        // Determine which fallback URL to use based on question text
-        if (questionLower.contains('dokumentasi_foto') ||
-            questionLower.contains('dokumentasi foto')) {
-          if (questionLower.contains('1')) {
-            log('controller.fallbackImages.value?.dokumentasiFoto1Url: ${controller.fallbackImages.value?.dokumentasiFoto1Url}');
-            fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto1Url;
-          } else if (questionLower.contains('2')) {
-            log('controller.fallbackImages.value?.dokumentasiFoto2Url: ${controller.fallbackImages.value?.dokumentasiFoto2Url}');
-            fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto2Url;
-          } else if (questionLower.contains('3')) {
-            log('controller.fallbackImages.value?.dokumentasiFoto3Url: ${controller.fallbackImages.value?.dokumentasiFoto3Url}');
-            fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto3Url;
+          // Determine which fallback URL to use based on question text
+          if (questionLower.contains('dokumentasi_foto') ||
+              questionLower.contains('dokumentasi foto')) {
+            if (questionLower.contains('1')) {
+              log('controller.fallbackImages.value?.dokumentasiFoto1Url: ${controller.fallbackImages.value?.dokumentasiFoto1Url}');
+              fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto1Url;
+            } else if (questionLower.contains('2')) {
+              log('controller.fallbackImages.value?.dokumentasiFoto2Url: ${controller.fallbackImages.value?.dokumentasiFoto2Url}');
+              fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto2Url;
+            } else if (questionLower.contains('3')) {
+              log('controller.fallbackImages.value?.dokumentasiFoto3Url: ${controller.fallbackImages.value?.dokumentasiFoto3Url}');
+              fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto3Url;
+            }
           }
         }
-      }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              onTap: () => _showFullScreenImage(imageUrl, fallbackUrl),
-              child: FallbackImageWidget(
-                primaryUrl: imageUrl,
-                fallbackUrl: fallbackUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 200,
-              ),
+        return _buildImageWidget(imageUrl, fallbackUrl);
+      });
+    } else {
+      // For other report types, no fallback needed, no Obx needed
+      return _buildImageWidget(imageUrl, null);
+    }
+  }
+
+  /// Build image widget (reusable for both Obx and non-Obx cases)
+  Widget _buildImageWidget(String imageUrl, String? fallbackUrl) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            onTap: () => _showFullScreenImage(imageUrl, fallbackUrl),
+            child: FallbackImageWidget(
+              primaryUrl: imageUrl,
+              fallbackUrl: fallbackUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 200,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap untuk melihat ukuran penuh',
-            style: Get.textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
-              fontStyle: FontStyle.italic,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Tap untuk melihat ukuran penuh',
+          style: Get.textTheme.bodySmall?.copyWith(
+            color: Colors.grey[600],
+            fontStyle: FontStyle.italic,
           ),
-        ],
-      );
-    });
+        ),
+      ],
+    );
   }
 
   void _showFullScreenImage(String primaryUrl, String? fallbackUrl) {

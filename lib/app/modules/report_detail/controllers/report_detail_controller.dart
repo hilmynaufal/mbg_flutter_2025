@@ -124,6 +124,8 @@ class ReportDetailController extends GetxController {
       // Delete from API server
       await _formProvider.deleteForm(reportId);
 
+      log('Report $reportId deleted from API successfully');
+
       // Remove from report IDs list
       List<int> reportIds = _storage.readIntList(AppConstants.keyReportIds) ?? [];
       reportIds.remove(reportId);
@@ -132,21 +134,28 @@ class ReportDetailController extends GetxController {
       // If this is pelaporan-penerima-mbg, also remove from local storage
       if (reportSlug == 'pelaporan-penerima-mbg') {
         await _removeFromLocalStorage();
+        log('Report $reportId removed from local storage');
       }
 
+      // Reset loading state
+      isLoading.value = false;
+
+      // Show success message
       CustomSnackbar.success(
         title: 'Berhasil',
         message: 'Laporan #$reportId berhasil dihapus',
       );
 
-      // Navigate back to list
-      Get.back(result: true); // Pass true to indicate deletion success
+      // Close detail page and return true to trigger list refresh
+      log('Closing detail page, list will refresh');
+      Get.back(result: true);
     } catch (e) {
+      log('Error deleting report: $e');
+      isLoading.value = false;
       CustomSnackbar.error(
         title: 'Error',
         message: e.toString().replaceAll('Exception: ', ''),
       );
-      isLoading.value = false;
     }
   }
 

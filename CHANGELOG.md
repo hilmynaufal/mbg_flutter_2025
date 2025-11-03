@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.13-alpha] - 2025-11-04
+
+### Fixed
+- **Improper Use of GetX Error in Report Detail**
+  - Fixed "improper use of getx" error when viewing non-pelaporan-penerima-mbg reports
+  - Obx now only used for pelaporan-penerima-mbg reports (where fallbackImages is reactive)
+  - Other report types use static widget without Obx wrapper
+  - Created reusable `_buildImageWidget()` helper method for both cases
+
+### Technical Details
+- Refactored `_buildImageAnswer()` method in report_detail_view.dart
+- Added conditional logic: if reportSlug == 'pelaporan-penerima-mbg' → use Obx, else → use static widget
+- New helper method: `_buildImageWidget(imageUrl, fallbackUrl)` - shared by both branches
+- Eliminates unnecessary reactive subscription for non-penerima-mbg reports
+- Updated version to 0.6.13-alpha+20251104
+
+### Benefits
+- ✅ **No More GetX Errors**: Obx only used when actually needed
+- ✅ **Better Performance**: No unnecessary reactive subscriptions
+- ✅ **Cleaner Code**: Reusable widget builder method
+- ✅ **Proper Scope**: Reactive logic isolated to specific report type
+
+---
+
+## [0.6.12-alpha] - 2025-11-04
+
+### Fixed
+- **Delete Report Flow Enhancement**
+  - Fixed loading state management - `isLoading` now properly reset to false after successful deletion
+  - Fixed page close timing - detail page closes immediately after API success response
+  - Fixed list refresh - report list automatically reloads after returning from deleted report
+  - Added comprehensive logging for debugging delete flow:
+    - Log after API delete success
+    - Log after local storage removal
+    - Log before closing detail page
+    - Log when list refresh is triggered
+    - Log after list refresh completes
+
+### Technical Details
+- `isLoading.value = false` now called before `Get.back()` in deleteReport()
+- `await controller.loadReports()` ensures list fully reloads before proceeding
+- Added `dart:developer` import for logging in report_list_view.dart
+- Better error logging with context in catch blocks
+- Updated version to 0.6.12-alpha+20251104
+
+### Flow After Delete:
+1. User confirms delete → Show loading indicator
+2. API delete called → Wait for response
+3. After success response → Remove from reportIds + local storage (if penerima-mbg)
+4. Reset loading state → `isLoading = false`
+5. Show success snackbar
+6. Close detail page → `Get.back(result: true)`
+7. List detects result == true → Auto refresh
+8. User sees updated list without deleted report
+
+---
+
 ## [0.6.11-alpha] - 2025-11-04
 
 ### Added

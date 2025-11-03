@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -167,6 +168,7 @@ class ReportListView extends GetView<ReportListController> {
       child: InkWell(
         onTap: () async {
           // Navigate to detail page and wait for result
+          log('Navigating to report detail #${report.id}');
           final result = await Get.toNamed('/report-detail', arguments: {
             'id': report.id,
             'slug': controller.slug,
@@ -174,7 +176,9 @@ class ReportListView extends GetView<ReportListController> {
 
           // If result is true (report was deleted), refresh the list
           if (result == true) {
-            controller.loadReports();
+            log('Report was deleted, refreshing list...');
+            await controller.loadReports();
+            log('List refreshed successfully');
           }
         },
         child: Padding(
