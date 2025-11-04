@@ -187,11 +187,28 @@ class DynamicFormController extends GetxController {
     try {
       // Get user ID from AuthService
       final authService = Get.find<AuthService>();
-      final userId = authService.currentUser?.id;
+      final currentUser = authService.currentUser;
 
-      if (userId == null) {
-        log('User ID not found, skipping fallback upload');
+      if (currentUser == null) {
+        log('User not found, skipping fallback upload');
         return;
+      }
+
+      // Determine user ID based on user type
+      // For Non-PNS: use NIK as user ID
+      // For PNS: use id field
+      int userId;
+      if (currentUser.isNonPns && currentUser.nik != null) {
+        // Convert NIK string to int for fallback API
+        try {
+          userId = int.parse(currentUser.nik!);
+        } catch (e) {
+          log('Failed to parse NIK as int: ${currentUser.nik}, error: $e');
+          log('Skipping fallback upload due to invalid NIK');
+          return;
+        }
+      } else {
+        userId = currentUser.id;
       }
 
       // Extract image files that match dokumentasi_foto pattern

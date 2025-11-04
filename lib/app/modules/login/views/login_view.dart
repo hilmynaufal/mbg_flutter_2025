@@ -45,42 +45,13 @@ class LoginView extends GetView<LoginController> {
                           ),
                           const SizedBox(height: 24),
 
-                          // Username Field
-                          TextFormField(
-                            controller: controller.usernameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Username',
-                              hintText: 'Masukkan username',
-                              prefixIcon: Icon(Icons.person),
-                            ),
-                            validator: controller.validateUsername,
-                            textInputAction: TextInputAction.next,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Password Field
+                          // Conditional Form Fields
                           Obx(
-                            () => TextFormField(
-                              controller: controller.passwordController,
-                              obscureText: !controller.isPasswordVisible.value,
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                hintText: 'Masukkan password',
-                                prefixIcon: const Icon(Icons.lock),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    controller.isPasswordVisible.value
-                                        ? Icons.visibility
-                                        : Icons.visibility_off,
-                                  ),
-                                  onPressed: controller.togglePasswordVisibility,
-                                ),
-                              ),
-                              validator: controller.validatePassword,
-                              textInputAction: TextInputAction.done,
-                              onFieldSubmitted: (_) => controller.login(),
-                            ),
+                            () => controller.isPnsLogin.value
+                                ? _buildPnsForm(context)
+                                : _buildNonPnsForm(context),
                           ),
+
                           const SizedBox(height: 24),
 
                           // Login Button
@@ -90,6 +61,26 @@ class LoginView extends GetView<LoginController> {
                               onPressed: controller.login,
                               isLoading: controller.isLoading.value,
                               icon: Icons.login,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Switch Login Type Text Link
+                          Obx(
+                            () => Center(
+                              child: GestureDetector(
+                                onTap: controller.toggleLoginType,
+                                child: Text(
+                                  controller.isPnsLogin.value
+                                      ? 'Tidak mempunyai akun? Masuk menggunakan NIK'
+                                      : 'Sudah punya akun? Login dengan Username',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Get.theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -112,6 +103,100 @@ class LoginView extends GetView<LoginController> {
           ),
         ),
       ),
+    );
+  }
+
+  // Build PNS login form (Username + Password)
+  Widget _buildPnsForm(BuildContext context) {
+    return Column(
+      children: [
+        // Username Field
+        TextFormField(
+          controller: controller.usernameController,
+          decoration: const InputDecoration(
+            labelText: 'Username',
+            hintText: 'Masukkan username',
+            prefixIcon: Icon(Icons.person),
+          ),
+          validator: controller.validateUsername,
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 16),
+
+        // Password Field
+        Obx(
+          () => TextFormField(
+            controller: controller.passwordController,
+            obscureText: !controller.isPasswordVisible.value,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              hintText: 'Masukkan password',
+              prefixIcon: const Icon(Icons.lock),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.isPasswordVisible.value
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                ),
+                onPressed: controller.togglePasswordVisibility,
+              ),
+            ),
+            validator: controller.validatePassword,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => controller.login(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Build Non-PNS login form (NIK + Nama + Email)
+  Widget _buildNonPnsForm(BuildContext context) {
+    return Column(
+      children: [
+        // NIK Field
+        TextFormField(
+          controller: controller.nikController,
+          decoration: const InputDecoration(
+            labelText: 'NIK',
+            hintText: 'Masukkan NIK (16 digit)',
+            prefixIcon: Icon(Icons.badge),
+          ),
+          keyboardType: TextInputType.number,
+          maxLength: 16,
+          validator: controller.validateNik,
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 16),
+
+        // Nama Field
+        TextFormField(
+          controller: controller.namaController,
+          decoration: const InputDecoration(
+            labelText: 'Nama Lengkap',
+            hintText: 'Masukkan nama lengkap',
+            prefixIcon: Icon(Icons.person_outline),
+          ),
+          textCapitalization: TextCapitalization.words,
+          validator: controller.validateNama,
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 16),
+
+        // Email Field
+        TextFormField(
+          controller: controller.emailController,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            hintText: 'Masukkan email',
+            prefixIcon: Icon(Icons.email),
+          ),
+          keyboardType: TextInputType.emailAddress,
+          validator: controller.validateEmail,
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => controller.login(),
+        ),
+      ],
     );
   }
 }

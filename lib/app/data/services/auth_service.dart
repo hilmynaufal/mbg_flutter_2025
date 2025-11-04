@@ -61,6 +61,35 @@ class AuthService extends GetxService {
     }
   }
 
+  // Login Non-PNS method (local storage only, no API call)
+  Future<bool> loginNonPns({
+    required String nik,
+    required String nama,
+    required String email,
+  }) async {
+    try {
+      // Create Non-PNS user model
+      final nonPnsUser = UserModel.nonPns(
+        nik: nik,
+        nama: nama,
+        email: email,
+      );
+
+      // Save user data to local storage
+      _currentUser.value = nonPnsUser;
+      await _storageService.writeObject(
+        AppConstants.keyUser,
+        nonPnsUser.toJson(),
+      );
+      await _storageService.writeBool(AppConstants.keyIsLoggedIn, true);
+      _isLoggedIn.value = true;
+
+      return true;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Logout method
   Future<void> logout() async {
     _currentUser.value = null;

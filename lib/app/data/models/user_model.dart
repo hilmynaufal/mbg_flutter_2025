@@ -12,6 +12,7 @@ class UserModel {
   final int jabatanId;
   final int idSkpdMaster;
   final String skpdNama;
+  final String userType; // "PNS" or "NON_PNS"
 
   UserModel({
     required this.id,
@@ -27,7 +28,38 @@ class UserModel {
     required this.jabatanId,
     required this.idSkpdMaster,
     required this.skpdNama,
+    this.userType = 'PNS', // Default to PNS for backward compatibility
   });
+
+  // Factory constructor for Non-PNS users
+  factory UserModel.nonPns({
+    required String nik,
+    required String nama,
+    required String email,
+  }) {
+    return UserModel(
+      id: 0,
+      username: nik, // Use NIK as username identifier
+      firebaseToken: null,
+      idPegawai: 0,
+      level: 0,
+      nmLengkap: nama,
+      nip: '',
+      nik: nik,
+      email: email,
+      jabatan: '',
+      jabatanId: 0,
+      idSkpdMaster: 0,
+      skpdNama: '',
+      userType: 'NON_PNS',
+    );
+  }
+
+  // Getter to check if user is PNS
+  bool get isPns => userType == 'PNS';
+
+  // Getter to check if user is Non-PNS
+  bool get isNonPns => userType == 'NON_PNS';
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -44,6 +76,7 @@ class UserModel {
       jabatanId: json['jabatan_id'] ?? 0,
       idSkpdMaster: json['id_skpd_master'] ?? 0,
       skpdNama: json['skpdnama'] ?? '',
+      userType: json['user_type'] ?? 'PNS', // Default to PNS for backward compatibility
     );
   }
 
@@ -62,6 +95,7 @@ class UserModel {
       'jabatan_id': jabatanId,
       'id_skpd_master': idSkpdMaster,
       'skpdnama': skpdNama,
+      'user_type': userType,
     };
   }
 }

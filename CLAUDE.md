@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.6.6-alpha+20251024
+**Current Version:** 0.7.0-alpha+20251105
 
 ## Development Commands
 
@@ -142,9 +142,12 @@ lib/
 
 ### Current Features
 1. **Authentication System**
-   - Login with username/password
-   - Token-based authentication
+   - **Dual Login System**: PNS (Username/Password) and Non-PNS (NIK/Nama/Email)
+   - PNS: Token-based authentication with API
+   - Non-PNS: Local storage only (no API authentication)
+   - NIK validation (16 digits)
    - User session management
+   - User type differentiation (PNS/Non-PNS)
 
 2. **Home Dashboard**
    - Real-time banner carousel from API (auto-play, active slides only)
@@ -189,6 +192,36 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.7.0-alpha)
+- **Dual Login System - PNS & Non-PNS**
+  - Added support for Non-PNS users to login without API authentication
+  - **UserModel Updates**:
+    - Added `userType` field ("PNS" / "NON_PNS")
+    - Added factory constructor `UserModel.nonPns()` for Non-PNS users
+    - Added `isPns` and `isNonPns` getters
+    - Non-PNS users: NIK used as username, other fields set to empty/0
+  - **AuthService Updates**:
+    - Added `loginNonPns()` method for local storage authentication
+    - No API call for Non-PNS login
+  - **LoginController Updates**:
+    - Added text controllers for Non-PNS: `nikController`, `namaController`, `emailController`
+    - Added `isPnsLogin` toggle state
+    - Split login logic: `loginPns()` and `loginNonPns()`
+    - **Validators**:
+      - `validateNik()` - NIK must be exactly 16 digits
+      - `validateNama()` - Name minimum 3 characters
+      - `validateEmail()` - Valid email format
+  - **LoginView UI Redesign**:
+    - Removed toggle button
+    - Added text link below login button: "Tidak mempunyai akun? Masuk menggunakan NIK"
+    - Form PNS: Username + Password
+    - Form Non-PNS: NIK (16 digits) + Nama + Email (no password)
+    - Clean and intuitive UI with conditional form rendering
+  - **DynamicFormController Updates**:
+    - Updated `_uploadToFallbackApi()` to use NIK as userId for Non-PNS users
+    - PNS: uses `user.id`, Non-PNS: parses `user.nik` to int
+  - Version updated to 0.7.0-alpha+20251105
 
 ### Recent Changes (v0.6.6-alpha)
 - **Updated Application Launcher Icon**
