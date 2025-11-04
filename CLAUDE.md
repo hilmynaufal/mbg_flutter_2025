@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.7.0-alpha+20251105
+**Current Version:** 0.8.0-alpha+20251105
 
 ## Development Commands
 
@@ -142,9 +142,14 @@ lib/
 
 ### Current Features
 1. **Authentication System**
-   - **Dual Login System**: PNS (Username/Password) and Non-PNS (NIK/Nama/Email)
+   - **Dual Login System**: PNS (Username/Password) and Non-PNS (NIK/Nama/Email with OTP)
    - PNS: Token-based authentication with API
-   - Non-PNS: Local storage only (no API authentication)
+   - Non-PNS: Local storage with OTP email verification
+   - **OTP Verification** for Non-PNS users:
+     - Email-based OTP (6 digits)
+     - OTP expiry handling
+     - Resend OTP with 60-second cooldown timer
+     - Real-time verification status
    - NIK validation (16 digits)
    - User session management
    - User type differentiation (PNS/Non-PNS)
@@ -192,6 +197,48 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+### Recent Changes (v0.8.0-alpha)
+- **OTP Email Verification for Non-PNS Users**
+  - Added OTP (One-Time Password) verification system for Non-PNS login security
+  - **OTP API Integration**:
+    - Created `OtpProvider` for API communication with fallback API
+    - Send OTP endpoint: `POST /otp/send` (email-based)
+    - Verify OTP endpoint: `POST /otp/verify` (6-digit code)
+  - **OTP Response Models**:
+    - `OtpSendResponseModel` - handles send OTP response (email, expires_at)
+    - `OtpVerifyResponseModel` - handles verify OTP response (email, verified_at)
+  - **LoginController OTP Features**:
+    - Added `otpController` text controller for OTP input
+    - OTP states: `isOtpSent`, `isOtpVerified`, `isSendingOtp`, `isVerifyingOtp`
+    - Resend timer with 60-second cooldown (`resendTimer`)
+    - **OTP Methods**:
+      - `sendOtp()` - sends OTP to email (validates Email, NIK, Nama first)
+      - `verifyOtp()` - verifies 6-digit OTP code
+      - `resendOtp()` - resends OTP with timer check
+      - `validateOtp()` - validates OTP format (6 digits)
+    - `_startResendTimer()` - countdown timer for resend functionality
+    - `_resetOtpStates()` - resets all OTP states when switching login types
+  - **LoginView OTP UI**:
+    - **Non-PNS Flow**: Email + NIK + Nama → Send OTP → Verify OTP → Login
+    - Step 1: Email, NIK, Nama fields + "Kirim OTP" button
+    - Step 2 (after OTP sent):
+      - Info message box with instructions
+      - OTP input field (6 digits) with verified checkmark icon
+      - "Verifikasi OTP" button
+      - "Kirim Ulang OTP" button with countdown timer (60s)
+      - Fields disabled after OTP sent (prevent changes)
+    - Step 3 (after OTP verified):
+      - "Login" button enabled
+      - Check mark icon on OTP field
+    - Conditional rendering based on OTP states
+    - Login button only shows for Non-PNS when OTP is verified
+  - **Security Enhancements**:
+    - Non-PNS users must verify email via OTP before login
+    - OTP expiry handled by API (returns error if expired)
+    - 60-second cooldown prevents OTP spam
+    - Email, NIK, and Nama validated before sending OTP
+  - Version updated to 0.8.0-alpha+20251105
 
 ### Recent Changes (v0.7.0-alpha)
 - **Dual Login System - PNS & Non-PNS**

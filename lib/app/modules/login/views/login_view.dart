@@ -54,16 +54,26 @@ class LoginView extends GetView<LoginController> {
 
                           const SizedBox(height: 24),
 
-                          // Login Button
+                          // Login Button (show always for PNS, show only when OTP verified for Non-PNS)
                           Obx(
-                            () => GradientButton(
-                              text: 'Login',
-                              onPressed: controller.login,
-                              isLoading: controller.isLoading.value,
-                              icon: Icons.login,
-                            ),
+                            () => (controller.isPnsLogin.value ||
+                                    controller.isOtpVerified.value)
+                                ? GradientButton(
+                                    text: 'Login',
+                                    onPressed: controller.login,
+                                    isLoading: controller.isLoading.value,
+                                    icon: Icons.login,
+                                  )
+                                : const SizedBox.shrink(),
                           ),
-                          const SizedBox(height: 16),
+
+                          // Spacing (only show if login button is visible)
+                          Obx(
+                            () => (controller.isPnsLogin.value ||
+                                    controller.isOtpVerified.value)
+                                ? const SizedBox(height: 16)
+                                : const SizedBox.shrink(),
+                          ),
 
                           // Switch Login Type Text Link
                           Obx(
@@ -150,10 +160,25 @@ class LoginView extends GetView<LoginController> {
     );
   }
 
-  // Build Non-PNS login form (NIK + Nama + Email)
+  // Build Non-PNS login form (NIK + Nama + Email + OTP)
   Widget _buildNonPnsForm(BuildContext context) {
     return Column(
       children: [
+        // Email Field
+        TextFormField(
+          controller: controller.emailController,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            hintText: 'Masukkan email',
+            prefixIcon: Icon(Icons.email),
+          ),
+          keyboardType: TextInputType.emailAddress,
+          validator: controller.validateEmail,
+          textInputAction: TextInputAction.next,
+          enabled: !controller.isOtpSent.value, // Disable after OTP sent
+        ),
+        const SizedBox(height: 16),
+
         // NIK Field
         TextFormField(
           controller: controller.nikController,
@@ -166,6 +191,7 @@ class LoginView extends GetView<LoginController> {
           maxLength: 16,
           validator: controller.validateNik,
           textInputAction: TextInputAction.next,
+          enabled: !controller.isOtpSent.value, // Disable after OTP sent
         ),
         const SizedBox(height: 16),
 
@@ -180,21 +206,109 @@ class LoginView extends GetView<LoginController> {
           textCapitalization: TextCapitalization.words,
           validator: controller.validateNama,
           textInputAction: TextInputAction.next,
+          enabled: !controller.isOtpSent.value, // Disable after OTP sent
         ),
         const SizedBox(height: 16),
 
-        // Email Field
-        TextFormField(
-          controller: controller.emailController,
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            hintText: 'Masukkan email',
-            prefixIcon: Icon(Icons.email),
-          ),
-          keyboardType: TextInputType.emailAddress,
-          validator: controller.validateEmail,
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => controller.login(),
+        // Send OTP Button (show before OTP sent)
+        Obx(
+          () => !controller.isOtpSent.value
+              ? GradientButton(
+                  text: 'Kirim OTP',
+                  onPressed: controller.sendOtp,
+                  isLoading: controller.isSendingOtp.value,
+                  icon: Icons.send,
+                )
+              : const SizedBox.shrink(),
+        ),
+
+        // OTP Field (show after OTP sent)
+        Obx(
+          () => controller.isOtpSent.value
+              ? Column(
+                  children: [
+                    // Info message
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Get.theme.colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Get.theme.colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Kode OTP telah dikirim ke email Anda. Silakan cek inbox/spam.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // OTP Input Field
+                    TextFormField(
+                      controller: controller.otpController,
+                      decoration: InputDecoration(
+                        labelText: 'Kode OTP',
+                        hintText: 'Masukkan kode OTP (6 digit)',
+                        prefixIcon: const Icon(Icons.vpn_key),
+                        suffixIcon: controller.isOtpVerified.value
+                            ? Icon(
+                                Icons.check_circle,
+                                color: Get.theme.colorScheme.primary,
+                              )
+                            : null,
+                      ),
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      validator: controller.validateOtp,
+                      textInputAction: TextInputAction.done,
+                      enabled: !controller.isOtpVerified.value,
+                      onFieldSubmitted: (_) => controller.verifyOtp(),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Verify OTP Button (show if not verified)
+                    if (!controller.isOtpVerified.value)
+                      GradientButton(
+                        text: 'Verifikasi OTP',
+                        onPressed: controller.verifyOtp,
+                        isLoading: controller.isVerifyingOtp.value,
+                        icon: Icons.verified_user,
+                      ),
+
+                    const SizedBox(height: 12),
+
+                    // Resend OTP Link (show if not verified)
+                    if (!controller.isOtpVerified.value)
+                      Obx(
+                        () => TextButton(
+                          onPressed: controller.resendTimer.value > 0
+                              ? null
+                              : controller.resendOtp,
+                          child: Text(
+                            controller.resendTimer.value > 0
+                                ? 'Kirim Ulang OTP (${controller.resendTimer.value}s)'
+                                : 'Kirim Ulang OTP',
+                            style: TextStyle(
+                              color: controller.resendTimer.value > 0
+                                  ? Colors.grey
+                                  : Get.theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );
