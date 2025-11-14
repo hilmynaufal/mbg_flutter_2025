@@ -8,6 +8,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -19,6 +22,8 @@
         #modal-image { cursor: grab; max-width: 90%; max-height: 80vh; object-fit: contain; }
         details summary::-webkit-details-marker { display: none; }
         .rotate-90 { transform: rotate(90deg); }
+        .pagination-btn { transition: all 0.2s; }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-teal-50 to-sky-50 min-h-screen">
@@ -86,9 +91,37 @@
 
             <!-- Reports Grid -->
             <section class="lg:col-span-2">
-                <div id="reports-grid" class="grid grid-cols-1 gap-4">
+                <!-- Pagination Info -->
+                <div id="pagination-info" class="bg-white p-3 rounded-lg shadow-md mb-4 flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Menampilkan <span id="showing-count" class="font-bold">0</span> dari <span id="total-count" class="font-bold">0</span> laporan</span>
+                    <select id="items-per-page" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                        <option value="10">10 per halaman</option>
+                        <option value="20" selected>20 per halaman</option>
+                        <option value="50">50 per halaman</option>
+                        <option value="100">100 per halaman</option>
+                    </select>
+                </div>
+
+                <div id="reports-grid" class="grid grid-cols-1 gap-4 mb-4">
                     <!-- Dynamic report cards -->
                 </div>
+
+                <!-- Pagination Controls -->
+                <div id="pagination-controls" class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center">
+                    <button id="prev-page" class="pagination-btn flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-gray-300">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i> Sebelumnya
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600">Halaman</span>
+                        <span id="current-page" class="font-bold text-teal-600">1</span>
+                        <span class="text-sm text-gray-600">dari</span>
+                        <span id="total-pages" class="font-bold">1</span>
+                    </div>
+                    <button id="next-page" class="pagination-btn flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-gray-300">
+                        Selanjutnya <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
                 <div id="no-results" class="hidden bg-white rounded-xl shadow-md p-8 text-center">
                     <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-300 mb-4"></i>
                     <p class="text-gray-500 font-semibold">Tidak ada laporan yang sesuai dengan filter.</p>
@@ -170,6 +203,16 @@
             const latestReportsContainer = document.getElementById('latest-reports-container');
             const summaryTableBody = document.getElementById('summary-table-body');
 
+            // Pagination elements
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+            const currentPageEl = document.getElementById('current-page');
+            const totalPagesEl = document.getElementById('total-pages');
+            const showingCountEl = document.getElementById('showing-count');
+            const totalCountEl = document.getElementById('total-count');
+            const itemsPerPageSelect = document.getElementById('items-per-page');
+            const paginationControls = document.getElementById('pagination-controls');
+
             // Modal elements
             const imageModal = document.getElementById('image-modal');
             const modalImageContainer = document.getElementById('modal-image-container');
@@ -181,17 +224,25 @@
             const zoomResetButton = document.getElementById('zoom-reset-button');
 
             let originalData = [];
+            let filteredData = [];
             let map = null;
-            let markersLayer = null;
+            let markerClusterGroup = null;
             let kecamatanLayer = null;
             let desaLayer = null;
             let layerControl = null;
+
+            // Pagination state
+            let currentPage = 1;
+            let itemsPerPage = 20;
 
             // Image Zoom/Pan State
             let zoomLevel = 1;
             let isDragging = false;
             let startPos = { x: 0, y: 0 };
             let translatePos = { x: 0, y: 0 };
+
+            // Debounce timer
+            let searchDebounceTimer = null;
 
             // --- DATE & TIME ---
             function updateDateTime() {
@@ -200,6 +251,18 @@
                 document.getElementById('current-date').textContent = now.toLocaleDateString('id-ID', options);
             }
             updateDateTime();
+
+            // --- DEBOUNCE FUNCTION ---
+            function debounce(func, wait) {
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(searchDebounceTimer);
+                        func(...args);
+                    };
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(later, wait);
+                };
+            }
 
             // --- LOADING & ANIMATION ---
             const showLoadingPlaceholders = () => {
@@ -215,7 +278,7 @@
                     </div>`
                 ).join('');
 
-                reportsGrid.innerHTML = Array(6).fill('').map(() =>
+                reportsGrid.innerHTML = Array(3).fill('').map(() =>
                     `<div class="bg-white rounded-xl shadow-md p-6 animate-pulse">
                         <div class="h-6 bg-gray-300 rounded w-3/4 mb-2"></div>
                         <div class="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
@@ -223,7 +286,6 @@
                         <div class="space-y-3">
                             <div class="h-4 bg-gray-200 rounded w-full"></div>
                             <div class="h-4 bg-gray-200 rounded w-5/6"></div>
-                            <div class="h-4 bg-gray-200 rounded w-full"></div>
                         </div>
                     </div>`
                 ).join('');
@@ -249,11 +311,17 @@
                 map = L.map(mapContainer).setView([-6.99, 107.59], 10);
 
                 const baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 });
                 baseTileLayer.addTo(map);
 
-                markersLayer = L.layerGroup().addTo(map);
+                // Use MarkerClusterGroup for better performance
+                markerClusterGroup = L.markerClusterGroup({
+                    maxClusterRadius: 50,
+                    spiderfyOnMaxZoom: true,
+                    showCoverageOnHover: false
+                });
+                map.addLayer(markerClusterGroup);
 
                 kecamatanLayer = L.geoJSON(null, {
                     style: { color: "#c2410c", weight: 2, opacity: 0.8, fillOpacity: 0.1 }
@@ -265,7 +333,7 @@
 
                 const baseMaps = { "Peta Dasar": baseTileLayer };
                 const overlayMaps = {
-                    "Lokasi Penerimaan": markersLayer,
+                    "Lokasi Penerimaan": markerClusterGroup,
                     "Batas Kecamatan": kecamatanLayer,
                     "Batas Desa": desaLayer
                 };
@@ -288,9 +356,7 @@
                     }
                     const popupImage = popupNode.querySelector('.popup-image-trigger');
                     if (popupImage) {
-                        popupImage.addEventListener('click', () => {
-                            openModal(popupImage);
-                        });
+                        popupImage.addEventListener('click', () => openModal(popupImage));
                     }
                     lucide.createIcons();
                 });
@@ -325,10 +391,13 @@
 
             function renderMapMarkers(data) {
                 if (!map) initMap();
-                markersLayer.clearLayers();
+                markerClusterGroup.clearLayers();
                 const placeholder = 'https://placehold.co/300x200/e2e8f0/94a3b8?text=Tidak+Ada+Foto';
 
-                data.forEach(item => {
+                // Limit to 200 markers for performance
+                const limitedData = data.slice(0, 200);
+
+                limitedData.forEach(item => {
                     const { titik_lokasi_penerimaan, nama_instansi__sekolah__unit__ponpes, nama_sppg, jenis_laporan, alamat_lengkap__lokasi_penerimaan, dokumentasi_foto, jumlah_paket_makanan_diterima, jumlah_siswa_penerima } = item.detail;
 
                     if (titik_lokasi_penerimaan) {
@@ -338,7 +407,7 @@
                             const jenisClass = getJenisLaporanClass(jenis_laporan);
 
                             const popupContent = `
-                                <div class="font-sans">
+                                <div class="font-sans" style="width: 250px;">
                                     <div class="relative group">
                                         <img src="${dokumentasi_foto || placeholder}"
                                              alt="Foto ${nama_instansi__sekolah__unit__ponpes}"
@@ -351,12 +420,11 @@
                                         </div>
                                     </div>
                                     <div class="p-3 space-y-1">
-                                        <b class="text-base leading-tight block">${nama_instansi__sekolah__unit__ponpes || 'Instansi'}</b>
+                                        <b class="text-sm leading-tight block">${nama_instansi__sekolah__unit__ponpes || 'Instansi'}</b>
                                         <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${jenisClass} inline-block">${getJenisLaporanLabel(jenis_laporan)}</span>
                                         <p class="text-xs text-gray-600"><b>SPPG:</b> ${nama_sppg || '-'}</p>
                                         <p class="text-xs text-gray-600"><b>Paket:</b> ${jumlah_paket_makanan_diterima || 0} | <b>Siswa:</b> ${jumlah_siswa_penerima || 0}</p>
-                                        <p class="text-xs text-gray-600 truncate" title="${alamat_lengkup__lokasi_penerimaan || ''}">${alamat_lengkap__lokasi_penerimaan || '-'}</p>
-                                        <a href="#report-card-${item.id}" class="view-detail-link text-teal-600 font-semibold hover:underline text-sm pt-1 block">Lihat Detail Lengkap</a>
+                                        <a href="#report-card-${item.id}" class="view-detail-link text-teal-600 font-semibold hover:underline text-xs pt-1 block">Lihat Detail Lengkap</a>
                                     </div>
                                 </div>`;
 
@@ -365,7 +433,7 @@
                             });
 
                             marker.bindPopup(popupContent);
-                            markersLayer.addLayer(marker);
+                            markerClusterGroup.addLayer(marker);
                         }
                     }
                 });
@@ -457,11 +525,42 @@
                 });
             };
 
-            const renderReportCards = (data) => {
-                reportsGrid.innerHTML = '';
-                noResultsEl.classList.toggle('hidden', data.length > 0);
+            // --- PAGINATION FUNCTIONS ---
+            function updatePaginationInfo() {
+                const totalItems = filteredData.length;
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 
-                data.forEach((item, index) => {
+                currentPageEl.textContent = currentPage;
+                totalPagesEl.textContent = totalPages || 1;
+                showingCountEl.textContent = totalItems > 0 ? `${startIndex + 1}-${endIndex}` : '0';
+                totalCountEl.textContent = totalItems.toLocaleString('id-ID');
+
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = currentPage >= totalPages;
+
+                paginationControls.classList.toggle('hidden', totalItems === 0);
+            }
+
+            function getPaginatedData() {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                return filteredData.slice(startIndex, endIndex);
+            }
+
+            const renderReportCards = () => {
+                const paginatedData = getPaginatedData();
+                reportsGrid.innerHTML = '';
+                noResultsEl.classList.toggle('hidden', filteredData.length > 0);
+
+                if (filteredData.length === 0) {
+                    updatePaginationInfo();
+                    lucide.createIcons();
+                    return;
+                }
+
+                paginatedData.forEach((item, index) => {
                     const detail = item.detail;
                     const jenisClass = getJenisLaporanClass(detail.jenis_laporan);
                     const mapsLink = detail.titik_lokasi_penerimaan ? `https://www.google.com/maps/search/?api=1&query=${detail.titik_lokasi_penerimaan}` : '#';
@@ -488,9 +587,9 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
                                     ${createCompactDetailRow('building-2', 'SPPG Pengirim', detail.nama_sppg)}
                                     ${createCompactDetailRow('calendar', 'Tanggal Laporan', formatDate(detail.tanggal_laporan))}
-                                    ${createCompactDetailRow('user', 'Pelapor', `${detail.nama_pelapor} (${detail.jabatan || '-'})`)}
+                                    ${createCompactDetailRow('user', 'Pelapor', `${detail.nama_pelapor || '-'} ${detail.jabatan ? `(${detail.jabatan})` : ''}`)}
                                     ${createCompactDetailRow('phone', 'No. HP/WA', detail.no_hp_whatsapp_aktif)}
-                                    ${createCompactDetailRow('map-pin', 'Lokasi', `${detail.desa}, ${detail.kecamatan}`)}
+                                    ${createCompactDetailRow('map-pin', 'Lokasi', `${detail.desa || '-'}, ${detail.kecamatan || '-'}`)}
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
@@ -553,8 +652,14 @@
                     }
                 });
 
+                updatePaginationInfo();
                 lucide.createIcons();
                 addThumbnailListeners();
+
+                // Scroll to top of reports grid
+                if (currentPage > 1) {
+                    reportsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             };
 
             const renderLatestReports = (data) => {
@@ -570,7 +675,7 @@
                     const formattedTime = reportDate.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
                     return `<a href="#report-card-${item.id}" class="notification-link block p-2 hover:bg-gray-50 rounded-lg">
                         <p class="font-semibold text-sm">${item.detail.nama_instansi__sekolah__unit__ponpes || 'Laporan Baru'}</p>
-                        <p class="text-xs text-gray-500">${item.detail.kecamatan} &bull; ${formattedTime}</p>
+                        <p class="text-xs text-gray-500">${item.detail.kecamatan || '-'} &bull; ${formattedTime}</p>
                     </a>`;
                 }).join('');
             };
@@ -594,6 +699,7 @@
                          data-src="${src || placeholder}"
                          data-title="${title}"
                          onerror="this.onerror=null;this.src='${placeholder}';"
+                         loading="lazy"
                          class="w-full h-48 object-cover rounded-md cursor-pointer transition-transform group-hover:scale-105">
                     <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md pointer-events-none">
                         <i data-lucide="zoom-in" class="w-8 h-8 text-white"></i>
@@ -605,6 +711,7 @@
             const populateFilters = (data) => {
                 // Populate Kecamatan
                 const kecamatanSet = new Set(data.map(item => item.detail.kecamatan).filter(Boolean).sort());
+                kecamatanFilter.innerHTML = '<option value="all">Semua Kecamatan</option>';
                 kecamatanSet.forEach(kecamatan => {
                     const option = document.createElement('option');
                     option.value = kecamatan;
@@ -622,6 +729,7 @@
                     }
                 });
 
+                jenisLaporanFilter.innerHTML = '<option value="all">Semua Jenis Laporan</option>';
                 jenisLaporanSet.forEach(jenis => {
                     const option = document.createElement('option');
                     option.value = jenis;
@@ -635,7 +743,7 @@
                 const selectedKecamatan = kecamatanFilter.value;
                 const selectedJenisLaporan = jenisLaporanFilter.value;
 
-                const filteredData = originalData.filter(item => {
+                filteredData = originalData.filter(item => {
                     const detail = item.detail;
                     const matchesSearch = searchTerm === '' ||
                         ['nama_instansi__sekolah__unit__ponpes', 'nama_sppg', 'nama_pelapor', 'kecamatan', 'desa'].some(key =>
@@ -647,7 +755,10 @@
                     return matchesSearch && matchesKecamatan && matchesJenisLaporan;
                 });
 
-                renderReportCards(filteredData);
+                // Reset to page 1 when filtering
+                currentPage = 1;
+
+                renderReportCards();
                 renderMapMarkers(filteredData);
                 renderKecamatanSummary(filteredData);
             };
@@ -667,12 +778,13 @@
                     }
 
                     originalData = jsonResponse.data;
+                    filteredData = [...originalData];
                     pageTitleEl.textContent = jsonResponse.title || 'Dashboard Pelaporan Penerima MBG';
 
                     updateStatCards(originalData);
                     populateFilters(originalData);
-                    renderReportCards(originalData);
-                    renderMapMarkers(originalData);
+                    renderReportCards();
+                    renderMapMarkers(filteredData);
                     renderLatestReports(originalData);
                     renderKecamatanSummary(originalData);
 
@@ -718,9 +830,33 @@
             }
 
             // --- EVENT LISTENERS ---
-            searchInput.addEventListener('input', filterAndRender);
+            searchInput.addEventListener('input', debounce(filterAndRender, 300));
             kecamatanFilter.addEventListener('change', filterAndRender);
             jenisLaporanFilter.addEventListener('change', filterAndRender);
+
+            // Pagination events
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderReportCards();
+                }
+            });
+
+            nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderReportCards();
+                }
+            });
+
+            itemsPerPageSelect.addEventListener('change', (e) => {
+                itemsPerPage = parseInt(e.target.value);
+                currentPage = 1;
+                renderReportCards();
+            });
+
+            // Modal events
             modalCloseButton.addEventListener('click', closeModal);
             imageModal.addEventListener('click', (e) => {
                 if (e.target === imageModal) closeModal();
@@ -768,6 +904,7 @@
                 }
             });
 
+            // Notification events
             notificationButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 notificationDropdown.classList.toggle('hidden');
