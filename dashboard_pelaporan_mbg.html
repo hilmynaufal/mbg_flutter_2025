@@ -66,7 +66,7 @@
 
         <!-- Search & Filter -->
         <section class="bg-white p-4 rounded-xl shadow-md">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
                 <input type="text" id="search-input" placeholder="🔍 Cari nama instansi, SPPG, pelapor..." class="col-span-1 md:col-span-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
                 <select id="kecamatan-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
                     <option value="all">Semua Kecamatan</option>
@@ -74,6 +74,14 @@
                 <select id="jenis-laporan-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
                     <option value="all">Semua Jenis Laporan</option>
                 </select>
+                <input type="date" id="date-from" placeholder="Dari Tanggal" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <input type="date" id="date-to" placeholder="Sampai Tanggal" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+            </div>
+            <div class="flex justify-between items-center">
+                <button id="reset-filters" class="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset Filter
+                </button>
+                <p id="filter-info" class="text-sm text-gray-600"></p>
             </div>
         </section>
 
@@ -196,6 +204,10 @@
             const searchInput = document.getElementById('search-input');
             const kecamatanFilter = document.getElementById('kecamatan-filter');
             const jenisLaporanFilter = document.getElementById('jenis-laporan-filter');
+            const dateFromInput = document.getElementById('date-from');
+            const dateToInput = document.getElementById('date-to');
+            const resetFiltersBtn = document.getElementById('reset-filters');
+            const filterInfoEl = document.getElementById('filter-info');
             const noResultsEl = document.getElementById('no-results');
             const mapContainer = document.getElementById('map');
             const notificationButton = document.getElementById('notification-button');
@@ -742,25 +754,87 @@
                 const searchTerm = searchInput.value.toLowerCase();
                 const selectedKecamatan = kecamatanFilter.value;
                 const selectedJenisLaporan = jenisLaporanFilter.value;
+                const dateFrom = dateFromInput.value;
+                const dateTo = dateToInput.value;
 
                 filteredData = originalData.filter(item => {
                     const detail = item.detail;
+
+                    // Search filter
                     const matchesSearch = searchTerm === '' ||
                         ['nama_instansi__sekolah__unit__ponpes', 'nama_sppg', 'nama_pelapor', 'kecamatan', 'desa'].some(key =>
                             detail[key] && detail[key].toString().toLowerCase().includes(searchTerm)
                         );
+
+                    // Kecamatan filter
                     const matchesKecamatan = selectedKecamatan === 'all' || detail.kecamatan === selectedKecamatan;
+
+                    // Jenis Laporan filter
                     const matchesJenisLaporan = selectedJenisLaporan === 'all' || (detail.jenis_laporan && detail.jenis_laporan.includes(selectedJenisLaporan));
 
-                    return matchesSearch && matchesKecamatan && matchesJenisLaporan;
+                    // Date filter
+                    let matchesDate = true;
+                    if (dateFrom || dateTo) {
+                        const reportDate = detail.tanggal_laporan ? new Date(detail.tanggal_laporan) : null;
+                        if (reportDate) {
+                            if (dateFrom && dateTo) {
+                                const fromDate = new Date(dateFrom);
+                                const toDate = new Date(dateTo);
+                                toDate.setHours(23, 59, 59, 999); // Include entire end date
+                                matchesDate = reportDate >= fromDate && reportDate <= toDate;
+                            } else if (dateFrom) {
+                                const fromDate = new Date(dateFrom);
+                                matchesDate = reportDate >= fromDate;
+                            } else if (dateTo) {
+                                const toDate = new Date(dateTo);
+                                toDate.setHours(23, 59, 59, 999);
+                                matchesDate = reportDate <= toDate;
+                            }
+                        } else {
+                            matchesDate = false; // Exclude items without date
+                        }
+                    }
+
+                    return matchesSearch && matchesKecamatan && matchesJenisLaporan && matchesDate;
                 });
 
                 // Reset to page 1 when filtering
                 currentPage = 1;
 
+                // Update filter info
+                updateFilterInfo();
+
                 renderReportCards();
                 renderMapMarkers(filteredData);
                 renderKecamatanSummary(filteredData);
+            };
+
+            const updateFilterInfo = () => {
+                const activeFilters = [];
+                if (searchInput.value) activeFilters.push(`Pencarian: "${searchInput.value}"`);
+                if (kecamatanFilter.value !== 'all') activeFilters.push(`Kecamatan: ${kecamatanFilter.value}`);
+                if (jenisLaporanFilter.value !== 'all') activeFilters.push(`Jenis: ${jenisLaporanFilter.value}`);
+                if (dateFromInput.value || dateToInput.value) {
+                    const from = dateFromInput.value ? new Date(dateFromInput.value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '...';
+                    const to = dateToInput.value ? new Date(dateToInput.value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '...';
+                    activeFilters.push(`Periode: ${from} - ${to}`);
+                }
+
+                if (activeFilters.length > 0) {
+                    filterInfoEl.innerHTML = `<i data-lucide="filter" class="w-4 h-4 inline"></i> ${activeFilters.join(' | ')}`;
+                    lucide.createIcons();
+                } else {
+                    filterInfoEl.textContent = '';
+                }
+            };
+
+            const resetFilters = () => {
+                searchInput.value = '';
+                kecamatanFilter.value = 'all';
+                jenisLaporanFilter.value = 'all';
+                dateFromInput.value = '';
+                dateToInput.value = '';
+                filterAndRender();
             };
 
             // --- ASYNC DATA FETCH ---
@@ -833,6 +907,9 @@
             searchInput.addEventListener('input', debounce(filterAndRender, 300));
             kecamatanFilter.addEventListener('change', filterAndRender);
             jenisLaporanFilter.addEventListener('change', filterAndRender);
+            dateFromInput.addEventListener('change', filterAndRender);
+            dateToInput.addEventListener('change', filterAndRender);
+            resetFiltersBtn.addEventListener('click', resetFilters);
 
             // Pagination events
             prevPageBtn.addEventListener('click', () => {
