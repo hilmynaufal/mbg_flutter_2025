@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pelaporan Penerima MBG - Kabupaten Bandung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .preserve-lines { white-space: pre-line; }
+        .modal-box { transition: all 0.3s ease; }
+        .dragging { cursor: grabbing; user-select: none; }
+        #modal-image { cursor: grab; max-width: 90%; max-height: 80vh; object-fit: contain; }
+        details summary::-webkit-details-marker { display: none; }
+        .rotate-90 { transform: rotate(90deg); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-teal-50 to-sky-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 id="page-title" class="text-2xl font-bold">Dashboard Pelaporan Penerima MBG</h1>
+                    <p class="text-teal-100 text-sm">Kabupaten Bandung - Makan Bergizi Gratis</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p id="current-date" class="text-sm font-medium"></p>
+                    </div>
+                    <div class="relative">
+                        <button id="notification-button" class="p-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-all relative">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">5</span>
+                        </button>
+                        <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50">
+                            <div class="bg-gradient-to-r from-teal-600 to-teal-500 px-4 py-3">
+                                <h3 class="font-bold text-white">Laporan Terbaru</h3>
+                            </div>
+                            <div id="latest-reports-container" class="max-h-96 overflow-y-auto divide-y">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 space-y-6">
+        <!-- Statistics Cards -->
+        <section id="stat-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Dynamic stat cards -->
+        </section>
+
+        <!-- Search & Filter -->
+        <section class="bg-white p-4 rounded-xl shadow-md">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <input type="text" id="search-input" placeholder="🔍 Cari nama instansi, SPPG, pelapor..." class="col-span-1 md:col-span-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <select id="kecamatan-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    <option value="all">Semua Kecamatan</option>
+                </select>
+                <select id="jenis-laporan-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    <option value="all">Semua Jenis Laporan</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Map & Reports Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Map -->
+            <section class="lg:col-span-1 bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-teal-600 to-teal-500 px-4 py-3">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i> Peta Lokasi Penerimaan
+                    </h2>
+                </div>
+                <div id="map" class="w-full h-96"></div>
+            </section>
+
+            <!-- Reports Grid -->
+            <section class="lg:col-span-2">
+                <div id="reports-grid" class="grid grid-cols-1 gap-4">
+                    <!-- Dynamic report cards -->
+                </div>
+                <div id="no-results" class="hidden bg-white rounded-xl shadow-md p-8 text-center">
+                    <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 font-semibold">Tidak ada laporan yang sesuai dengan filter.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Summary Table -->
+        <section class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="w-6 h-6"></i> Rekap Per Kecamatan
+                </h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b-2 border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-semibold text-gray-700">Kecamatan</th>
+                            <th class="px-6 py-3 text-center font-semibold text-gray-700">Total Laporan</th>
+                            <th class="px-6 py-3 text-center font-semibold text-gray-700">Total Paket</th>
+                            <th class="px-6 py-3 text-center font-semibold text-gray-700">Total Siswa</th>
+                            <th class="px-6 py-3 text-center font-semibold text-gray-700">Total Instansi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summary-table-body">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 scale-95 opacity-0 transition-all duration-300">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-lg font-bold text-gray-900"></h3>
+                <button id="modal-close-button" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="modal-image-container" class="p-4 flex justify-center items-center overflow-hidden" style="max-height: 70vh;">
+                <img id="modal-image" src="" alt="Preview" class="transition-transform duration-200">
+            </div>
+            <div class="flex justify-center gap-2 p-4 border-t">
+                <button id="zoom-in-button" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="zoom-in" class="w-4 h-4"></i> Perbesar
+                </button>
+                <button id="zoom-out-button" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="zoom-out" class="w-4 h-4"></i> Perkecil
+                </button>
+                <button id="zoom-reset-button" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t mt-8 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+            <p>&copy; 2025 Satgas MBG Kabupaten Bandung. Dashboard Pelaporan Penerima MBG.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ELEMENT SELECTORS ---
+            const pageTitleEl = document.getElementById('page-title');
+            const statCardsContainer = document.getElementById('stat-cards-container');
+            const reportsGrid = document.getElementById('reports-grid');
+            const searchInput = document.getElementById('search-input');
+            const kecamatanFilter = document.getElementById('kecamatan-filter');
+            const jenisLaporanFilter = document.getElementById('jenis-laporan-filter');
+            const noResultsEl = document.getElementById('no-results');
+            const mapContainer = document.getElementById('map');
+            const notificationButton = document.getElementById('notification-button');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+            const latestReportsContainer = document.getElementById('latest-reports-container');
+            const summaryTableBody = document.getElementById('summary-table-body');
+
+            // Modal elements
+            const imageModal = document.getElementById('image-modal');
+            const modalImageContainer = document.getElementById('modal-image-container');
+            const modalImage = document.getElementById('modal-image');
+            const modalTitle = document.getElementById('modal-title');
+            const modalCloseButton = document.getElementById('modal-close-button');
+            const zoomInButton = document.getElementById('zoom-in-button');
+            const zoomOutButton = document.getElementById('zoom-out-button');
+            const zoomResetButton = document.getElementById('zoom-reset-button');
+
+            let originalData = [];
+            let map = null;
+            let markersLayer = null;
+            let kecamatanLayer = null;
+            let desaLayer = null;
+            let layerControl = null;
+
+            // Image Zoom/Pan State
+            let zoomLevel = 1;
+            let isDragging = false;
+            let startPos = { x: 0, y: 0 };
+            let translatePos = { x: 0, y: 0 };
+
+            // --- DATE & TIME ---
+            function updateDateTime() {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('current-date').textContent = now.toLocaleDateString('id-ID', options);
+            }
+            updateDateTime();
+
+            // --- LOADING & ANIMATION ---
+            const showLoadingPlaceholders = () => {
+                statCardsContainer.innerHTML = Array(5).fill('').map(() =>
+                    `<div class="bg-white p-5 rounded-xl shadow-md animate-pulse">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-gray-200 rounded-lg h-12 w-12"></div>
+                            <div class="flex-1">
+                                <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div class="h-6 bg-gray-300 rounded w-1/2"></div>
+                            </div>
+                        </div>
+                    </div>`
+                ).join('');
+
+                reportsGrid.innerHTML = Array(6).fill('').map(() =>
+                    `<div class="bg-white rounded-xl shadow-md p-6 animate-pulse">
+                        <div class="h-6 bg-gray-300 rounded w-3/4 mb-2"></div>
+                        <div class="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4"></div>
+                        <div class="space-y-3">
+                            <div class="h-4 bg-gray-200 rounded w-full"></div>
+                            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                            <div class="h-4 bg-gray-200 rounded w-full"></div>
+                        </div>
+                    </div>`
+                ).join('');
+
+                latestReportsContainer.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">Memuat laporan...</div>`;
+
+                if (summaryTableBody) {
+                    summaryTableBody.innerHTML = Array(5).fill('').map(() =>
+                        `<tr class="animate-pulse">
+                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-3/4"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></td>
+                        </tr>`
+                    ).join('');
+                }
+            };
+
+            // --- MAP FUNCTIONS ---
+            function initMap() {
+                if (map) return;
+                map = L.map(mapContainer).setView([-6.99, 107.59], 10);
+
+                const baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                });
+                baseTileLayer.addTo(map);
+
+                markersLayer = L.layerGroup().addTo(map);
+
+                kecamatanLayer = L.geoJSON(null, {
+                    style: { color: "#c2410c", weight: 2, opacity: 0.8, fillOpacity: 0.1 }
+                }).addTo(map);
+
+                desaLayer = L.geoJSON(null, {
+                    style: { color: "#16a34a", weight: 1, opacity: 0.7, fillOpacity: 0.1 }
+                }).addTo(map);
+
+                const baseMaps = { "Peta Dasar": baseTileLayer };
+                const overlayMaps = {
+                    "Lokasi Penerimaan": markersLayer,
+                    "Batas Kecamatan": kecamatanLayer,
+                    "Batas Desa": desaLayer
+                };
+
+                layerControl = L.control.layers(baseMaps, overlayMaps, {
+                    position: 'topright',
+                    collapsed: true
+                }).addTo(map);
+
+                map.on('popupopen', function(e) {
+                    const popupNode = e.popup._container;
+                    const viewDetailLink = popupNode.querySelector('.view-detail-link');
+                    if (viewDetailLink) {
+                        viewDetailLink.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            const targetId = this.getAttribute('href').substring(1);
+                            document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            map.closePopup();
+                        });
+                    }
+                    const popupImage = popupNode.querySelector('.popup-image-trigger');
+                    if (popupImage) {
+                        popupImage.addEventListener('click', () => {
+                            openModal(popupImage);
+                        });
+                    }
+                    lucide.createIcons();
+                });
+            }
+
+            async function fetchGeoJSONLayers() {
+                if (!map) initMap();
+
+                const kecamatanUrl = 'https://gist.githubusercontent.com/infomugi/b7f82ebe72e1a1830da958ea267e87a5/raw/ebe0bbccca2aaff18521e245c33a4a62d38bd455/gistfile1.txt';
+                const desaUrl = 'https://gist.githubusercontent.com/infomugi/4576f539c1dc958f6ed7ede7cca8976e/raw/694baf71e0db935f26e40b1621db61bf91ff9092/gistfile1.txt';
+
+                try {
+                    const kecResponse = await fetch(kecamatanUrl);
+                    if (kecResponse.ok) {
+                        const kecData = await kecResponse.json();
+                        kecamatanLayer.addData(kecData);
+                    }
+                } catch (error) {
+                    console.error('Gagal memuat Batas Kecamatan:', error);
+                }
+
+                try {
+                    const desaResponse = await fetch(desaUrl);
+                    if (desaResponse.ok) {
+                        const desaData = await desaResponse.json();
+                        desaLayer.addData(desaData);
+                    }
+                } catch (error) {
+                    console.error('Gagal memuat Batas Desa:', error);
+                }
+            }
+
+            function renderMapMarkers(data) {
+                if (!map) initMap();
+                markersLayer.clearLayers();
+                const placeholder = 'https://placehold.co/300x200/e2e8f0/94a3b8?text=Tidak+Ada+Foto';
+
+                data.forEach(item => {
+                    const { titik_lokasi_penerimaan, nama_instansi__sekolah__unit__ponpes, nama_sppg, jenis_laporan, alamat_lengkap__lokasi_penerimaan, dokumentasi_foto, jumlah_paket_makanan_diterima, jumlah_siswa_penerima } = item.detail;
+
+                    if (titik_lokasi_penerimaan) {
+                        const coords = titik_lokasi_penerimaan.split(',').map(Number);
+                        if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                            const marker = L.marker(coords);
+                            const jenisClass = getJenisLaporanClass(jenis_laporan);
+
+                            const popupContent = `
+                                <div class="font-sans">
+                                    <div class="relative group">
+                                        <img src="${dokumentasi_foto || placeholder}"
+                                             alt="Foto ${nama_instansi__sekolah__unit__ponpes}"
+                                             class="w-full h-32 object-cover rounded-t-lg cursor-pointer popup-image-trigger"
+                                             data-src="${dokumentasi_foto || placeholder}"
+                                             data-title="Dokumentasi: ${nama_instansi__sekolah__unit__ponpes}"
+                                             onerror="this.onerror=null;this.src='${placeholder}';">
+                                        <div class="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                            <i data-lucide="zoom-in" class="w-8 h-8 text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 space-y-1">
+                                        <b class="text-base leading-tight block">${nama_instansi__sekolah__unit__ponpes || 'Instansi'}</b>
+                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${jenisClass} inline-block">${getJenisLaporanLabel(jenis_laporan)}</span>
+                                        <p class="text-xs text-gray-600"><b>SPPG:</b> ${nama_sppg || '-'}</p>
+                                        <p class="text-xs text-gray-600"><b>Paket:</b> ${jumlah_paket_makanan_diterima || 0} | <b>Siswa:</b> ${jumlah_siswa_penerima || 0}</p>
+                                        <p class="text-xs text-gray-600 truncate" title="${alamat_lengkup__lokasi_penerimaan || ''}">${alamat_lengkap__lokasi_penerimaan || '-'}</p>
+                                        <a href="#report-card-${item.id}" class="view-detail-link text-teal-600 font-semibold hover:underline text-sm pt-1 block">Lihat Detail Lengkap</a>
+                                    </div>
+                                </div>`;
+
+                            marker.on('click', () => {
+                                map.flyTo(coords, 15);
+                            });
+
+                            marker.bindPopup(popupContent);
+                            markersLayer.addLayer(marker);
+                        }
+                    }
+                });
+            }
+
+            function getJenisLaporanClass(jenisLaporan) {
+                if (!jenisLaporan) return 'bg-gray-100 text-gray-800';
+                if (jenisLaporan.includes('DITERIMA SESUAI')) return 'bg-green-100 text-green-800';
+                if (jenisLaporan.includes('DITERIMA TIDAK SESUAI')) return 'bg-yellow-100 text-yellow-800';
+                if (jenisLaporan.includes('TIDAK DITERIMA')) return 'bg-red-100 text-red-800';
+                return 'bg-blue-100 text-blue-800';
+            }
+
+            function getJenisLaporanLabel(jenisLaporan) {
+                if (!jenisLaporan) return 'Tidak Diketahui';
+                if (jenisLaporan.includes('DITERIMA SESUAI')) return 'Sesuai';
+                if (jenisLaporan.includes('DITERIMA TIDAK SESUAI')) return 'Tidak Sesuai';
+                if (jenisLaporan.includes('TIDAK DITERIMA')) return 'Tidak Diterima';
+                return jenisLaporan.substring(0, 20);
+            }
+
+            // --- UI RENDERING FUNCTIONS ---
+            const updateStatCards = (data) => {
+                const totalLaporan = data.length;
+                const totalPaket = data.reduce((sum, item) => sum + (parseInt(item.detail.jumlah_paket_makanan_diterima) || 0), 0);
+                const totalSiswa = data.reduce((sum, item) => sum + (parseInt(item.detail.jumlah_siswa_penerima) || 0), 0);
+                const uniqueKecamatan = new Set(data.map(item => item.detail.kecamatan).filter(Boolean)).size;
+                const uniqueInstansi = new Set(data.map(item => item.detail.nama_instansi__sekolah__unit__ponpes).filter(Boolean)).size;
+
+                const cards = [
+                    { icon: 'file-text', label: 'Total Laporan', value: totalLaporan.toLocaleString('id-ID'), color: 'teal' },
+                    { icon: 'package', label: 'Total Paket Makanan', value: totalPaket.toLocaleString('id-ID'), color: 'amber' },
+                    { icon: 'users', label: 'Total Siswa Penerima', value: totalSiswa.toLocaleString('id-ID'), color: 'sky' },
+                    { icon: 'map', label: 'Jumlah Kecamatan', value: uniqueKecamatan.toLocaleString('id-ID'), color: 'violet' },
+                    { icon: 'school', label: 'Jumlah Instansi', value: uniqueInstansi.toLocaleString('id-ID'), color: 'lime' }
+                ];
+
+                statCardsContainer.innerHTML = cards.map((card, index) =>
+                    `<div class="bg-white p-5 rounded-xl shadow-md fade-in-up" style="animation-delay: ${index * 100}ms;">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-${card.color}-100 rounded-lg">
+                                <i data-lucide="${card.icon}" class="h-6 w-6 text-${card.color}-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">${card.label}</p>
+                                <p class="text-2xl font-bold">${card.value}</p>
+                            </div>
+                        </div>
+                    </div>`
+                ).join('');
+                lucide.createIcons();
+            };
+
+            const renderKecamatanSummary = (data) => {
+                const summary = data.reduce((acc, item) => {
+                    const kecamatan = item.detail.kecamatan || 'Tidak Diketahui';
+                    if (!acc[kecamatan]) {
+                        acc[kecamatan] = { totalLaporan: 0, totalPaket: 0, totalSiswa: 0, instansiSet: new Set() };
+                    }
+                    const paket = parseInt(item.detail.jumlah_paket_makanan_diterima) || 0;
+                    const siswa = parseInt(item.detail.jumlah_siswa_penerima) || 0;
+                    acc[kecamatan].totalLaporan++;
+                    acc[kecamatan].totalPaket += paket;
+                    acc[kecamatan].totalSiswa += siswa;
+                    if (item.detail.nama_instansi__sekolah__unit__ponpes) {
+                        acc[kecamatan].instansiSet.add(item.detail.nama_instansi__sekolah__unit__ponpes);
+                    }
+                    return acc;
+                }, {});
+
+                const sortedSummary = Object.entries(summary).sort((a, b) => a[0].localeCompare(b[0]));
+
+                summaryTableBody.innerHTML = '';
+                if (sortedSummary.length === 0) {
+                    summaryTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">Data rekap tidak tersedia.</td></tr>`;
+                    return;
+                }
+
+                sortedSummary.forEach(([kecamatan, stats]) => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b">
+                            <td class="px-6 py-4 font-medium whitespace-nowrap">${kecamatan}</td>
+                            <td class="px-6 py-4 text-center">${stats.totalLaporan.toLocaleString('id-ID')}</td>
+                            <td class="px-6 py-4 text-center font-semibold">${stats.totalPaket.toLocaleString('id-ID')}</td>
+                            <td class="px-6 py-4 text-center font-semibold">${stats.totalSiswa.toLocaleString('id-ID')}</td>
+                            <td class="px-6 py-4 text-center">${stats.instansiSet.size.toLocaleString('id-ID')}</td>
+                        </tr>`;
+                    summaryTableBody.innerHTML += row;
+                });
+            };
+
+            const renderReportCards = (data) => {
+                reportsGrid.innerHTML = '';
+                noResultsEl.classList.toggle('hidden', data.length > 0);
+
+                data.forEach((item, index) => {
+                    const detail = item.detail;
+                    const jenisClass = getJenisLaporanClass(detail.jenis_laporan);
+                    const mapsLink = detail.titik_lokasi_penerimaan ? `https://www.google.com/maps/search/?api=1&query=${detail.titik_lokasi_penerimaan}` : '#';
+                    const placeholder = 'https://placehold.co/600x400/e2e8f0/94a3b8?text=Tidak+Ada+Foto';
+
+                    const formatDate = (dateStr) => {
+                        if (!dateStr) return '-';
+                        const date = new Date(dateStr);
+                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    };
+
+                    const card = `
+                        <div id="report-card-${item.id}" class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col fade-in-up" style="animation-delay: ${index * 50}ms;">
+                            <div class="p-4 flex-grow">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-base font-bold text-gray-900 pr-2 leading-tight">${detail.nama_instansi__sekolah__unit__ponpes || 'Nama Instansi Tidak Tersedia'}</h3>
+                                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${jenisClass} whitespace-nowrap">${getJenisLaporanLabel(detail.jenis_laporan)}</span>
+                                </div>
+
+                                <div class="mb-3">
+                                    ${createImagePreview(detail.dokumentasi_foto, `Dokumentasi ${detail.nama_instansi__sekolah__unit__ponpes}`, placeholder)}
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+                                    ${createCompactDetailRow('building-2', 'SPPG Pengirim', detail.nama_sppg)}
+                                    ${createCompactDetailRow('calendar', 'Tanggal Laporan', formatDate(detail.tanggal_laporan))}
+                                    ${createCompactDetailRow('user', 'Pelapor', `${detail.nama_pelapor} (${detail.jabatan || '-'})`)}
+                                    ${createCompactDetailRow('phone', 'No. HP/WA', detail.no_hp_whatsapp_aktif)}
+                                    ${createCompactDetailRow('map-pin', 'Lokasi', `${detail.desa}, ${detail.kecamatan}`)}
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                                    <div class="bg-teal-50 p-2 rounded-lg">
+                                        <p class="font-medium text-gray-500 text-xs">Paket Diterima</p>
+                                        <p class="font-bold text-teal-700 text-lg">${detail.jumlah_paket_makanan_diterima || 0}</p>
+                                    </div>
+                                    <div class="bg-sky-50 p-2 rounded-lg">
+                                        <p class="font-medium text-gray-500 text-xs">Siswa Penerima</p>
+                                        <p class="font-bold text-sky-700 text-lg">${detail.jumlah_siswa_penerima || 0}</p>
+                                    </div>
+                                </div>
+
+                                ${detail.jenis_menu_yang_diterima ? `
+                                <div class="mb-3 text-sm">
+                                    <p class="font-medium text-gray-500 text-xs mb-1">Menu yang Diterima</p>
+                                    <p class="text-gray-800">${detail.jenis_menu_yang_diterima}</p>
+                                </div>` : ''}
+
+                                <details class="text-sm mb-3">
+                                    <summary class="cursor-pointer font-medium text-gray-600 hover:text-gray-900 list-none flex items-center gap-1">
+                                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                        Penilaian Makanan
+                                    </summary>
+                                    <div class="mt-2 text-xs space-y-1 bg-gray-50 p-2 rounded-md border">
+                                        ${detail.variasi_menu ? `<p><b>Variasi Menu:</b> ${detail.variasi_menu}</p>` : ''}
+                                        ${detail.porsi_makanan ? `<p><b>Porsi Makanan:</b> ${detail.porsi_makanan}</p>` : ''}
+                                        ${detail.kebersihan__kelayakan_makanan ? `<p><b>Kebersihan/Kelayakan:</b> ${detail.kebersihan__kelayakan_makanan}</p>` : ''}
+                                        ${detail.cita_rasa_makanan ? `<p><b>Cita Rasa:</b> ${detail.cita_rasa_makanan}</p>` : ''}
+                                    </div>
+                                </details>
+
+                                ${detail.keterangan_laporan || detail.kendala__usulan_perbaikan_terkait_makanan ? `
+                                <details class="text-sm">
+                                    <summary class="cursor-pointer font-medium text-gray-600 hover:text-gray-900 list-none flex items-center gap-1">
+                                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                        Keterangan & Kendala
+                                    </summary>
+                                    <div class="mt-2 text-xs bg-gray-50 p-2 rounded-md max-h-32 overflow-y-auto preserve-lines border">
+                                        ${detail.keterangan_laporan ? `<p class="mb-2"><b>Keterangan:</b><br>${detail.keterangan_laporan}</p>` : ''}
+                                        ${detail.kendala__usulan_perbaikan_terkait_makanan ? `<p><b>Kendala/Usulan:</b><br>${detail.kendala__usulan_perbaikan_terkait_makanan}</p>` : ''}
+                                    </div>
+                                </details>` : ''}
+                            </div>
+                            <div class="p-4 bg-gray-50 border-t">
+                                <a href="${mapsLink}" target="_blank" class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-semibold">
+                                    <i data-lucide="map" class="w-4 h-4"></i> Lihat di Peta
+                                </a>
+                            </div>
+                        </div>`;
+                    reportsGrid.innerHTML += card;
+                });
+
+                document.querySelectorAll('details').forEach((detailElement) => {
+                    const summaryIcon = detailElement.querySelector('summary i');
+                    if (summaryIcon) {
+                        detailElement.addEventListener('toggle', () => {
+                            summaryIcon.classList.toggle('rotate-90', detailElement.open);
+                        });
+                    }
+                });
+
+                lucide.createIcons();
+                addThumbnailListeners();
+            };
+
+            const renderLatestReports = (data) => {
+                const sortedData = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+
+                if (sortedData.length === 0) {
+                    latestReportsContainer.innerHTML = `<p class="p-4 text-center text-sm text-gray-500">Tidak ada laporan terbaru.</p>`;
+                    return;
+                }
+
+                latestReportsContainer.innerHTML = sortedData.map(item => {
+                    const reportDate = new Date(item.created_at);
+                    const formattedTime = reportDate.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+                    return `<a href="#report-card-${item.id}" class="notification-link block p-2 hover:bg-gray-50 rounded-lg">
+                        <p class="font-semibold text-sm">${item.detail.nama_instansi__sekolah__unit__ponpes || 'Laporan Baru'}</p>
+                        <p class="text-xs text-gray-500">${item.detail.kecamatan} &bull; ${formattedTime}</p>
+                    </a>`;
+                }).join('');
+            };
+
+            const createCompactDetailRow = (icon, label, value) => {
+                if (!value) return '';
+                return `
+                <div class="flex items-start gap-2 min-w-0">
+                    <i data-lucide="${icon}" class="w-4 h-4 text-gray-500 mt-0.5 shrink-0"></i>
+                    <div class="min-w-0">
+                        <p class="font-medium text-gray-500 text-xs">${label}</p>
+                        <p class="text-gray-800 font-medium truncate" title="${value}">${value}</p>
+                    </div>
+                </div>`;
+            };
+
+            const createImagePreview = (src, title, placeholder) => {
+                return `<div class="relative group">
+                    <img src="${src || placeholder}"
+                         alt="${title}"
+                         data-src="${src || placeholder}"
+                         data-title="${title}"
+                         onerror="this.onerror=null;this.src='${placeholder}';"
+                         class="w-full h-48 object-cover rounded-md cursor-pointer transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md pointer-events-none">
+                        <i data-lucide="zoom-in" class="w-8 h-8 text-white"></i>
+                    </div>
+                </div>`;
+            };
+
+            // --- DATA & FILTER LOGIC ---
+            const populateFilters = (data) => {
+                // Populate Kecamatan
+                const kecamatanSet = new Set(data.map(item => item.detail.kecamatan).filter(Boolean).sort());
+                kecamatanSet.forEach(kecamatan => {
+                    const option = document.createElement('option');
+                    option.value = kecamatan;
+                    option.textContent = kecamatan;
+                    kecamatanFilter.appendChild(option);
+                });
+
+                // Populate Jenis Laporan
+                const jenisLaporanSet = new Set();
+                data.forEach(item => {
+                    if (item.detail.jenis_laporan) {
+                        if (item.detail.jenis_laporan.includes('DITERIMA SESUAI')) jenisLaporanSet.add('DITERIMA SESUAI');
+                        else if (item.detail.jenis_laporan.includes('DITERIMA TIDAK SESUAI')) jenisLaporanSet.add('DITERIMA TIDAK SESUAI');
+                        else if (item.detail.jenis_laporan.includes('TIDAK DITERIMA')) jenisLaporanSet.add('TIDAK DITERIMA');
+                    }
+                });
+
+                jenisLaporanSet.forEach(jenis => {
+                    const option = document.createElement('option');
+                    option.value = jenis;
+                    option.textContent = jenis;
+                    jenisLaporanFilter.appendChild(option);
+                });
+            };
+
+            const filterAndRender = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedKecamatan = kecamatanFilter.value;
+                const selectedJenisLaporan = jenisLaporanFilter.value;
+
+                const filteredData = originalData.filter(item => {
+                    const detail = item.detail;
+                    const matchesSearch = searchTerm === '' ||
+                        ['nama_instansi__sekolah__unit__ponpes', 'nama_sppg', 'nama_pelapor', 'kecamatan', 'desa'].some(key =>
+                            detail[key] && detail[key].toString().toLowerCase().includes(searchTerm)
+                        );
+                    const matchesKecamatan = selectedKecamatan === 'all' || detail.kecamatan === selectedKecamatan;
+                    const matchesJenisLaporan = selectedJenisLaporan === 'all' || (detail.jenis_laporan && detail.jenis_laporan.includes(selectedJenisLaporan));
+
+                    return matchesSearch && matchesKecamatan && matchesJenisLaporan;
+                });
+
+                renderReportCards(filteredData);
+                renderMapMarkers(filteredData);
+                renderKecamatanSummary(filteredData);
+            };
+
+            // --- ASYNC DATA FETCH ---
+            async function fetchData() {
+                showLoadingPlaceholders();
+                const apiUrl = 'https://aplikasi.bandungkab.go.id/api/data/pelaporan-penerima-mbg';
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const jsonResponse = await response.json();
+
+                    if (jsonResponse.status !== 'success' || !Array.isArray(jsonResponse.data)) {
+                        throw new Error('Format data API tidak valid.');
+                    }
+
+                    originalData = jsonResponse.data;
+                    pageTitleEl.textContent = jsonResponse.title || 'Dashboard Pelaporan Penerima MBG';
+
+                    updateStatCards(originalData);
+                    populateFilters(originalData);
+                    renderReportCards(originalData);
+                    renderMapMarkers(originalData);
+                    renderLatestReports(originalData);
+                    renderKecamatanSummary(originalData);
+
+                    await fetchGeoJSONLayers();
+
+                } catch (error) {
+                    console.error("Gagal mengambil data:", error);
+                    reportsGrid.innerHTML = `<div class="col-span-full text-center p-8 bg-white rounded-xl shadow-md">
+                        <p class="text-red-600 font-semibold">Maaf, terjadi kesalahan saat memuat data.</p>
+                        <p class="text-gray-500 mt-2">${error.message}</p>
+                    </div>`;
+                }
+            }
+
+            // --- MODAL & IMAGE ZOOM LOGIC ---
+            function applyTransform() {
+                modalImage.style.transform = `translate(${translatePos.x}px, ${translatePos.y}px) scale(${zoomLevel})`;
+            }
+
+            function openModal(imgElement) {
+                modalImage.src = imgElement.dataset.src;
+                modalTitle.textContent = imgElement.dataset.title || 'Tampilan Foto';
+                imageModal.classList.remove('opacity-0', 'pointer-events-none');
+                imageModal.querySelector('.modal-box').classList.remove('scale-95', 'opacity-0');
+                lucide.createIcons();
+            }
+
+            function closeModal() {
+                imageModal.classList.add('opacity-0');
+                imageModal.querySelector('.modal-box').classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    imageModal.classList.add('pointer-events-none');
+                    zoomLevel = 1;
+                    translatePos = { x: 0, y: 0 };
+                    applyTransform();
+                }, 300);
+            }
+
+            function addThumbnailListeners() {
+                document.querySelectorAll('.group img').forEach(img => {
+                    img.addEventListener('click', () => openModal(img));
+                });
+            }
+
+            // --- EVENT LISTENERS ---
+            searchInput.addEventListener('input', filterAndRender);
+            kecamatanFilter.addEventListener('change', filterAndRender);
+            jenisLaporanFilter.addEventListener('change', filterAndRender);
+            modalCloseButton.addEventListener('click', closeModal);
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) closeModal();
+            });
+            zoomInButton.addEventListener('click', () => {
+                zoomLevel = Math.min(3, zoomLevel + 0.2);
+                applyTransform();
+            });
+            zoomOutButton.addEventListener('click', () => {
+                zoomLevel = Math.max(0.5, zoomLevel - 0.2);
+                applyTransform();
+            });
+            zoomResetButton.addEventListener('click', () => {
+                zoomLevel = 1;
+                translatePos = { x: 0, y: 0 };
+                applyTransform();
+            });
+
+            modalImageContainer.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+                zoomLevel = Math.max(0.5, Math.min(3, zoomLevel * zoomFactor));
+                applyTransform();
+            });
+
+            modalImage.addEventListener('mousedown', (e) => {
+                if (zoomLevel > 1) {
+                    isDragging = true;
+                    modalImage.classList.add('dragging');
+                    startPos.x = e.clientX - translatePos.x;
+                    startPos.y = e.clientY - translatePos.y;
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+                modalImage.classList.remove('dragging');
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    translatePos.x = e.clientX - startPos.x;
+                    translatePos.y = e.clientY - startPos.y;
+                    applyTransform();
+                }
+            });
+
+            notificationButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!notificationButton.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                    notificationDropdown.classList.add('hidden');
+                }
+            });
+
+            latestReportsContainer.addEventListener('click', (e) => {
+                if (e.target.closest('.notification-link')) {
+                    e.preventDefault();
+                    const targetId = e.target.closest('.notification-link').getAttribute('href').substring(1);
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    notificationDropdown.classList.add('hidden');
+                }
+            });
+
+            // --- INITIAL LOAD ---
+            fetchData();
+        });
+    </script>
+</body>
+</html>
