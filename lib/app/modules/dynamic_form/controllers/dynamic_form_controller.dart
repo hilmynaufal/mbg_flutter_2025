@@ -7,6 +7,7 @@ import 'package:dio/dio.dart'
 import '../../../data/providers/form_provider.dart';
 import '../../../data/providers/fallback_api_provider.dart';
 import '../../../data/models/form_response_model.dart';
+import '../../../data/models/form_field_model.dart';
 import '../../../data/models/report_list_item_model.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../data/services/auth_service.dart';
@@ -31,11 +32,37 @@ class DynamicFormController extends GetxController {
   // Form slug - dynamically set from route arguments
   late final String formSlug;
 
+  // Edit mode parameters
+  bool isEditMode = false;
+  dynamic existingData; // Can be PosyanduItemModel or other types
+  int? responseId;
+
   @override
   void onInit() {
     super.onInit();
-    // Get slug from route arguments
-    formSlug = Get.arguments as String? ?? 'pelaporan-tugas-satgas-mbg';
+
+    // Get arguments from route
+    final args = Get.arguments;
+
+    if (args is Map<String, dynamic>) {
+      // New format with edit mode support
+      formSlug = args['slug'] as String? ?? 'pelaporan-tugas-satgas-mbg';
+      isEditMode = args['isEditMode'] as bool? ?? false;
+      existingData = args['existingData'];
+
+      // Extract responseId from existingData
+      if (isEditMode && existingData != null) {
+        try {
+          responseId = (existingData as dynamic).id as int?;
+        } catch (e) {
+          log('Failed to extract responseId: $e');
+        }
+      }
+    } else {
+      // Old format - just slug string
+      formSlug = args as String? ?? 'pelaporan-tugas-satgas-mbg';
+    }
+
     _loadFormStructure();
   }
 
@@ -47,6 +74,11 @@ class DynamicFormController extends GetxController {
 
       final response = await _formProvider.getFormStructure(formSlug);
       formStructure.value = response;
+
+      // Pre-fill form if in edit mode with responseId
+      if (isEditMode && responseId != null) {
+        await _preFillFormValues();
+      }
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
       CustomSnackbar.error(
@@ -55,6 +87,163 @@ class DynamicFormController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Pre-fill form values from existing data using viewForm API
+  Future<void> _preFillFormValues() async {
+    if (formStructure.value == null || responseId == null) return;
+
+    try {
+      log('Edit mode: Pre-filling form with responseId: $responseId');
+
+      // Fetch existing form data from API
+      final viewResponse = await _formProvider.viewForm(responseId!);
+
+      log('Form data loaded. Answers count: ${viewResponse.answers.length}');
+
+      // Create a map for quick lookup: question -> answer
+      final answersMap = <String, String>{};
+      for (var qa in viewResponse.answers) {
+        answersMap[qa.question] = qa.answer;
+      }
+
+      log('Answers map: ${answersMap.keys.toList()}');
+
+      // Match form fields with answers
+      int matchedCount = 0;
+      for (var field in formStructure.value!.data) {
+        try {
+          // Try exact match first
+          String? matchedAnswer;
+
+          if (answersMap.containsKey(field.questionText)) {
+            // Exact match
+            matchedAnswer = answersMap[field.questionText];
+          } else {
+            // Try normalized match
+            final questionTextNormalized = _normalizeText(field.questionText);
+
+            for (var entry in answersMap.entries) {
+              final answerQuestionNormalized = _normalizeText(entry.key);
+
+              if (questionTextNormalized == answerQuestionNormalized) {
+                matchedAnswer = entry.value;
+                break;
+              }
+            }
+          }
+
+          // If match found, pre-fill the form field
+          if (matchedAnswer != null && matchedAnswer.isNotEmpty) {
+            _preFillField(field, matchedAnswer);
+            matchedCount++;
+            log('✓ Matched: "${field.questionText}" = "$matchedAnswer"');
+          } else {
+            log('✗ No match for: "${field.questionText}"');
+          }
+        } catch (e) {
+          log('Error pre-filling field ${field.questionText}: $e');
+          continue;
+        }
+      }
+
+      log('Pre-fill completed: $matchedCount/${formStructure.value!.data.length} fields filled');
+
+      // Trigger UI update to sync TextEditingControllers
+      update();
+    } catch (e) {
+      log('Error pre-filling form data: $e');
+      // Non-critical error, just log it
+    }
+  }
+
+  // Normalize text for matching (lowercase, remove spaces/underscores)
+  String _normalizeText(String text) {
+    return text
+        .toLowerCase()
+        .replaceAll(' ', '')
+        .replaceAll('_', '')
+        .replaceAll('-', '');
+  }
+
+  // Pre-fill individual field based on type
+  // Note: API returns all answers as strings, so we need to parse them
+  void _preFillField(FormFieldModel field, String value) {
+    try {
+      if (value.isEmpty) {
+        log('Skipping empty value for: ${field.questionText}');
+        return;
+      }
+
+      switch (field.questionType) {
+        case 'text':
+        case 'textarea':
+          formValues[field.id] = value;
+          log('  → Set as text: "$value"');
+          break;
+
+        case 'number':
+          final numValue = int.tryParse(value);
+          if (numValue != null) {
+            formValues[field.id] = numValue;
+            log('  → Set as number: $numValue');
+          } else {
+            log('  → Failed to parse number: "$value"');
+          }
+          break;
+
+        case 'dropdown':
+        case 'radio':
+          formValues[field.id] = value;
+          log('  → Set as dropdown/radio: "$value"');
+          break;
+
+        case 'date':
+          try {
+            // Try to parse date string (format: yyyy-MM-dd or yyyy-MM-dd HH:mm:ss)
+            final datePart = value.split(' ')[0]; // Get only date part
+            final dateValue = DateTime.parse(datePart);
+            formValues[field.id] = dateValue;
+            log('  → Set as date: $dateValue');
+          } catch (e) {
+            log('  → Failed to parse date: "$value" - $e');
+          }
+          break;
+
+        case 'map':
+          if (value.contains(',')) {
+            // Parse "lat,lng" format
+            final parts = value.split(',').map((e) => e.trim()).toList();
+            if (parts.length == 2) {
+              final lat = double.tryParse(parts[0]);
+              final lng = double.tryParse(parts[1]);
+              if (lat != null && lng != null) {
+                formValues[field.id] = {
+                  'latitude': lat,
+                  'longitude': lng,
+                };
+                log('  → Set as map coordinates: lat=$lat, lng=$lng');
+              } else {
+                log('  → Failed to parse coordinates: "$value"');
+              }
+            }
+          } else {
+            log('  → Invalid coordinate format: "$value"');
+          }
+          break;
+
+        case 'image':
+          // Image fields cannot be pre-filled from URL/path
+          // User will need to re-upload
+          log('  → Skipping image field (need manual re-upload)');
+          break;
+
+        default:
+          log('  → Unknown field type: ${field.questionType}');
+      }
+    } catch (e) {
+      log('Error setting value for field ${field.id}: $e');
     }
   }
 
@@ -107,8 +296,19 @@ class DynamicFormController extends GetxController {
         final value = entry.value;
         final fieldKey = 'answers[$fieldId]';
 
+        //TODO: UBAH DYNAMIC FORM (sementara hardcode)
         if (value == null) {
           continue; // Skip null values
+        } 
+
+        if (fieldId == 1070) {
+          //skip kecamatan
+          continue;
+        }
+
+        if (fieldId == 1059) {
+          //skip desa
+          continue;
         }
 
         if (value is DateTime) {
@@ -131,18 +331,27 @@ class DynamicFormController extends GetxController {
         }
       }
 
-      // Submit to API
-      log('Submitting form data: ${submitData.toString()}');
-      final response = await _formProvider.submitForm(
-        slug: formSlug,
-        formData: submitData,
-      );
+      // Submit to API (create or update based on mode)
+      log('${isEditMode ? "Updating" : "Submitting"} form data: ${submitData.toString()}');
 
-      // Save report ID to local storage
-      final storage = Get.find<StorageService>();
-      List<int> reportIds = storage.readIntList(AppConstants.keyReportIds) ?? [];
-      reportIds.add(response.id);
-      await storage.writeIntList(AppConstants.keyReportIds, reportIds);
+      final response = isEditMode && responseId != null
+          ? await _formProvider.updateForm(
+              id: responseId!,
+              slug: formSlug,
+              formData: submitData,
+            )
+          : await _formProvider.submitForm(
+              slug: formSlug,
+              formData: submitData,
+            );
+
+      // Save report ID to local storage (only for new submissions)
+      if (!isEditMode) {
+        final storage = Get.find<StorageService>();
+        List<int> reportIds = storage.readIntList(AppConstants.keyReportIds) ?? [];
+        reportIds.add(response.id);
+        await storage.writeIntList(AppConstants.keyReportIds, reportIds);
+      }
 
       log('Report saved with ID: ${response.id}');
 
@@ -165,6 +374,7 @@ class DynamicFormController extends GetxController {
         arguments: {
           'response': response,
           'slug': formSlug,
+          'isEditMode': isEditMode,
         },
       );
     } catch (e) {

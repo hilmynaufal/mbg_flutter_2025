@@ -36,6 +36,37 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
     for (var field in widget.fields) {
       if (['text', 'number', 'textarea'].contains(field.questionType)) {
         _controllers[field.id] = TextEditingController();
+
+        // Set initial value from formValues if exists (for edit mode)
+        if (widget.formValues.containsKey(field.id)) {
+          final value = widget.formValues[field.id];
+          if (value != null) {
+            _controllers[field.id]!.text = value.toString();
+          }
+        }
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(DynamicFormBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Update controllers when formValues change (e.g., after autofill)
+    for (var field in widget.fields) {
+      if (['text', 'number', 'textarea'].contains(field.questionType)) {
+        if (widget.formValues.containsKey(field.id)) {
+          final value = widget.formValues[field.id];
+          final controller = _controllers[field.id];
+
+          // Only update if value changed and controller exists
+          if (controller != null && value != null) {
+            final newText = value.toString();
+            if (controller.text != newText) {
+              controller.text = newText;
+            }
+          }
+        }
       }
     }
   }

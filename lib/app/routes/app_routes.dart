@@ -8,6 +8,10 @@ class Routes {
   static const REPORT_DETAIL = '/report-detail';
   static const NEWS_DETAIL = '/news-detail';
   static const FORM_SUCCESS = '/form-success';
+  static const SPPG_LIST = '/sppg-list';
+  static const SPPG_DETAIL = '/sppg-detail';
+  static const POSYANDU_EDIT = '/posyandu-edit';
+  static const POSYANDU_DETAIL = '/posyandu-detail';
 
   // Initial route
   static const INITIAL = SPLASH;

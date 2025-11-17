@@ -200,7 +200,7 @@ class HomeView extends GetView<HomeController> {
                           'pelaporan-penerima-mbg',
                         ),
                         showDescription: false,
-                        showNewBadge: true,
+                        
                       ),
                       ServiceGridItem(
                         icon: FontAwesomeIcons.clipboardCheck,
@@ -208,7 +208,7 @@ class HomeView extends GetView<HomeController> {
                         description: 'Daftar Laporan Penerima MBG',
                         onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'penerima-mbg'),
                         showDescription: false,
-                        showNewBadge: true,
+                        
                       ),
 
                       // Existing menus
@@ -251,13 +251,13 @@ class HomeView extends GetView<HomeController> {
                         },
                         showDescription: false,
                       ),
-                      ServiceGridItem(
-                        icon: FontAwesomeIcons.fileLines,
-                        title: 'Laporan SPPG',
-                        description: 'Daftar Laporan SPPG',
-                        onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'sppg'),
-                        showDescription: false,
-                      ),
+                      // ServiceGridItem(
+                      //   icon: FontAwesomeIcons.fileLines,
+                      //   title: 'Laporan SPPG',
+                      //   description: 'Daftar Laporan SPPG',
+                      //   onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'sppg'),
+                      //   showDescription: false,
+                      // ),
                       ServiceGridItem(
                         icon: FontAwesomeIcons.notesMedical,
                         title: 'Laporan IKL',
@@ -265,6 +265,41 @@ class HomeView extends GetView<HomeController> {
                         onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
                         showDescription: false,
                       ),
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.buildingUser,
+                        title: 'Daftar SPPG',
+                        description: 'Direktori SPPG Aktif',
+                        onTap: () => Get.toNamed(Routes.SPPG_LIST),
+                        showDescription: false,
+                        showNewBadge: true,
+                      ),
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.hospital,
+                        title: 'Pendataan\n Posyandu',
+                        description: 'Pendataan Posyandu',
+                        onTap: () => Get.toNamed(
+                          Routes.POSYANDU_EDIT,
+                          arguments: {
+                            'slug': 'pendataan-profil-posyandu-aktif-di-kabupaten-bandung',
+                            'title': 'Edit Data Posyandu',
+                          },
+                        ),
+                        showDescription: false,
+                        showNewBadge: true,
+                      ),
+                      // ServiceGridItem(
+                      //   icon: FontAwesomeIcons.vialCircleCheck,
+                      //   title: 'Edit Posyandu\n(Test)',
+                      //   description: 'Test Edit Posyandu',
+                      //   onTap: () => Get.toNamed(
+                      //     Routes.POSYANDU_EDIT,
+                      //     arguments: {
+                      //       'slug': 'pelaporan-tugas-satgas-mbg',
+                      //       'title': 'Edit Posyandu (Testing)',
+                      //     },
+                      //   ),
+                      //   showDescription: false,
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 24),

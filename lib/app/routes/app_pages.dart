@@ -17,6 +17,14 @@ import '../modules/news_detail/bindings/news_detail_binding.dart';
 import '../modules/news_detail/views/news_detail_view.dart';
 import '../modules/form_success/bindings/form_success_binding.dart';
 import '../modules/form_success/views/form_success_view.dart';
+import '../modules/sppg_list/bindings/sppg_list_binding.dart';
+import '../modules/sppg_list/views/sppg_list_view.dart';
+import '../modules/sppg_detail/bindings/sppg_detail_binding.dart';
+import '../modules/sppg_detail/views/sppg_detail_view.dart';
+import '../modules/posyandu_edit/bindings/posyandu_edit_binding.dart';
+import '../modules/posyandu_edit/views/posyandu_edit_view.dart';
+import '../modules/posyandu_detail/bindings/posyandu_detail_binding.dart';
+import '../modules/posyandu_detail/views/posyandu_detail_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -65,6 +73,26 @@ class AppPages {
       name: Routes.FORM_SUCCESS,
       page: () => const FormSuccessView(),
       binding: FormSuccessBinding(),
+    ),
+    GetPage(
+      name: Routes.SPPG_LIST,
+      page: () => const SppgListView(),
+      binding: SppgListBinding(),
+    ),
+    GetPage(
+      name: Routes.SPPG_DETAIL,
+      page: () => const SppgDetailView(),
+      binding: SppgDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.POSYANDU_EDIT,
+      page: () => const PosyanduEditView(),
+      binding: PosyanduEditBinding(),
+    ),
+    GetPage(
+      name: Routes.POSYANDU_DETAIL,
+      page: () => const PosyanduDetailView(),
+      binding: PosyanduDetailBinding(),
     ),
   ];
 }
