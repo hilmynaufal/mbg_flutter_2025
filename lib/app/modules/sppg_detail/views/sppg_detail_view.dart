@@ -65,10 +65,6 @@ class SppgDetailView extends GetView<SppgDetailController> {
                     icon: Icons.location_on_outlined,
                     child: _buildLocationInfo(),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Meta Info
-                  _buildMetaInfo(),
                 ],
               ),
             ),
@@ -269,26 +265,28 @@ class SppgDetailView extends GetView<SppgDetailController> {
   Widget _buildContactInfo() {
     return Column(
       children: [
-        _buildInfoRow('Nama Ketua', controller.sppg.detail.namaKetuaSppg),
-        _buildDivider(),
-        _buildCopyableRow(
-          'WhatsApp Ketua',
-          '0${controller.sppg.detail.noWhatsappKetuaSppg}',
-          onCopy: () => controller.copyToClipboard(
-            '0${controller.sppg.detail.noWhatsappKetuaSppg}',
-            'Nomor WhatsApp',
-          ),
+        _buildMaskedInfoRow(
+          'Nama Ketua',
+          controller.maskedNamaKetua,
+          controller.sppg.detail.namaKetuaSppg,
         ),
         _buildDivider(),
-        _buildInfoRow('Pelapor', controller.sppg.detail.namaLengkap),
+        _buildMaskedInfoRow(
+          'WhatsApp Ketua',
+          controller.maskedWhatsappKetua,
+          '0${controller.sppg.detail.noWhatsappKetuaSppg}',
+        ),
         _buildDivider(),
-        _buildCopyableRow(
+        _buildMaskedInfoRow(
+          'Pelapor',
+          controller.maskedNamaPelapor,
+          controller.sppg.detail.namaLengkap,
+        ),
+        _buildDivider(),
+        _buildMaskedInfoRow(
           'No. HP Pelapor',
+          controller.maskedNoHpPelapor,
           '0${controller.sppg.detail.noHp}',
-          onCopy: () => controller.copyToClipboard(
-            '0${controller.sppg.detail.noHp}',
-            'Nomor HP',
-          ),
         ),
       ],
     );
@@ -384,35 +382,6 @@ class SppgDetailView extends GetView<SppgDetailController> {
     );
   }
 
-  /// Build meta info
-  Widget _buildMetaInfo() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Informasi Laporan',
-            style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildMetaRow('Tanggal Laporan', controller.sppg.detail.tanggalLaporan),
-          _buildMetaRow('Dibuat oleh', controller.sppg.createdBy),
-          _buildMetaRow('Tanggal dibuat', controller.sppg.createdAt),
-          _buildMetaRow('Diupdate oleh', controller.sppg.updatedBy),
-          _buildMetaRow('Tanggal update', controller.sppg.updatedAt),
-        ],
-      ),
-    );
-  }
-
   /// Build info row
   Widget _buildInfoRow(String label, String value) {
     return Row(
@@ -478,34 +447,40 @@ class SppgDetailView extends GetView<SppgDetailController> {
     );
   }
 
+  /// Build masked info row with tooltip showing original value
+  Widget _buildMaskedInfoRow(String label, String maskedValue, String originalValue) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Tooltip(
+            message: 'Data disembunyikan untuk privasi',
+            child: Text(
+              maskedValue.isNotEmpty ? maskedValue : '-',
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Build divider
   Widget _buildDivider() {
     return Divider(height: 24, color: Colors.grey[300]);
-  }
-
-  /// Build meta row
-  Widget _buildMetaRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
-          Text(
-            value.isNotEmpty ? value : '-',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[700],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
