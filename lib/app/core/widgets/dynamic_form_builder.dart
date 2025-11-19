@@ -137,6 +137,35 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
     return null;
   }
 
+  /// Check if a field should be visible based on conditional logic
+  /// Hardcoded for "gerakan-menanam-komoditas-sayuran-untuk-ketahanan-pangan" form
+  bool _isFieldVisible(FormFieldModel field) {
+    // Question 2028 (radio control) is always visible
+    if (field.id == 2028) return true;
+
+    // Get selected value from question 2028
+    final komoditasValue = widget.formValues[2028] as String?;
+
+    // Apply conditional visibility rules
+    if (field.id == 1929) {
+      // Show only if "Pertanian" selected
+      return komoditasValue == 'Pertanian';
+    }
+
+    if (field.id == 2029) {
+      // Show only if "Peternakan" selected
+      return komoditasValue == 'Peternakan';
+    }
+
+    if (field.id == 2030) {
+      // Show only if "Perikanan" selected
+      return komoditasValue == 'Perikanan';
+    }
+
+    // All other fields are visible by default
+    return true;
+  }
+
   Widget _buildField(FormFieldModel field) {
     switch (field.questionType) {
       case 'text':
@@ -201,6 +230,20 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           onChanged: (value) {
             setState(() {
               widget.formValues[field.id] = value;
+
+              // Conditional visibility logic for question 2028
+              if (field.id == 2028) {
+                // Clear values of hidden fields when komoditas changes
+                if (value != 'Pertanian') {
+                  widget.formValues[1929] = null;
+                }
+                if (value != 'Peternakan') {
+                  widget.formValues[2029] = null;
+                }
+                if (value != 'Perikanan') {
+                  widget.formValues[2030] = null;
+                }
+              }
             });
           },
           validator: (value) => _validateField(field, value),
@@ -260,14 +303,17 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
   @override
   Widget build(BuildContext context) {
+    // Filter fields based on conditional visibility
+    final visibleFields = widget.fields.where((field) => _isFieldVisible(field)).toList();
+
     return Form(
       key: widget.formKey,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: widget.fields.length,
+        itemCount: visibleFields.length,
         separatorBuilder: (context, index) => const SizedBox(height: 20),
         itemBuilder: (context, index) {
-          final field = widget.fields[index];
+          final field = visibleFields[index];
           return _buildField(field);
         },
       ),

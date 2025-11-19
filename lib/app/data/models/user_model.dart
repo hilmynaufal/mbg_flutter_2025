@@ -12,7 +12,7 @@ class UserModel {
   final int jabatanId;
   final int idSkpdMaster;
   final String skpdNama;
-  final String userType; // "PNS" or "NON_PNS"
+  final String userType; // "PNS", "NON_PNS", or "GUEST"
 
   UserModel({
     required this.id,
@@ -55,11 +55,34 @@ class UserModel {
     );
   }
 
+  // Factory constructor for Guest users
+  factory UserModel.guest() {
+    return UserModel(
+      id: 0,
+      username: 'guest',
+      firebaseToken: null,
+      idPegawai: 0,
+      level: 0,
+      nmLengkap: 'Pengguna Tamu',
+      nip: '',
+      nik: null,
+      email: null,
+      jabatan: '',
+      jabatanId: 0,
+      idSkpdMaster: 0,
+      skpdNama: '',
+      userType: 'GUEST',
+    );
+  }
+
   // Getter to check if user is PNS
   bool get isPns => userType == 'PNS';
 
   // Getter to check if user is Non-PNS
   bool get isNonPns => userType == 'NON_PNS';
+
+  // Getter to check if user is Guest
+  bool get isGuest => userType == 'GUEST';
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../models/otp_send_response_model.dart';
 import '../models/otp_verify_response_model.dart';
+import '../models/password_response_model.dart';
 
 class OtpProvider {
   final Dio _dio;
@@ -80,6 +81,28 @@ class OtpProvider {
       if (e.response != null) {
         throw Exception(
           e.response?.data['message'] ?? 'Failed to verify OTP',
+        );
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    }
+  }
+
+  /// Get password for protected forms
+  /// GET /otp/password
+  Future<PasswordResponseModel> getPassword() async {
+    try {
+      final response = await _dio.get('/otp/password');
+
+      if (response.data['success'] == true) {
+        return PasswordResponseModel.fromJson(response.data);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to get password');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(
+          e.response?.data['message'] ?? 'Failed to get password',
         );
       } else {
         throw Exception('Network error: ${e.message}');

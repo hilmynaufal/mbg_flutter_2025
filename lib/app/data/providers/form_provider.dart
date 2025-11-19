@@ -6,6 +6,7 @@ import '../models/form_submit_response_model.dart';
 import '../models/form_view_response_model.dart';
 import '../models/sppg_list_response_model.dart';
 import '../models/posyandu_list_response_model.dart';
+import '../models/bedas_menanam_list_response_model.dart';
 import '../../core/values/constants.dart';
 
 class FormProvider {
@@ -269,6 +270,46 @@ class FormProvider {
       if (e.response != null) {
         throw Exception(
           'Failed to update form: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else {
+        throw Exception(
+          'Network error: ${e.message}. Please check your internet connection.',
+        );
+      }
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// Get Bedas Menanam filtered list
+  /// Endpoint: GET /api/filter/gerakan-menanam-komoditas-sayuran-untuk-ketahanan-pangan/{kecamatan}/{desa}
+  /// Parameters: kecamatan and desa names (uppercase)
+  /// Returns filtered list of Bedas Menanam records
+  Future<BedasMenanamListResponseModel> getBedasMenanamFiltered({
+    required String kecamatan,
+    required String desa,
+  }) async {
+    try {
+      // Convert to uppercase for API consistency
+      final kecUpper = kecamatan.toUpperCase();
+      final desaUpper = desa.toUpperCase();
+
+      final response = await _dio.get(
+        '/filter/gerakan-menanam-komoditas-sayuran-untuk-ketahanan-pangan/$kecUpper/$desaUpper',
+      );
+
+      if (response.data != null) {
+        log('Bedas Menanam API Response type: ${response.data.runtimeType}');
+
+        // API response structure: {"status": "success", "total": 1, "data": [...]}
+        return BedasMenanamListResponseModel.fromJson(response.data);
+      } else {
+        throw Exception('Failed to parse Bedas Menanam response');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(
+          'Failed to load Bedas Menanam data: ${e.response?.data['message'] ?? e.message}',
         );
       } else {
         throw Exception(

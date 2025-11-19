@@ -93,6 +93,27 @@ class LoginView extends GetView<LoginController> {
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 16),
+
+                          // Guest Login Button
+                          Center(
+                            child: OutlinedButton.icon(
+                              onPressed: controller.showGuestLoginDialog,
+                              icon: const Icon(Icons.person_outline),
+                              label: const Text('Masuk sebagai Tamu'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Get.theme.colorScheme.primary,
+                                side: BorderSide(
+                                  color: Get.theme.colorScheme.primary,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

@@ -25,6 +25,10 @@ import '../modules/posyandu_edit/bindings/posyandu_edit_binding.dart';
 import '../modules/posyandu_edit/views/posyandu_edit_view.dart';
 import '../modules/posyandu_detail/bindings/posyandu_detail_binding.dart';
 import '../modules/posyandu_detail/views/posyandu_detail_view.dart';
+import '../modules/bedas_menanam_search/bindings/bedas_menanam_search_binding.dart';
+import '../modules/bedas_menanam_search/views/bedas_menanam_search_view.dart';
+import '../modules/bedas_menanam_detail/bindings/bedas_menanam_detail_binding.dart';
+import '../modules/bedas_menanam_detail/views/bedas_menanam_detail_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -93,6 +97,16 @@ class AppPages {
       name: Routes.POSYANDU_DETAIL,
       page: () => const PosyanduDetailView(),
       binding: PosyanduDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.BEDAS_MENANAM_SEARCH,
+      page: () => const BedasMenanamSearchView(),
+      binding: BedasMenanamSearchBinding(),
+    ),
+    GetPage(
+      name: Routes.BEDAS_MENANAM_DETAIL,
+      page: () => const BedasMenanamDetailView(),
+      binding: BedasMenanamDetailBinding(),
     ),
   ];
 }

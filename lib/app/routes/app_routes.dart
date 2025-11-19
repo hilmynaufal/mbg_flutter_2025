@@ -12,6 +12,8 @@ class Routes {
   static const SPPG_DETAIL = '/sppg-detail';
   static const POSYANDU_EDIT = '/posyandu-edit';
   static const POSYANDU_DETAIL = '/posyandu-detail';
+  static const BEDAS_MENANAM_SEARCH = '/bedas-menanam-search';
+  static const BEDAS_MENANAM_DETAIL = '/bedas-menanam-detail';
 
   // Initial route
   static const INITIAL = SPLASH;

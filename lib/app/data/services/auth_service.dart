@@ -90,6 +90,27 @@ class AuthService extends GetxService {
     }
   }
 
+  // Login Guest method (local storage only, no fields required)
+  Future<bool> loginGuest() async {
+    try {
+      // Create Guest user model
+      final guestUser = UserModel.guest();
+
+      // Save user data to local storage
+      _currentUser.value = guestUser;
+      await _storageService.writeObject(
+        AppConstants.keyUser,
+        guestUser.toJson(),
+      );
+      await _storageService.writeBool(AppConstants.keyIsLoggedIn, true);
+      _isLoggedIn.value = true;
+
+      return true;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Logout method
   Future<void> logout() async {
     _currentUser.value = null;

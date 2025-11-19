@@ -453,4 +453,74 @@ class LoginController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  // Show Guest login confirmation dialog
+  Future<void> showGuestLoginDialog() async {
+    await Get.dialog(
+      AlertDialog(
+        title: const Text('Login sebagai Tamu?'),
+        content: const Text(
+          'Dengan login sebagai tamu, Anda hanya dapat mengakses menu terbatas. '
+          'Beberapa fitur mungkin tidak tersedia.\n\n'
+          'Lanjutkan tanpa akun?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back(); // Close dialog
+              loginGuest(); // Proceed with guest login
+            },
+            child: const Text('Ya, Lanjutkan'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  // Login Guest method (local storage only, no fields required)
+  Future<void> loginGuest() async {
+    // Clear previous error
+    errorMessage.value = '';
+
+    // Start loading
+    isLoading.value = true;
+
+    try {
+      final success = await _authService.loginGuest();
+
+      if (success) {
+        // Show success message
+        Get.snackbar(
+          'Login Berhasil',
+          'Selamat datang, Pengguna Tamu',
+          backgroundColor: Get.theme.colorScheme.primary,
+          colorText: Get.theme.colorScheme.onPrimary,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 2),
+        );
+
+        // Navigate to home
+        Get.offAllNamed(Routes.HOME);
+      }
+    } catch (e) {
+      // Show error message
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Login Gagal',
+        errorMessage.value,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      // Stop loading
+      isLoading.value = false;
+    }
+  }
 }

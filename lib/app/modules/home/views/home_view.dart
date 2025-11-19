@@ -187,70 +187,76 @@ class HomeView extends GetView<HomeController> {
                   //     ),
                   //   ],
                   // ),
-                  Wrap(
+                  Obx(() => Wrap(
                     spacing: 0,
                     runSpacing: 0,
                     children: [
                       // New menus first with NEW badge
-                      ServiceGridItem(
-                        icon: FontAwesomeIcons.fileCirclePlus,
-                        title: 'Buat Laporan \nHarian',
-                        description: 'Buat laporan penerima MBG',
-                        onTap: () => controller.navigateToDynamicForm(
-                          'pelaporan-penerima-mbg',
+                      // Hidden for Guest users
+                      if (!controller.isGuestUser)
+                        ServiceGridItem(
+                          icon: FontAwesomeIcons.fileCirclePlus,
+                          title: 'Buat Laporan \nHarian',
+                          description: 'Buat laporan penerima MBG',
+                          onTap: () => controller.navigateToDynamicForm(
+                            'pelaporan-penerima-mbg',
+                          ),
+                          showDescription: false,
+
                         ),
-                        showDescription: false,
-                        
-                      ),
-                      ServiceGridItem(
-                        icon: FontAwesomeIcons.clipboardCheck,
-                        title: 'Laporan Harian\n Saya',
-                        description: 'Daftar Laporan Penerima MBG',
-                        onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'penerima-mbg'),
-                        showDescription: false,
-                        
-                      ),
+                      // Hidden for Guest users
+                      if (!controller.isGuestUser)
+                        ServiceGridItem(
+                          icon: FontAwesomeIcons.clipboardCheck,
+                          title: 'Laporan Harian\n Saya',
+                          description: 'Daftar Laporan Penerima MBG',
+                          onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'penerima-mbg'),
+                          showDescription: false,
+
+                        ),
 
                       // Existing menus
-                      ServiceGridItem(
-                        icon: FontAwesomeIcons.fileCirclePlus,
-                        title: 'Buat Laporan\nLainnya',
-                        description: 'Buat laporan baru',
-                        onTap: () {
-                          // Show dialog to choose form type
-                          Get.dialog(
-                            AlertDialog(
-                              title: const Text('Pilih Jenis Laporan'),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ListTile(
-                                    leading: const Icon(FontAwesomeIcons.fileContract),
-                                    title: const Text('Laporan SPPG'),
-                                    onTap: () {
-                                      Get.back();
-                                      controller.navigateToDynamicForm(
-                                        'pelaporan-tugas-satgas-mbg',
-                                      );
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: const Icon(FontAwesomeIcons.fileMedical),
-                                    title: const Text('Laporan IKL Dinkes'),
-                                    onTap: () {
-                                      Get.back();
-                                      controller.navigateToDynamicForm(
-                                        'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
-                                      );
-                                    },
-                                  ),
-                                ],
+                      // Hidden for Guest users
+                      if (!controller.isGuestUser)
+                        ServiceGridItem(
+                          icon: FontAwesomeIcons.fileCirclePlus,
+                          title: 'Buat Laporan\nLainnya',
+                          description: 'Buat laporan baru',
+                          onTap: () {
+                            // Show dialog to choose form type
+                            Get.dialog(
+                              AlertDialog(
+                                title: const Text('Pilih Jenis Laporan'),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(FontAwesomeIcons.fileContract),
+                                      title: const Text('Laporan SPPG'),
+                                      onTap: () {
+                                        Get.back();
+                                        controller.navigateToDynamicForm(
+                                          'pelaporan-tugas-satgas-mbg',
+                                        );
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(FontAwesomeIcons.fileMedical),
+                                      title: const Text('Laporan IKL Dinkes'),
+                                      onTap: () {
+                                        Get.back();
+                                        controller.navigateToDynamicForm(
+                                          'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        showDescription: false,
-                      ),
+                            );
+                          },
+                          showDescription: false,
+                        ),
                       // ServiceGridItem(
                       //   icon: FontAwesomeIcons.fileLines,
                       //   title: 'Laporan SPPG',
@@ -258,13 +264,17 @@ class HomeView extends GetView<HomeController> {
                       //   onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'sppg'),
                       //   showDescription: false,
                       // ),
-                      ServiceGridItem(
-                        icon: FontAwesomeIcons.notesMedical,
-                        title: 'Laporan IKL',
-                        description: 'Daftar Laporan IKL',
-                        onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
-                        showDescription: false,
-                      ),
+                      // Hidden for Guest users
+                      if (!controller.isGuestUser)
+                        ServiceGridItem(
+                          icon: FontAwesomeIcons.notesMedical,
+                          title: 'Laporan IKL',
+                          description: 'Daftar Laporan IKL',
+                          onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
+                          showDescription: false,
+                        ),
+                      // Visible for ALL users including Guest
+                      if (!controller.isGuestUser)
                       ServiceGridItem(
                         icon: FontAwesomeIcons.buildingUser,
                         title: 'Daftar SPPG',
@@ -273,20 +283,39 @@ class HomeView extends GetView<HomeController> {
                         showDescription: false,
                         showNewBadge: true,
                       ),
+                      // Visible for ALL users including Guest
                       ServiceGridItem(
-                        icon: FontAwesomeIcons.hospital,
-                        title: 'Pendataan\n Posyandu',
-                        description: 'Pendataan Posyandu',
-                        onTap: () => Get.toNamed(
-                          Routes.POSYANDU_EDIT,
-                          arguments: {
-                            'slug': 'pendataan-profil-posyandu-aktif-di-kabupaten-bandung',
-                            'title': 'Edit Data Posyandu',
-                          },
-                        ),
+                        icon: FontAwesomeIcons.seedling,
+                        title: 'Bedas Menanam',
+                        description: 'Gerakan Menanam Sayuran',
+                        onTap: () => controller.showBedasMenanamPasswordDialog(),
                         showDescription: false,
                         showNewBadge: true,
                       ),
+                      // Visible for ALL users including Guest
+                      ServiceGridItem(
+                        icon: FontAwesomeIcons.eye,
+                        title: 'Lihat Data\nBedas Menanam',
+                        description: 'Cari Data Bedas Menanam',
+                        onTap: () => controller.showBedasMenanamSearchPasswordDialog(),
+                        showDescription: false,
+                      ),
+                      // Hidden for Guest users
+                      if (!controller.isGuestUser)
+                        ServiceGridItem(
+                          icon: FontAwesomeIcons.hospital,
+                          title: 'Pendataan\n Posyandu',
+                          description: 'Pendataan Posyandu',
+                          onTap: () => Get.toNamed(
+                            Routes.POSYANDU_EDIT,
+                            arguments: {
+                              'slug': 'pendataan-profil-posyandu-aktif-di-kabupaten-bandung',
+                              'title': 'Edit Data Posyandu',
+                            },
+                          ),
+                          showDescription: false,
+                          showNewBadge: true,
+                        ),
                       // ServiceGridItem(
                       //   icon: FontAwesomeIcons.vialCircleCheck,
                       //   title: 'Edit Posyandu\n(Test)',
@@ -301,7 +330,7 @@ class HomeView extends GetView<HomeController> {
                       //   showDescription: false,
                       // ),
                     ],
-                  ),
+                  )),
                   const SizedBox(height: 24),
 
                   // Section Title - Berita Terbaru
