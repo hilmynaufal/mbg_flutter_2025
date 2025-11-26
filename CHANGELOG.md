@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Version Update Check System**
   - Automatic version check on app startup (splash screen)
-  - API integration with version endpoint: `https://hirumi.xyz/fallback_api/api/version/check`
+  - API integration with version endpoint: `https://hirumi.xyz/fallback_api/api/version/check?version=x.x.x`
+  - Current app version sent as query parameter `version` (e.g., `?version=0.10.0-alpha`)
   - Support for two update modes:
     - **Force Update**: User MUST update to continue (dialog cannot be dismissed)
     - **Optional Update**: User can choose "Update Now" or "Later"
@@ -71,11 +72,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 - **Version Check Flow**:
   1. App launches → Splash screen (2s delay)
-  2. Call version API with current version
-  3. Compare current vs minimum/latest version
-  4. If force_update = true → Show dialog, block navigation
-  5. If optional_update = true → Show dialog, continue navigation
-  6. If no update → Continue to login/home
+  2. Get current version from package_info_plus
+  3. Call version API: `GET /version/check?version={currentVersion}`
+  4. Backend compares version and returns update status
+  5. If force_update = true → Show dialog, block navigation
+  6. If optional_update = true → Show dialog, continue navigation
+  7. If no update → Continue to login/home
+
+- **API Request Example**:
+  - URL: `https://hirumi.xyz/fallback_api/api/version/check?version=0.10.0-alpha`
+  - Method: GET
+  - Query Parameter: `version` (current app version)
 
 - **Version Service Methods**:
   - `getCurrentVersion()` - Get app version from package_info

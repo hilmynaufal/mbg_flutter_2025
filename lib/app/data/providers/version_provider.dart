@@ -30,16 +30,22 @@ class VersionProvider {
   }
 
   /// Check version from API
-  /// Endpoint: GET /version/check
+  /// Endpoint: GET /version/check?version=x.x.x
   Future<VersionCheckResponseModel> checkVersion({String? currentVersion}) async {
     try {
       log('Checking version from API...', name: 'VersionProvider');
+      if (currentVersion != null) {
+        log('Current version: $currentVersion', name: 'VersionProvider');
+      }
 
       // Build query parameters
       final queryParams = <String, dynamic>{};
       if (currentVersion != null) {
-        queryParams['current_version'] = currentVersion;
+        queryParams['version'] = currentVersion;
       }
+
+      final fullUrl = '/version/check${queryParams.isNotEmpty ? '?version=$currentVersion' : ''}';
+      log('Request URL: $fullUrl', name: 'VersionProvider');
 
       final response = await _dio.get(
         '/version/check',
