@@ -1,9 +1,13 @@
 import 'package:get/get.dart';
 import 'dart:developer';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/version_service.dart';
+import '../../../core/widgets/update_dialog.dart';
 import '../../../routes/app_routes.dart';
 
 class SplashController extends GetxController {
+  final VersionService _versionService = VersionService();
+
   @override
   void onInit() {
     super.onInit();
@@ -18,7 +22,18 @@ class SplashController extends GetxController {
       // Wait 2 seconds before navigating
       await Future.delayed(const Duration(seconds: 2));
 
-      log('SplashController: Timer completed, checking auth status');
+      log('SplashController: Timer completed, checking version...');
+
+      // Check for app updates
+      final shouldBlockNavigation = await _checkAppVersion();
+
+      // If force update is required, stop navigation here
+      if (shouldBlockNavigation) {
+        log('SplashController: Navigation blocked due to force update');
+        return;
+      }
+
+      log('SplashController: Version check completed, checking auth status');
 
       // Get AuthService
       final authService = Get.find<AuthService>();
@@ -39,6 +54,49 @@ class SplashController extends GetxController {
       log('SplashController: Error during navigation - $e');
       // Fallback to login on error
       Get.offAllNamed(Routes.LOGIN);
+    }
+  }
+
+  /// Check app version and show update dialog if needed
+  /// Returns true if navigation should be blocked (force update required)
+  Future<bool> _checkAppVersion() async {
+    try {
+      log('Checking app version...', name: 'SplashController');
+
+      final versionData = await _versionService.checkForUpdate();
+
+      log('Version data: ${versionData?.toJson().toString()}', name: 'SplashController');
+
+      if (versionData == null) {
+        log('Version check returned null, skipping update check', name: 'SplashController');
+        return false; // Don't block navigation
+      }
+
+      // Check if force update is required
+      if (versionData.forceUpdate) {
+        log('Force update required!', name: 'SplashController');
+        UpdateDialog.show(
+          versionData: versionData,
+          isForceUpdate: true,
+        );
+        return true; // Block navigation - force update required
+      }
+
+      // Check if optional update is available
+      if (versionData.optionalUpdate) {
+        log('Optional update available', name: 'SplashController');
+        UpdateDialog.show(
+          versionData: versionData,
+          isForceUpdate: false,
+        );
+        // Continue with navigation after showing dialog
+      }
+
+      return false; // Don't block navigation
+    } catch (e) {
+      log('Error checking version: $e', name: 'SplashController');
+      // Don't block navigation on version check errors
+      return false;
     }
   }
 }

@@ -5,6 +5,118 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0-alpha] - 2025-11-26
+
+### Added
+- **Version Update Check System**
+  - Automatic version check on app startup (splash screen)
+  - API integration with version endpoint: `https://hirumi.xyz/fallback_api/api/version/check`
+  - Support for two update modes:
+    - **Force Update**: User MUST update to continue (dialog cannot be dismissed)
+    - **Optional Update**: User can choose "Update Now" or "Later"
+  - Created VersionCheckResponseModel for API response handling
+  - Created VersionProvider for API communication
+  - Created VersionService for version comparison logic
+  - Created UpdateDialog widget with Material Design 3 styling
+  - Display current version vs latest version in dialog
+  - Custom update messages from API
+  - Direct link to Play Store (Android) and App Store (iOS)
+  - Semantic version comparison (supports "x.y.z" format)
+  - Clean version parsing (removes suffixes like "-alpha", "+build")
+
+- **Dependencies**
+  - Added `package_info_plus: ^6.0.0` - for getting current app version
+  - Added `url_launcher: ^6.2.5` - for opening app stores
+
+### Changed
+- **Posyandu Edit Module - Search Flow Improvement**
+  - Changed flow from direct navigation to list selection
+  - **Before**: Search by phone → Direct navigate to detail page
+  - **After**: Search by phone → Show list of matching posyandu → User selects → Navigate to detail
+  - Added `filteredPosyanduList` to store search results
+  - Added `hasSearched` flag to track search state
+  - Enhanced UI with three states:
+    1. Before search: Help message
+    2. No results: Empty state with icon and message
+    3. Results found: Scrollable list with PosyanduCard
+  - Search results show count: "Ditemukan X Posyandu"
+  - Better UX: Users can now see all posyandu with same phone number
+
+- **Form Success Page - Back Button Behavior**
+  - Wrapped view with `PopScope` to intercept back button
+  - Back button (hardware/gesture/system) now redirects to Home instead of form
+  - Prevents users from accidentally returning to submitted form
+  - Consistent behavior across platforms (Android hardware back, iOS swipe gesture)
+  - Clean navigation stack with `Get.until()` to Home route
+
+- **Splash Controller - Version Check Integration**
+  - Added version check before navigation
+  - Returns boolean flag to block/allow navigation
+  - Force update blocks navigation completely
+  - Optional update shows dialog but continues navigation
+  - Error-tolerant: Navigation continues even if version check fails
+
+### Fixed
+- **Version Check Dialog Not Showing**
+  - Fixed navigation flow in SplashController
+  - Changed `_checkAppVersion()` to return `Future<bool>`
+  - `true` = block navigation (force update required)
+  - `false` = continue navigation (no update or optional update)
+  - Dialog now properly displays before navigation occurs
+
+- **Deprecated API Usage**
+  - Replaced `WillPopScope` with `PopScope` in UpdateDialog (Flutter 3.12+)
+  - Updated to use `canPop` and `onPopInvokedWithResult` parameters
+
+### Technical Details
+- **Version Check Flow**:
+  1. App launches → Splash screen (2s delay)
+  2. Call version API with current version
+  3. Compare current vs minimum/latest version
+  4. If force_update = true → Show dialog, block navigation
+  5. If optional_update = true → Show dialog, continue navigation
+  6. If no update → Continue to login/home
+
+- **Version Service Methods**:
+  - `getCurrentVersion()` - Get app version from package_info
+  - `checkForUpdate()` - Call API and return VersionData
+  - `compareVersions()` - Semantic version comparison
+  - `isForceUpdateRequired()` - Check if force update needed
+  - `isOptionalUpdateAvailable()` - Check if optional update available
+
+- **New Files Created**:
+  - `lib/app/data/models/version_check_response_model.dart`
+  - `lib/app/data/providers/version_provider.dart`
+  - `lib/app/data/services/version_service.dart`
+  - `lib/app/core/widgets/update_dialog.dart`
+
+- **Updated Files**:
+  - `lib/app/modules/splash/controllers/splash_controller.dart`
+  - `lib/app/modules/posyandu_edit/controllers/posyandu_edit_controller.dart`
+  - `lib/app/modules/posyandu_edit/views/posyandu_edit_view.dart`
+  - `lib/app/modules/form_success/views/form_success_view.dart`
+  - `lib/app/core/values/constants.dart`
+  - `pubspec.yaml`
+
+- **Constants Updated**:
+  - Added `baseUrlFallback` - Fallback API base URL
+  - Added `versionCheckEndpoint` - Version check API endpoint
+  - Added `appName`, `androidPackageName`, `iosAppId`
+  - Added `playStoreUrl`, `appStoreUrl`
+
+- Updated version to 0.10.0-alpha+20251126
+
+### Benefits
+- ✅ **Version Control**: Automatic version management and update notifications
+- ✅ **Force Update Support**: Can enforce critical updates for security/compatibility
+- ✅ **Better UX in Posyandu Search**: Users can now see and choose from multiple results
+- ✅ **Cleaner Navigation**: Form success properly redirects to home on back button
+- ✅ **Platform Independent**: Version check works on all platforms
+- ✅ **Non-Blocking**: Version check errors don't prevent app usage
+- ✅ **Customizable Messages**: Backend can set custom update messages per version
+
+---
+
 ## [0.6.13-alpha] - 2025-11-04
 
 ### Fixed

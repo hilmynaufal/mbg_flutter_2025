@@ -13,9 +13,11 @@ class PosyanduEditController extends GetxController {
 
   // Observable states
   final RxList<PosyanduItemModel> allPosyanduList = <PosyanduItemModel>[].obs;
+  final RxList<PosyanduItemModel> filteredPosyanduList = <PosyanduItemModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isSearching = false.obs;
   final RxString errorMessage = ''.obs;
+  final RxBool hasSearched = false.obs;
 
   // Text controller for phone input
   final phoneController = TextEditingController();
@@ -64,7 +66,7 @@ class PosyanduEditController extends GetxController {
     }
   }
 
-  /// Search Posyandu by phone and navigate to detail
+  /// Search Posyandu by phone and show filtered list
   Future<void> searchByPhone() async {
     final phone = phoneController.text.trim();
 
@@ -77,16 +79,6 @@ class PosyanduEditController extends GetxController {
       );
       return;
     }
-
-    // // Validate phone format (must be digits, 10-13 chars)
-    // if (!RegExp(r'^\d{10,13}$').hasMatch(phone)) {
-    //   Get.snackbar(
-    //     'Validasi Gagal',
-    //     'Nomor HP harus 10-13 digit angka',
-    //     snackPosition: SnackPosition.BOTTOM,
-    //   );
-    //   return;
-    // }
 
     // Wait if data still loading
     if (isLoading.value) {
@@ -104,22 +96,18 @@ class PosyanduEditController extends GetxController {
       // Remove leading 0 for comparison
       final searchPhone = phone.startsWith('0') ? phone.substring(1) : phone;
 
-      // Find exact match by phone number
-      final result = allPosyanduList.firstWhereOrNull((posyandu) {
+      // Find all matching posyandu by phone number
+      final results = allPosyanduList.where((posyandu) {
         final posyanduPhone = posyandu.detail.noHpPelapor.toString();
         return posyanduPhone == searchPhone;
-      });
+      }).toList();
 
-      if (result != null) {
-        // Navigate to detail page
-        Get.toNamed(
-          Routes.POSYANDU_DETAIL,
-          arguments: {
-            'posyandu': result,
-            'formSlug': formSlug,
-          },
-        );
-      } else {
+      // Update filtered list
+      filteredPosyanduList.value = results;
+      hasSearched.value = true;
+
+      // Show message if no results
+      if (results.isEmpty) {
         Get.snackbar(
           'Data Tidak Ditemukan',
           'Tidak ada posyandu dengan nomor HP $phone',
@@ -135,6 +123,19 @@ class PosyanduEditController extends GetxController {
   /// Clear search input
   void clearSearch() {
     phoneController.clear();
+    filteredPosyanduList.clear();
+    hasSearched.value = false;
+  }
+
+  /// Navigate to detail page
+  void navigateToDetail(PosyanduItemModel posyandu) {
+    Get.toNamed(
+      Routes.POSYANDU_DETAIL,
+      arguments: {
+        'posyandu': posyandu,
+        'formSlug': formSlug,
+      },
+    );
   }
 
 }

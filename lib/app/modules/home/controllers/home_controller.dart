@@ -9,6 +9,7 @@ import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import '../../../core/values/constants.dart';
 
 class HomeController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -153,8 +154,34 @@ class HomeController extends GetxController {
     _isBedasMenanamPasswordVisible.value = !_isBedasMenanamPasswordVisible.value;
   }
 
+  // Check if saved password is still valid
+  Future<bool> _checkSavedPassword() async {
+    final savedPassword = _storageService.read(AppConstants.keyBedasMenanamPassword);
+    if (savedPassword == null || savedPassword.isEmpty) {
+      return false;
+    }
+
+    // Verify saved password against API
+    final correctPassword = await _getPasswordFromApi();
+    if (correctPassword == null) {
+      return false;
+    }
+
+    return savedPassword == correctPassword;
+  }
+
   // Show Bedas Menanam password protection dialog
   Future<void> showBedasMenanamPasswordDialog() async {
+    // Check if password is already saved and valid
+    final isPasswordValid = await _checkSavedPassword();
+    if (isPasswordValid) {
+      // Password is valid, grant access directly
+      navigateToDynamicForm(
+        'gerakan-menanam-komoditas-sayuran-untuk-ketahanan-pangan',
+      );
+      return;
+    }
+
     _bedasMenanamPasswordController.clear();
     _isBedasMenanamPasswordVisible.value = false;
 
@@ -274,6 +301,12 @@ class HomeController extends GetxController {
     }
 
     if (enteredPassword == correctPassword) {
+      // Save password to local storage
+      await _storageService.write(
+        AppConstants.keyBedasMenanamPassword,
+        enteredPassword,
+      );
+
       Get.back(); // Close dialog
       navigateToDynamicForm(
         'gerakan-menanam-komoditas-sayuran-untuk-ketahanan-pangan',
@@ -301,6 +334,14 @@ class HomeController extends GetxController {
 
   // Show Bedas Menanam Search password protection dialog
   Future<void> showBedasMenanamSearchPasswordDialog() async {
+    // Check if password is already saved and valid
+    final isPasswordValid = await _checkSavedPassword();
+    if (isPasswordValid) {
+      // Password is valid, grant access directly
+      Get.toNamed(Routes.BEDAS_MENANAM_SEARCH);
+      return;
+    }
+
     _bedasMenanamSearchPasswordController.clear();
     _isBedasMenanamSearchPasswordVisible.value = false;
 
@@ -392,6 +433,12 @@ class HomeController extends GetxController {
     }
 
     if (enteredPassword == correctPassword) {
+      // Save password to local storage
+      await _storageService.write(
+        AppConstants.keyBedasMenanamPassword,
+        enteredPassword,
+      );
+
       Get.back(); // Close dialog
       Get.toNamed(Routes.BEDAS_MENANAM_SEARCH);
       CustomSnackbar.success(
