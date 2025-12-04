@@ -7,10 +7,12 @@ import '../../../core/values/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
+import '../../../data/providers/content_provider.dart';
 
 class BedasMenanamDashboardController extends GetxController {
   final StorageService _storageService = Get.find<StorageService>();
   final OtpProvider _otpProvider = OtpProvider();
+  final ContentProvider _contentProvider = Get.find<ContentProvider>();
 
   // Cached password from API
   String? _cachedPassword;
@@ -67,45 +69,17 @@ class BedasMenanamDashboardController extends GetxController {
       ),
     ];
 
-    // Dummy Statistics
-    statistics.value = {
-      'Total Pohon': '15.4K',
-      'Petani Aktif': '1,250',
-      'Luas Lahan': '450 Ha',
-      'Kecamatan': '31',
-    };
+    // Statistics hidden - no data loaded
+    statistics.value = {};
 
-    // Dummy News
-    newsList.value = [
-      NewsModel(
-        idPost: 1,
-        title: 'Bupati Bandung Tanam 1000 Pohon',
-        description:
-            'Bupati Bandung Dadang Supriatna memimpin aksi penanaman 1000 pohon di kawasan hulu sungai Citarum.',
-        imageUrl:
-            'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-        imageSmallUrl: '',
-        imageMiddleUrl: '',
-        url: 'bupati-tanam-pohon',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        author: 'Humas',
-        category: 'Kegiatan',
-      ),
-      NewsModel(
-        idPost: 2,
-        title: 'Panen Raya Jagung Hibrida',
-        description:
-            'Kelompok tani di Kecamatan Soreang berhasil melakukan panen raya jagung hibrida dengan hasil melimpah.',
-        imageUrl:
-            'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-        imageSmallUrl: '',
-        imageMiddleUrl: '',
-        url: 'panen-raya-jagung',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        author: 'Dinas Pertanian',
-        category: 'Berita',
-      ),
-    ];
+    // Load news from API (same as HomeController)
+    try {
+      final posts = await _contentProvider.getPosts(limit: 3);
+      newsList.value = posts;
+    } catch (e) {
+      print('Error loading news: $e');
+      // Silent failure - keep empty list
+    }
 
     isLoadingData.value = false;
   }

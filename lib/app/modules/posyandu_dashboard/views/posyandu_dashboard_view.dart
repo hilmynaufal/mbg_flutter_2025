@@ -26,8 +26,9 @@ class PosyanduDashboardView extends GetView<PosyanduDashboardController> {
                 children: [
                   _buildBannerSection(),
                   const SizedBox(height: 24),
-                  _buildStatisticsSection(context),
-                  const SizedBox(height: 24),
+                  // Statistics section hidden
+                  // _buildStatisticsSection(context),
+                  // const SizedBox(height: 24),
                   _buildMenuSection(context),
                   const SizedBox(height: 24),
                   _buildNewsSection(context),
@@ -324,7 +325,8 @@ class PosyanduDashboardView extends GetView<PosyanduDashboardController> {
               final news = controller.newsList[index];
               return NewsCardWidget(
                 news: news,
-                onTap: () => Get.toNamed(Routes.NEWS_DETAIL, arguments: news),
+                onTap: () =>
+                    Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
               );
             },
           );

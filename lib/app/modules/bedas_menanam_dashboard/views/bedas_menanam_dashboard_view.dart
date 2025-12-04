@@ -27,8 +27,9 @@ class BedasMenanamDashboardView
                 children: [
                   _buildBannerSection(),
                   const SizedBox(height: 24),
-                  _buildStatisticsSection(context),
-                  const SizedBox(height: 24),
+                  // Statistics section hidden
+                  // _buildStatisticsSection(context),
+                  // const SizedBox(height: 24),
                   _buildMenuSection(context),
                   const SizedBox(height: 24),
                   _buildNewsSection(context),
@@ -332,7 +333,8 @@ class BedasMenanamDashboardView
               final news = controller.newsList[index];
               return NewsCardWidget(
                 news: news,
-                onTap: () => Get.toNamed(Routes.NEWS_DETAIL, arguments: news),
+                onTap: () =>
+                    Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
               );
             },
           );

@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
+import '../../../data/providers/content_provider.dart';
 
 class MbgSppgDashboardController extends GetxController {
+  // Services
+  final ContentProvider _contentProvider = Get.find<ContentProvider>();
+
   // Dashboard Data
   final RxList<BannerItem> banners = <BannerItem>[].obs;
   final RxList<NewsModel> newsList = <NewsModel>[].obs;
@@ -40,45 +44,17 @@ class MbgSppgDashboardController extends GetxController {
       ),
     ];
 
-    // Dummy Statistics
-    statistics.value = {
-      'Total Penerima': '45.2K',
-      'SPPG Aktif': '128',
-      'Sekolah': '350',
-      'Paket Tersalur': '1.2M',
-    };
+    // Statistics hidden - no data loaded
+    statistics.value = {};
 
-    // Dummy News
-    newsList.value = [
-      NewsModel(
-        idPost: 1,
-        title: 'Monitoring Kualitas Makanan',
-        description:
-            'Tim Satgas MBG melakukan monitoring mendadak ke beberapa SPPG untuk memastikan kualitas makanan.',
-        imageUrl:
-            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-        imageSmallUrl: '',
-        imageMiddleUrl: '',
-        url: 'monitoring-mbg',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        author: 'Satgas MBG',
-        category: 'Berita',
-      ),
-      NewsModel(
-        idPost: 2,
-        title: 'Sosialisasi Gizi Seimbang',
-        description:
-            'Edukasi pentingnya gizi seimbang bagi pertumbuhan anak usia sekolah.',
-        imageUrl:
-            'https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-        imageSmallUrl: '',
-        imageMiddleUrl: '',
-        url: 'sosialisasi-gizi',
-        createdAt: DateTime.now().subtract(const Duration(days: 4)),
-        author: 'Dinas Kesehatan',
-        category: 'Edukasi',
-      ),
-    ];
+    // Load news from API (same as HomeController)
+    try {
+      final posts = await _contentProvider.getPosts(limit: 3);
+      newsList.value = posts;
+    } catch (e) {
+      print('Error loading news: $e');
+      // Silent failure - keep empty list
+    }
 
     isLoadingData.value = false;
   }

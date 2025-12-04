@@ -69,7 +69,6 @@ class HomeView extends GetView<HomeController> {
                 backgroundImage: AssetImage('assets/images/logo.png'),
                 // Fallback if asset not found, maybe use icon
                 onBackgroundImageError: (_, __) {},
-                child: Icon(Icons.person, size: 20, color: Colors.grey),
               ),
             ),
             const SizedBox(width: 12),
@@ -331,7 +330,8 @@ class HomeView extends GetView<HomeController> {
               final news = controller.latestNews[index];
               return NewsCardWidget(
                 news: news,
-                onTap: () => Get.toNamed(Routes.NEWS_DETAIL, arguments: news),
+                onTap: () =>
+                    Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
               );
             },
           );

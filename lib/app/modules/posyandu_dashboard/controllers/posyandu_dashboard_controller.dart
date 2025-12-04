@@ -2,8 +2,12 @@ import 'package:get/get.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
+import '../../../data/providers/content_provider.dart';
 
 class PosyanduDashboardController extends GetxController {
+  // Services
+  final ContentProvider _contentProvider = Get.find<ContentProvider>();
+
   // Dashboard Data
   final RxList<BannerItem> banners = <BannerItem>[].obs;
   final RxList<NewsModel> newsList = <NewsModel>[].obs;
@@ -38,45 +42,17 @@ class PosyanduDashboardController extends GetxController {
       ),
     ];
 
-    // Dummy Statistics
-    statistics.value = {
-      'Total Posyandu': '4,321',
-      'Kader Aktif': '12.5K',
-      'Balita Terdaftar': '85K',
-      'Ibu Hamil': '15K',
-    };
+    // Statistics hidden - no data loaded
+    statistics.value = {};
 
-    // Dummy News
-    newsList.value = [
-      NewsModel(
-        idPost: 1,
-        title: 'Pekan Imunisasi Nasional',
-        description:
-            'Pemerintah Kabupaten Bandung menggelar Pekan Imunisasi Nasional serentak di seluruh Posyandu.',
-        imageUrl:
-            'https://images.unsplash.com/photo-1632053001128-93661129668d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-        imageSmallUrl: '',
-        imageMiddleUrl: '',
-        url: 'pekan-imunisasi',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        author: 'Dinas Kesehatan',
-        category: 'Kesehatan',
-      ),
-      NewsModel(
-        idPost: 2,
-        title: 'Pemberian Makanan Tambahan',
-        description:
-            'Program pemberian makanan tambahan (PMT) untuk balita stunting terus digencarkan.',
-        imageUrl:
-            'https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-        imageSmallUrl: '',
-        imageMiddleUrl: '',
-        url: 'pmt-stunting',
-        createdAt: DateTime.now().subtract(const Duration(days: 7)),
-        author: 'Dinas Kesehatan',
-        category: 'Program',
-      ),
-    ];
+    // Load news from API (same as HomeController)
+    try {
+      final posts = await _contentProvider.getPosts(limit: 3);
+      newsList.value = posts;
+    } catch (e) {
+      print('Error loading news: $e');
+      // Silent failure - keep empty list
+    }
 
     isLoadingData.value = false;
   }
