@@ -15,6 +15,11 @@ class Routes {
   static const BEDAS_MENANAM_SEARCH = '/bedas-menanam-search';
   static const BEDAS_MENANAM_DETAIL = '/bedas-menanam-detail';
 
+  // Dashboards
+  static const DASHBOARD_MBG = '/dashboard-mbg';
+  static const DASHBOARD_POSYANDU = '/dashboard-posyandu';
+  static const DASHBOARD_BEDAS_MENANAM = '/dashboard-bedas-menanam';
+
   // Initial route
   static const INITIAL = SPLASH;
 }

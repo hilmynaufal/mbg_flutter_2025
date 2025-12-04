@@ -29,6 +29,12 @@ import '../modules/bedas_menanam_search/bindings/bedas_menanam_search_binding.da
 import '../modules/bedas_menanam_search/views/bedas_menanam_search_view.dart';
 import '../modules/bedas_menanam_detail/bindings/bedas_menanam_detail_binding.dart';
 import '../modules/bedas_menanam_detail/views/bedas_menanam_detail_view.dart';
+import '../modules/mbg_sppg_dashboard/bindings/mbg_sppg_dashboard_binding.dart';
+import '../modules/mbg_sppg_dashboard/views/mbg_sppg_dashboard_view.dart';
+import '../modules/posyandu_dashboard/bindings/posyandu_dashboard_binding.dart';
+import '../modules/posyandu_dashboard/views/posyandu_dashboard_view.dart';
+import '../modules/bedas_menanam_dashboard/bindings/bedas_menanam_dashboard_binding.dart';
+import '../modules/bedas_menanam_dashboard/views/bedas_menanam_dashboard_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -107,6 +113,21 @@ class AppPages {
       name: Routes.BEDAS_MENANAM_DETAIL,
       page: () => const BedasMenanamDetailView(),
       binding: BedasMenanamDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.DASHBOARD_MBG,
+      page: () => const MbgSppgDashboardView(),
+      binding: MbgSppgDashboardBinding(),
+    ),
+    GetPage(
+      name: Routes.DASHBOARD_POSYANDU,
+      page: () => const PosyanduDashboardView(),
+      binding: PosyanduDashboardBinding(),
+    ),
+    GetPage(
+      name: Routes.DASHBOARD_BEDAS_MENANAM,
+      page: () => const BedasMenanamDashboardView(),
+      binding: BedasMenanamDashboardBinding(),
     ),
   ];
 }

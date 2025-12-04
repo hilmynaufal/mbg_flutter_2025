@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0-alpha] - 2025-12-04
+
+### Added
+- **Restructured Dashboards**
+  - Implemented three distinct dashboards: **Bedas Menanam**, **Posyandu**, and **MBG & SPPG**.
+  - Each dashboard features a premium design with:
+    - **SliverAppBar**: Collapsible header with theme-specific gradient and background pattern.
+    - **Banner Carousel**: Dedicated banner section for each service.
+    - **Statistics Section**: Key metrics displayed in a horizontal list.
+    - **Menu Grid**: Quick access to specific services with updated design.
+    - **News Feed**: Relevant news and activities for each dashboard.
+
+### Changed
+- **Home View Refactor**
+  - Updated `HomeView` to navigate to the new dashboards instead of direct service links.
+  - Refactored `ServiceGridItem` to support custom colors and improved "NEW" badge positioning.
+  - "NEW" badge is now attached to the icon container for a cleaner look.
+
+- **Dashboard Theming**
+  - **Bedas Menanam**: Green theme with leaf pattern.
+  - **Posyandu**: Red/Pink theme with heart/pulse pattern.
+  - **MBG & SPPG**: Blue theme with utensils pattern.
+
+### Technical Details
+- **Modular Architecture**
+  - Created separate modules for each dashboard (`bedas_menanam_dashboard`, `posyandu_dashboard`, `mbg_sppg_dashboard`).
+  - Each module has its own Controller, View, and Binding.
+- **Reusable Components**
+  - Updated `ServiceGridItem` to be more flexible with color and badge positioning.
+  - Reused `BannerCarouselWidget` and `NewsCardWidget` across all dashboards.
+- **Dummy Data Integration**
+  - Controllers currently use dummy data for banners, statistics, and news to facilitate UI development and testing.
+
 ## [0.10.0-alpha] - 2025-11-26
 
 ### Added

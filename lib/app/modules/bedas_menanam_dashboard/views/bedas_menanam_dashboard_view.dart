@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../controllers/home_controller.dart';
-import '../../../routes/app_routes.dart';
+import '../controllers/bedas_menanam_dashboard_controller.dart';
+import '../../../core/widgets/service_grid_item.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../core/widgets/news_card_widget.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import '../../../routes/app_routes.dart';
 
-class HomeView extends GetView<HomeController> {
-  const HomeView({super.key});
+class BedasMenanamDashboardView
+    extends GetView<BedasMenanamDashboardController> {
+  const BedasMenanamDashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Light background for better contrast
+      backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(context),
@@ -27,11 +27,11 @@ class HomeView extends GetView<HomeController> {
                 children: [
                   _buildBannerSection(),
                   const SizedBox(height: 24),
-                  _buildServicesSection(context),
+                  _buildStatisticsSection(context),
+                  const SizedBox(height: 24),
+                  _buildMenuSection(context),
                   const SizedBox(height: 24),
                   _buildNewsSection(context),
-                  const SizedBox(height: 32),
-                  _buildLogoutButton(context),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -48,7 +48,7 @@ class HomeView extends GetView<HomeController> {
       floating: true,
       pinned: true,
       elevation: 0,
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: Colors.green.shade700,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(30),
@@ -59,43 +59,25 @@ class HomeView extends GetView<HomeController> {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundImage: AssetImage('assets/images/logo.png'),
-                // Fallback if asset not found, maybe use icon
-                onBackgroundImageError: (_, __) {},
-                child: Icon(Icons.person, size: 20, color: Colors.grey),
+              child: const FaIcon(
+                FontAwesomeIcons.seedling,
+                size: 20,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 12),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Selamat Datang,',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                Obx(() => Text(
-                      controller.user.value?.nmLengkap ?? 'Tamu',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )),
-              ],
+            const Text(
+              'Bedas Menanam',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
@@ -105,11 +87,11 @@ class HomeView extends GetView<HomeController> {
               bottom: Radius.circular(30),
             ),
             gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
               colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                Colors.green.shade700,
+                Colors.green.shade500,
               ],
             ),
           ),
@@ -128,23 +110,12 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            CustomSnackbar.info(
-              title: 'Notifikasi',
-              message: 'Belum ada notifikasi baru',
-            );
-          },
-        ),
-      ],
     );
   }
 
   Widget _buildBannerSection() {
     return Obx(() {
-      if (controller.isLoadingBanners.value) {
+      if (controller.isLoadingData.value) {
         return Container(
           height: 180,
           decoration: BoxDecoration(
@@ -177,7 +148,7 @@ class HomeView extends GetView<HomeController> {
             height: 180,
             onBannerTap: (banner) {
               CustomSnackbar.info(
-                title: 'Banner',
+                title: 'Info',
                 message: banner.title ?? 'Banner tapped',
               );
             },
@@ -187,7 +158,78 @@ class HomeView extends GetView<HomeController> {
     });
   }
 
-  Widget _buildServicesSection(BuildContext context) {
+  Widget _buildStatisticsSection(BuildContext context) {
+    return Obx(() {
+      if (controller.statistics.isEmpty) return const SizedBox.shrink();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Statistik Terkini',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 100,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.statistics.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final key = controller.statistics.keys.elementAt(index);
+                final value = controller.statistics[key];
+                return Container(
+                  width: 140,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.green.withOpacity(0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        value ?? '-',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        key,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildMenuSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -207,67 +249,26 @@ class HomeView extends GetView<HomeController> {
           mainAxisSpacing: 12,
           childAspectRatio: 0.85,
           children: [
-            _buildServiceItem(
-              context,
-              icon: FontAwesomeIcons.layerGroup,
-              title: 'MBG & SPPG',
-              color: Colors.blue,
-              onTap: () => Get.toNamed(Routes.DASHBOARD_MBG),
-            ),
-            _buildServiceItem(
-              context,
-              icon: FontAwesomeIcons.hospital,
-              title: 'Posyandu',
-              color: Colors.redAccent,
-              onTap: () => Get.toNamed(Routes.DASHBOARD_POSYANDU),
-            ),
-            _buildServiceItem(
-              context,
+            ServiceGridItem(
               icon: FontAwesomeIcons.seedling,
               title: 'Bedas\nMenanam',
+              description: 'Gerakan Menanam Sayuran',
+              onTap: controller.showBedasMenanamPasswordDialog,
+              showDescription: false,
+              showNewBadge: true,
               color: Colors.green,
-              onTap: () => Get.toNamed(Routes.DASHBOARD_BEDAS_MENANAM),
+            ),
+            ServiceGridItem(
+              icon: FontAwesomeIcons.magnifyingGlass,
+              title: 'Cari Data\nMenanam',
+              description: 'Cari Data Bedas Menanam',
+              onTap: controller.showBedasMenanamSearchPasswordDialog,
+              showDescription: false,
+              color: Colors.green,
             ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildServiceItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withOpacity(0.2)),
-            ),
-            child: FaIcon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  height: 1.2,
-                ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
   }
 
@@ -278,7 +279,7 @@ class HomeView extends GetView<HomeController> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Berita Terbaru',
+              'Berita & Kegiatan',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -287,8 +288,8 @@ class HomeView extends GetView<HomeController> {
             TextButton(
               onPressed: () {
                 CustomSnackbar.info(
-                  title: 'Berita',
-                  message: 'Halaman semua berita akan segera hadir',
+                  title: 'Info',
+                  message: 'Fitur ini akan segera hadir',
                 );
               },
               child: const Text('Lihat Semua'),
@@ -297,11 +298,11 @@ class HomeView extends GetView<HomeController> {
         ),
         const SizedBox(height: 8),
         Obx(() {
-          if (controller.isLoadingNews.value) {
+          if (controller.isLoadingData.value) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (controller.latestNews.isEmpty) {
+          if (controller.newsList.isEmpty) {
             return Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
@@ -325,10 +326,10 @@ class HomeView extends GetView<HomeController> {
           return ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.latestNews.length,
+            itemCount: controller.newsList.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final news = controller.latestNews[index];
+              final news = controller.newsList[index];
               return NewsCardWidget(
                 news: news,
                 onTap: () => Get.toNamed(Routes.NEWS_DETAIL, arguments: news),
@@ -337,46 +338,6 @@ class HomeView extends GetView<HomeController> {
           );
         }),
       ],
-    );
-  }
-
-  Widget _buildLogoutButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: () {
-          Get.dialog(
-            AlertDialog(
-              title: const Text('Konfirmasi Logout'),
-              content: const Text('Apakah anda yakin ingin keluar aplikasi?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Get.back(),
-                  child: const Text('Batal'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Get.back();
-                    controller.logout();
-                  },
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('Ya, Keluar'),
-                ),
-              ],
-            ),
-          );
-        },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.red,
-          side: const BorderSide(color: Colors.red),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        icon: const Icon(Icons.logout),
-        label: const Text('Keluar Aplikasi'),
-      ),
     );
   }
 }
