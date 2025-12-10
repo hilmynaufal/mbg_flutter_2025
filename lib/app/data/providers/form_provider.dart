@@ -7,6 +7,8 @@ import '../models/form_view_response_model.dart';
 import '../models/sppg_list_response_model.dart';
 import '../models/posyandu_list_response_model.dart';
 import '../models/bedas_menanam_list_response_model.dart';
+import '../models/menu_opd_list_response_model.dart';
+import '../models/report_list_response_model.dart';
 import '../../core/values/constants.dart';
 
 class FormProvider {
@@ -16,8 +18,10 @@ class FormProvider {
       : _dio = Dio(
           BaseOptions(
             baseUrl: AppConstants.baseUrlApi,
-            connectTimeout: const Duration(milliseconds: AppConstants.connectionTimeout),
-            receiveTimeout: const Duration(milliseconds: AppConstants.receiveTimeout),
+            connectTimeout:
+                const Duration(milliseconds: AppConstants.connectionTimeout),
+            receiveTimeout:
+                const Duration(milliseconds: AppConstants.receiveTimeout),
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
@@ -82,7 +86,8 @@ class FormProvider {
       );
 
       // Parse response to get the ID
-      if (response.data['status'] == 'success' && response.data['data'] != null) {
+      if (response.data['status'] == 'success' &&
+          response.data['data'] != null) {
         return FormSubmitResponseModel.fromJson(response.data['data']);
       } else {
         throw Exception('Failed to parse submit response');
@@ -318,6 +323,131 @@ class FormProvider {
       }
     } catch (e) {
       throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// Get OPD Menu list
+  /// Endpoint: GET /data/menu-aplikasi-satgas-mbg
+  /// Returns list of OPD menus grouped by parent_menu
+  Future<MenuOpdListResponseModel> getMenuOpdList() async {
+    try {
+      final response = await _dio.get(
+        '/data/menu-aplikasi-satgas-mbg',
+      );
+
+      if (response.data != null) {
+        log('Menu OPD API Response type: ${response.data.runtimeType}');
+
+        // API response structure matches standard format
+        return MenuOpdListResponseModel.fromJson(response.data);
+      } else {
+        throw Exception('Failed to parse Menu OPD response');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(
+          'Failed to load Menu OPD: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else {
+        throw Exception(
+          'Network error: ${e.message}. Please check your internet connection.',
+        );
+      }
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// Get OPD data list by slug
+  /// Endpoint: GET /data/{slug}
+  /// Returns list of data items for the given slug
+  /// Example: GET /data/pendataan-sekolah-dibawah-kcd-provinsi-dan-kemenag
+  Future<ReportListResponseModel> getOpdDataList(String slug) async {
+    try {
+      final response = await _dio.get(
+        '/data/$slug',
+      );
+
+      if (response.data != null) {
+        log('OPD Data List API Response type: ${response.data.runtimeType}');
+
+        // Check if response.data is a List or Map
+        if (response.data is List) {
+          // API returns array directly without wrapper
+          log('API returns List directly, wrapping in response object');
+          final wrappedData = {
+            'status': 'success',
+            'message': 'Data loaded',
+            'pageTitle': '',
+            'title': '',
+            'slug': slug,
+            'description': '',
+            'total': (response.data as List).length,
+            'data': response.data,
+          };
+          return ReportListResponseModel.fromJson(wrappedData);
+        } else {
+          return ReportListResponseModel.fromJson(response.data);
+        }
+      } else {
+        throw Exception('Failed to parse OPD data list response');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(
+          'Failed to load OPD data: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else {
+        throw Exception(
+          'Network error: ${e.message}. Please check your internet connection.',
+        );
+      }
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// Get form submission statistics by slug
+  /// Endpoint: POST /form/index/{slug}
+  /// Returns only the total count of submissions
+  /// This API is paginated but we only need the "total" field
+  Future<int> getFormStatistics(String slug) async {
+    try {
+      final response = await _dio.post(
+        '/form/index/$slug',
+        data: {
+          'page': 1, // Just get first page to read total
+        },
+      );
+
+      if (response.data != null && response.data['status'] == 'success') {
+        // Extract total from paginated response
+        final responsesData = response.data['data']?['responses'];
+        if (responsesData != null && responsesData is Map) {
+          return responsesData['total'] as int? ?? 0;
+        }
+        return 0;
+      } else {
+        throw Exception('Failed to parse form statistics response');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        // If 404 or no data, return 0
+        if (e.response?.statusCode == 404) {
+          return 0;
+        }
+        throw Exception(
+          'Failed to load form statistics: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else {
+        throw Exception(
+          'Network error: ${e.message}. Please check your internet connection.',
+        );
+      }
+    } catch (e) {
+      log('Error getting form statistics for $slug: $e');
+      // Return 0 on error instead of throwing
+      return 0;
     }
   }
 }

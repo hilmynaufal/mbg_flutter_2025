@@ -50,12 +50,14 @@ class DynamicFormController extends GetxController {
       isEditMode = args['isEditMode'] as bool? ?? false;
       existingData = args['existingData'];
 
-      // Extract responseId from existingData
-      if (isEditMode && existingData != null) {
+      // Extract responseId - try from arguments first, then from existingData
+      responseId = args['responseId'] as int?;
+
+      if (responseId == null && isEditMode && existingData != null) {
         try {
           responseId = (existingData as dynamic).id as int?;
         } catch (e) {
-          log('Failed to extract responseId: $e');
+          log('Failed to extract responseId from existingData: $e');
         }
       }
     } else {
@@ -299,7 +301,7 @@ class DynamicFormController extends GetxController {
         //TODO: UBAH DYNAMIC FORM (sementara hardcode)
         if (value == null) {
           continue; // Skip null values
-        } 
+        }
 
         if (fieldId == 1070) {
           //skip kecamatan
@@ -348,15 +350,16 @@ class DynamicFormController extends GetxController {
       // Save report ID to local storage (only for new submissions)
       if (!isEditMode) {
         final storage = Get.find<StorageService>();
-        List<int> reportIds = storage.readIntList(AppConstants.keyReportIds) ?? [];
+        List<int> reportIds =
+            storage.readIntList(AppConstants.keyReportIds) ?? [];
         reportIds.add(response.id);
         await storage.writeIntList(AppConstants.keyReportIds, reportIds);
       }
 
       log('Report saved with ID: ${response.id}');
 
-      // Save full report to local storage if this is pelaporan-penerima-mbg form
-      if (formSlug == 'pelaporan-penerima-mbg') {
+      // Save full report to local storage if this is pelaporan-penerima-mbg form (only for new submissions)
+      if (!isEditMode && formSlug == 'pelaporan-penerima-mbg') {
         await _saveReportToLocalStorage(response);
       }
 
@@ -368,7 +371,7 @@ class DynamicFormController extends GetxController {
         });
       }
 
-      // Navigate to success screen
+      // Handle navigation - both create and update go to success screen
       Get.offNamed(
         '/form-success',
         arguments: {
@@ -444,8 +447,8 @@ class DynamicFormController extends GetxController {
                 // Determine which dokumentasi_foto this is based on question text
                 if (questionTextLower.contains('1') ||
                     (imageFiles['dokumentasi_foto_1'] == null &&
-                     !questionTextLower.contains('2') &&
-                     !questionTextLower.contains('3'))) {
+                        !questionTextLower.contains('2') &&
+                        !questionTextLower.contains('3'))) {
                   imageFiles['dokumentasi_foto_1'] = fileValue;
                 } else if (questionTextLower.contains('2')) {
                   imageFiles['dokumentasi_foto_2'] = fileValue;
@@ -495,9 +498,11 @@ class DynamicFormController extends GetxController {
           if (value != null) {
             // Convert value to storable format
             if (value is DateTime) {
-              detail[field.questionText] = value.toIso8601String().split('T')[0];
+              detail[field.questionText] =
+                  value.toIso8601String().split('T')[0];
             } else if (value is Map<String, double>) {
-              detail[field.questionText] = '${value['latitude']},${value['longitude']}';
+              detail[field.questionText] =
+                  '${value['latitude']},${value['longitude']}';
             } else if (value is File) {
               // Store file path for local reference (won't work after file deletion)
               detail[field.questionText] = value.path;
@@ -523,7 +528,8 @@ class DynamicFormController extends GetxController {
 
       // Load existing reports from local storage
       List<ReportListItemModel> reports = [];
-      final existingData = storage.readObjectList(AppConstants.keyPenerimaMbgReports);
+      final existingData =
+          storage.readObjectList(AppConstants.keyPenerimaMbgReports);
 
       if (existingData != null) {
         reports = existingData
@@ -536,7 +542,8 @@ class DynamicFormController extends GetxController {
 
       // Save back to local storage
       final reportsJson = reports.map((r) => r.toJson()).toList();
-      await storage.writeObjectList(AppConstants.keyPenerimaMbgReports, reportsJson);
+      await storage.writeObjectList(
+          AppConstants.keyPenerimaMbgReports, reportsJson);
 
       log('Report saved to local storage: ${report.id}');
     } catch (e) {

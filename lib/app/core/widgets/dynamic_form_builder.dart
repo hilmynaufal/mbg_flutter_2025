@@ -1,10 +1,11 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../data/models/form_field_model.dart';
 import 'custom_text_field.dart';
 import 'custom_number_field.dart';
 import 'custom_textarea.dart';
-import 'custom_dropdown.dart';
+import 'searchable_dropdown.dart';
 import 'custom_date_picker.dart';
 import 'map_picker_widget.dart';
 import 'custom_image_picker.dart';
@@ -199,10 +200,12 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         );
 
       case 'dropdown':
-        return CustomDropdown(
+        // log(field.options.toString());
+        return SearchableDropdown(
           field: field,
           value: widget.formValues[field.id] as String?,
-          formValues: widget.formValues, // Pass formValues for dependent dropdowns
+          formValues:
+              widget.formValues, // Pass formValues for dependent dropdowns
           onChanged: (value) {
             setState(() {
               widget.formValues[field.id] = value;
@@ -304,7 +307,8 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
   @override
   Widget build(BuildContext context) {
     // Filter fields based on conditional visibility
-    final visibleFields = widget.fields.where((field) => _isFieldVisible(field)).toList();
+    final visibleFields =
+        widget.fields.where((field) => _isFieldVisible(field)).toList();
 
     return Form(
       key: widget.formKey,

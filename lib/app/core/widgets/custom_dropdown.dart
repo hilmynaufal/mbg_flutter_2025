@@ -8,7 +8,8 @@ class CustomDropdown extends StatelessWidget {
   final String? value;
   final void Function(String?) onChanged;
   final String? Function(String?)? validator;
-  final Map<int, dynamic>? formValues; // For dependent dropdowns (Desa depends on Kecamatan)
+  final Map<int, dynamic>?
+      formValues; // For dependent dropdowns (Desa depends on Kecamatan)
 
   const CustomDropdown({
     super.key,
@@ -79,7 +80,8 @@ class CustomDropdown extends StatelessWidget {
 
       // Store nama (uppercase) as value, not ID
       options = desaData
-          .map((desa) => {'value': desa.nmDesa.toUpperCase(), 'label': desa.nmDesa})
+          .map((desa) =>
+              {'value': desa.nmDesa.toUpperCase(), 'label': desa.nmDesa})
           .toList();
     } else {
       // Use options from API
@@ -88,7 +90,9 @@ class CustomDropdown extends StatelessWidget {
         if (option is Map) {
           return {
             'value': option['value']?.toString() ?? '',
-            'label': option['label']?.toString() ?? option['value']?.toString() ?? '',
+            'label': option['label']?.toString() ??
+                option['value']?.toString() ??
+                '',
           };
         } else {
           return {
@@ -132,7 +136,8 @@ class CustomDropdown extends StatelessWidget {
         DropdownButtonFormField<String>(
           value: value,
           decoration: InputDecoration(
-            hintText: field.questionPlaceholder ?? 'Pilih ${field.questionText}',
+            hintText:
+                field.questionPlaceholder ?? 'Pilih ${field.questionText}',
           ),
           items: options.isEmpty
               ? null

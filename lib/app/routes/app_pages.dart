@@ -35,6 +35,12 @@ import '../modules/posyandu_dashboard/bindings/posyandu_dashboard_binding.dart';
 import '../modules/posyandu_dashboard/views/posyandu_dashboard_view.dart';
 import '../modules/bedas_menanam_dashboard/bindings/bedas_menanam_dashboard_binding.dart';
 import '../modules/bedas_menanam_dashboard/views/bedas_menanam_dashboard_view.dart';
+import '../modules/dynamic_opd_dashboard/bindings/dynamic_opd_dashboard_binding.dart';
+import '../modules/dynamic_opd_dashboard/views/dynamic_opd_dashboard_view.dart';
+import '../modules/opd_data_list/bindings/opd_data_list_binding.dart';
+import '../modules/opd_data_list/views/opd_data_list_view.dart';
+import '../modules/dynamic_filter/bindings/dynamic_filter_binding.dart';
+import '../modules/dynamic_filter/views/dynamic_filter_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -128,6 +134,21 @@ class AppPages {
       name: Routes.DASHBOARD_BEDAS_MENANAM,
       page: () => const BedasMenanamDashboardView(),
       binding: BedasMenanamDashboardBinding(),
+    ),
+    GetPage(
+      name: Routes.DASHBOARD_OPD,
+      page: () => const DynamicOpdDashboardView(),
+      binding: DynamicOpdDashboardBinding(),
+    ),
+    GetPage(
+      name: Routes.OPD_DATA_LIST,
+      page: () => const OpdDataListView(),
+      binding: OpdDataListBinding(),
+    ),
+    GetPage(
+      name: Routes.DYNAMIC_FILTER,
+      page: () => const DynamicFilterView(),
+      binding: DynamicFilterBinding(),
     ),
   ];
 }

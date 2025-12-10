@@ -19,6 +19,11 @@ class Routes {
   static const DASHBOARD_MBG = '/dashboard-mbg';
   static const DASHBOARD_POSYANDU = '/dashboard-posyandu';
   static const DASHBOARD_BEDAS_MENANAM = '/dashboard-bedas-menanam';
+  static const DASHBOARD_OPD = '/dashboard-opd';
+
+  // OPD Data List
+  static const OPD_DATA_LIST = '/opd-data-list';
+  static const DYNAMIC_FILTER = '/dynamic-filter';
 
   // Initial route
   static const INITIAL = SPLASH;

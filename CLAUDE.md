@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter application project named `mbg_flutter_2025` - MBG Kabupaten Bandung SPPG Reporting System with multi-platform support (Android, iOS, Web, Linux, macOS, Windows). It uses Flutter SDK 3.7.2+ and follows GetX architecture pattern.
 
-**Current Version:** 0.8.0-alpha+20251105
+**Current Version:** 0.12.0-alpha+202512102
 
 ## Development Commands
 
@@ -197,6 +197,56 @@ lib/
    - SEO-friendly slug-based URLs
    - Indonesian date formatting
    - Error handling with retry functionality
+
+6. **Dynamic OPD Dashboard System**
+   - "Layanan OPD" section in MBG Dashboard
+   - API-driven OPD menu system
+   - Hierarchical navigation: Home → MBG → OPD → Dashboard → Form
+   - Dynamic dashboard routing by parent_menu parameter
+   - FontAwesome icon mapping from CSS class strings
+   - Hex color parsing for dynamic theming
+   - Banner carousel and news in OPD dashboards
+   - Menu grouping by parent organization
+
+### Recent Changes (v0.12.0-alpha)
+- **Dynamic OPD Dashboard System**
+  - Added "Layanan OPD" section to MBG Dashboard
+  - API integration: `GET /api/data/menu-aplikasi-satgas-mbg`
+  - **Data Models**:
+    - Created `MenuOpdDetailModel` with color parser and icon mapper
+    - Created `MenuOpdItemModel` for standard item wrapper
+    - Created `MenuOpdListResponseModel` for API response
+  - **IconMapper Utility** (`lib/app/core/utils/icon_mapper.dart`):
+    - Converts FontAwesome CSS strings to Flutter IconData
+    - Maps 50+ icons (fa-university → buildingColumns, etc.)
+    - Fallback to FontAwesomeIcons.circle for unknown icons
+  - **MBG Dashboard Enhancement**:
+    - Added OPD menu loading and grouping logic to controller
+    - New `_buildOpdMenuSection()` displays grouped OPD menus
+    - Grid layout with parent_menu as card titles
+    - Shows menu count per parent organization
+  - **Dynamic OPD Dashboard Module**:
+    - New module: `dynamic_opd_dashboard` (bindings, controller, view)
+    - Extracts `parentMenu` from route arguments
+    - Loads banners, news, and filtered menus in parallel
+    - Dynamic theming from first menu item (color + icon)
+    - SliverAppBar with gradient and dynamic colors
+    - Menu grid filtered by parent_menu field
+    - Banner carousel and news sections
+    - Empty states for all sections
+  - **Navigation Flow**:
+    - Home → MBG Dashboard → Layanan OPD → Dynamic Dashboard → Dynamic Form
+    - Route: `/dashboard-opd` with `{parentMenu}` argument
+    - Slug-based routing to dynamic form
+  - **Technical Features**:
+    - Hex color string parser (#e91e63 → Color)
+    - Manual FontAwesome icon mapping
+    - Menu grouping by parent_menu field
+    - Parallel API data loading
+    - Loading states with spinner indicators
+    - Error handling with silent failures
+    - Fallbacks for invalid data
+  - Version updated to 0.12.0-alpha+202512102
 
 ### Recent Changes (v0.8.0-alpha)
 - **OTP Email Verification for Non-PNS Users**

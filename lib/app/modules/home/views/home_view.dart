@@ -21,18 +21,18 @@ class HomeView extends GetView<HomeController> {
           _buildSliverAppBar(context),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildBannerSection(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   _buildServicesSection(context),
                   const SizedBox(height: 24),
                   _buildNewsSection(context),
-                  const SizedBox(height: 32),
-                  _buildLogoutButton(context),
                   const SizedBox(height: 24),
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -197,14 +197,14 @@ class HomeView extends GetView<HomeController> {
                 color: Colors.black87,
               ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.85,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.90,
           children: [
             _buildServiceItem(
               context,
@@ -245,20 +245,20 @@ class HomeView extends GetView<HomeController> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: color.withOpacity(0.2)),
             ),
-            child: FaIcon(icon, color: color, size: 24),
+            child: FaIcon(icon, color: color, size: 28),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             title,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   height: 1.2,
                 ),
@@ -294,7 +294,7 @@ class HomeView extends GetView<HomeController> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Obx(() {
           if (controller.isLoadingNews.value) {
             return const Center(child: CircularProgressIndicator());
@@ -325,7 +325,7 @@ class HomeView extends GetView<HomeController> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: controller.latestNews.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final news = controller.latestNews[index];
               return NewsCardWidget(

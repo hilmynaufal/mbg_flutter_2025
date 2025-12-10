@@ -34,13 +34,17 @@ class ServiceGridItem extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Container(
+                width: 56,
+                height: 56,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: mainColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: mainColor.withOpacity(0.2)),
                 ),
-                child: FaIcon(icon, color: mainColor, size: 24),
+                child: Center(
+                  child: FaIcon(icon, color: mainColor, size: 24),
+                ),
               ),
               if (showNewBadge)
                 Positioned(

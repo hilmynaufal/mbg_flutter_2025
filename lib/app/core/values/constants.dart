@@ -1,6 +1,6 @@
 class AppConstants {
   // API Base URLs
-  static const String baseUrlSultan = 'https://sultan.bandungkab.go.id/api';
+  static const String baseUrlSultan = 'https://hirumi.xyz/agenda_api/api';
   static const String baseUrlApi = 'https://api.bandungkab.go.id/api';
   static const String baseUrlFallback = 'https://hirumi.xyz/fallback_api/api';
 
@@ -27,6 +27,7 @@ class AppConstants {
   static const String iosAppId = 'your-ios-app-id';
 
   // Play Store & App Store URLs
-  static const String playStoreUrl = 'https://play.google.com/store/apps/details?id=$androidPackageName';
+  static const String playStoreUrl =
+      'https://play.google.com/store/apps/details?id=$androidPackageName';
   static const String appStoreUrl = 'https://apps.apple.com/app/$iosAppId';
 }

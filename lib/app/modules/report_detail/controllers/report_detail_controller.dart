@@ -9,6 +9,7 @@ import '../../../data/models/report_list_item_model.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../core/values/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import '../../../routes/app_routes.dart';
 
 class ReportDetailController extends GetxController {
   final FormProvider _formProvider = FormProvider();
@@ -118,9 +119,27 @@ class ReportDetailController extends GetxController {
 
     if (confirmed != true) return;
 
-    try {
-      isLoading.value = true;
+    // Show loading dialog
+    Get.dialog(
+      const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Menghapus laporan...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
 
+    try {
       // Delete from API server
       await _formProvider.deleteForm(reportId);
 
@@ -137,8 +156,8 @@ class ReportDetailController extends GetxController {
         log('Report $reportId removed from local storage');
       }
 
-      // Reset loading state
-      isLoading.value = false;
+      // Close loading dialog
+      Get.back();
 
       // Show success message
       CustomSnackbar.success(
@@ -151,7 +170,10 @@ class ReportDetailController extends GetxController {
       Get.back(result: true);
     } catch (e) {
       log('Error deleting report: $e');
-      isLoading.value = false;
+
+      // Close loading dialog
+      Get.back();
+
       CustomSnackbar.error(
         title: 'Error',
         message: e.toString().replaceAll('Exception: ', ''),
@@ -184,6 +206,33 @@ class ReportDetailController extends GetxController {
       log('Error removing report from local storage: $e');
       // Don't throw - local storage removal is not critical
     }
+  }
+
+  /// Navigate to edit form
+  void editReport() {
+    if (reportDetail.value == null || reportSlug == null) {
+      CustomSnackbar.error(
+        title: 'Error',
+        message: 'Data laporan tidak lengkap untuk edit',
+      );
+      return;
+    }
+
+    // Navigate to dynamic form in edit mode
+    Get.toNamed(
+      Routes.DYNAMIC_FORM,
+      arguments: {
+        'slug': reportSlug,
+        'isEditMode': true,
+        'existingData': null, // Not needed - will use responseId
+        'responseId': reportId, // Pass responseId for pre-filling
+      },
+    )?.then((result) {
+      // Refresh detail if edit was successful
+      if (result == true) {
+        loadReportDetail();
+      }
+    });
   }
 
   /// Retry loading report detail

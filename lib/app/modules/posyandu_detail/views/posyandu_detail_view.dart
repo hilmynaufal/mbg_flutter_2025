@@ -251,6 +251,39 @@ class PosyanduDetailView extends GetView<PosyanduDetailController> {
               onPressed: controller.editPosyandu,
               icon: Icons.edit,
             ),
+            const SizedBox(height: 12),
+
+            // Delete button
+            Obx(
+              () => OutlinedButton.icon(
+                onPressed: controller.isDeleting.value
+                    ? null
+                    : controller.deletePosyandu,
+                icon: controller.isDeleting.value
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                        ),
+                      )
+                    : const Icon(Icons.delete_outline),
+                label: Text(
+                  controller.isDeleting.value
+                      ? 'Menghapus...'
+                      : 'Hapus Data Posyandu',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),

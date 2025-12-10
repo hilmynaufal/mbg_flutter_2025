@@ -3,17 +3,25 @@ import 'package:flutter/material.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
+import '../../../data/models/menu_opd_item_model.dart';
 import '../../../data/providers/content_provider.dart';
+import '../../../data/providers/form_provider.dart';
 
 class MbgSppgDashboardController extends GetxController {
   // Services
   final ContentProvider _contentProvider = Get.find<ContentProvider>();
+  final FormProvider _formProvider = Get.find<FormProvider>();
 
   // Dashboard Data
   final RxList<BannerItem> banners = <BannerItem>[].obs;
   final RxList<NewsModel> newsList = <NewsModel>[].obs;
   final RxMap<String, String> statistics = <String, String>{}.obs;
   final RxBool isLoadingData = false.obs;
+
+  // OPD Menu Data
+  final RxList<MenuOpdItemModel> opdMenus = <MenuOpdItemModel>[].obs;
+  final RxMap<String, List<MenuOpdItemModel>> groupedOpdMenus =
+      <String, List<MenuOpdItemModel>>{}.obs;
 
   @override
   void onInit() {
@@ -56,11 +64,43 @@ class MbgSppgDashboardController extends GetxController {
       // Silent failure - keep empty list
     }
 
+    // Load OPD menus from API
+    try {
+      final menuResponse = await _formProvider.getMenuOpdList();
+      opdMenus.value = menuResponse.data;
+      _groupMenusByParent();
+    } catch (e) {
+      print('Error loading OPD menus: $e');
+      // Silent failure - keep empty list
+    }
+
     isLoadingData.value = false;
+  }
+
+  /// Group OPD menus by parent_menu field
+  void _groupMenusByParent() {
+    final Map<String, List<MenuOpdItemModel>> grouped = {};
+
+    for (var menu in opdMenus) {
+      final parentMenu = menu.detail.parentMenu;
+      if (!grouped.containsKey(parentMenu)) {
+        grouped[parentMenu] = [];
+      }
+      grouped[parentMenu]!.add(menu);
+    }
+
+    groupedOpdMenus.value = grouped;
   }
 
   void navigateToDynamicForm(String slug) {
     Get.toNamed(Routes.DYNAMIC_FORM, arguments: slug);
+  }
+
+  void navigateToOpdDashboard(String parentMenu) {
+    Get.toNamed(
+      Routes.DASHBOARD_OPD,
+      arguments: {'parentMenu': parentMenu},
+    );
   }
 
   void showReportTypeDialog() {

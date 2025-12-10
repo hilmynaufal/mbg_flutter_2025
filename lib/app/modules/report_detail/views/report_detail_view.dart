@@ -17,6 +17,11 @@ class ReportDetailView extends GetView<ReportDetailController> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: controller.editReport,
+            tooltip: 'Edit Laporan',
+          ),
+          IconButton(
             icon: const Icon(Icons.delete),
             onPressed: controller.deleteReport,
             tooltip: 'Hapus Laporan',

@@ -31,6 +31,8 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
                   // const SizedBox(height: 24),
                   _buildMenuSection(context),
                   const SizedBox(height: 24),
+                  _buildOpdMenuSection(context),
+                  const SizedBox(height: 24),
                   _buildNewsSection(context),
                   const SizedBox(height: 24),
                 ],
@@ -267,22 +269,22 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
               showDescription: false,
               color: Colors.blue,
             ),
-            ServiceGridItem(
-              icon: FontAwesomeIcons.fileSignature,
-              title: 'Laporan\nLainnya',
-              description: 'Buat laporan baru',
-              onTap: controller.showReportTypeDialog,
-              showDescription: false,
-              color: Colors.blue,
-            ),
-            ServiceGridItem(
-              icon: FontAwesomeIcons.notesMedical,
-              title: 'Laporan\nIKL',
-              description: 'Daftar Laporan IKL',
-              onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
-              showDescription: false,
-              color: Colors.blue,
-            ),
+            // ServiceGridItem(
+            //   icon: FontAwesomeIcons.fileSignature,
+            //   title: 'Laporan\nLainnya',
+            //   description: 'Buat laporan baru',
+            //   onTap: controller.showReportTypeDialog,
+            //   showDescription: false,
+            //   color: Colors.blue,
+            // ),
+            // ServiceGridItem(
+            //   icon: FontAwesomeIcons.notesMedical,
+            //   title: 'Laporan\nIKL',
+            //   description: 'Daftar Laporan IKL',
+            //   onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
+            //   showDescription: false,
+            //   color: Colors.blue,
+            // ),
             ServiceGridItem(
               icon: FontAwesomeIcons.buildingUser,
               title: 'Daftar\nSPPG',
@@ -296,6 +298,58 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
         ),
       ],
     );
+  }
+
+  Widget _buildOpdMenuSection(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoadingData.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (controller.groupedOpdMenus.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Layanan OPD',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+          ),
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.85,
+            ),
+            itemCount: controller.groupedOpdMenus.length,
+            itemBuilder: (context, index) {
+              final parentMenu =
+                  controller.groupedOpdMenus.keys.elementAt(index);
+              final menus = controller.groupedOpdMenus[parentMenu]!;
+              final firstMenu = menus.first.detail;
+
+              return ServiceGridItem(
+                icon: firstMenu.iconData ?? FontAwesomeIcons.circle,
+                title: parentMenu,
+                description: '${menus.length} menu',
+                onTap: () => controller.navigateToOpdDashboard(parentMenu),
+                showDescription: false,
+                color: firstMenu.backgroundColor,
+              );
+            },
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildNewsSection(BuildContext context) {
