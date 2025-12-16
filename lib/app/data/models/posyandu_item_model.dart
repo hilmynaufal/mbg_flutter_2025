@@ -3,7 +3,7 @@ import 'posyandu_detail_model.dart';
 class PosyanduItemModel {
   final int id;
   final String? status;
-  final String departmentId;
+  final dynamic departmentId; // Can be int or String (e.g., "Tamu")
   final String departmentNama;
   final String asistantNama;
   final String createdBy;
@@ -46,7 +46,8 @@ class PosyanduItemModel {
       return PosyanduItemModel(
         id: json['id'] ?? 0,
         status: json['status'],
-        departmentId: json['department_id']?.toString() ?? '',
+        // Handle both int and string for department_id
+        departmentId: json['department_id'] ?? 0,
         departmentNama: json['department_nama'] ?? '',
         asistantNama: json['asistant_nama'] ?? '',
         createdBy: json['created_by'] ?? '',

@@ -170,28 +170,14 @@ class FormProvider {
   /// Endpoint: GET /data/pendataan-profil-sppg-aktif-di-kabupaten-bandung-oleh-kecamatan
   /// Returns list of SPPG with details
   Future<SppgListResponseModel> getSppgList() async {
-    try {
-      final response = await _dio.get(
-        '/data/pendataan-profil-sppg-aktif-di-kabupaten-bandung-oleh-kecamatan',
-      );
+    final response = await _dio.get(
+      '/data/pendataan-profil-sppg-aktif-di-kabupaten-bandung-oleh-kecamatan',
+    );
 
-      if (response.data != null) {
-        return SppgListResponseModel.fromJson(response.data);
-      } else {
-        throw Exception('Failed to parse SPPG list response');
-      }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        throw Exception(
-          'Failed to load SPPG list: ${e.response?.data['message'] ?? e.message}',
-        );
-      } else {
-        throw Exception(
-          'Network error: ${e.message}. Please check your internet connection.',
-        );
-      }
-    } catch (e) {
-      throw Exception('Unexpected error: $e');
+    if (response.data != null) {
+      return SppgListResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('Failed to parse SPPG list response');
     }
   }
 

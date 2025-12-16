@@ -2,7 +2,7 @@ import 'bedas_menanam_detail_model.dart';
 
 class BedasMenanamItemModel {
   final int id;
-  final String departmentId;
+  final dynamic departmentId; // Can be int or String (e.g., "Tamu")
   final String departmentNama;
   final String asistantNama;
   final String createdBy;
@@ -42,7 +42,8 @@ class BedasMenanamItemModel {
 
       return BedasMenanamItemModel(
         id: json['id'] ?? 0,
-        departmentId: json['department_id'] ?? '',
+        // Handle both int and string for department_id
+        departmentId: json['department_id'] ?? 0,
         departmentNama: json['department_nama'] ?? '',
         asistantNama: json['asistant_nama'] ?? '',
         createdBy: json['created_by'] ?? '',
