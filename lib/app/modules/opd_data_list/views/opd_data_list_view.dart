@@ -13,7 +13,7 @@ class OpdDataListView extends GetView<OpdDataListController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(controller.menuTitle)),
+        title: Text(controller.menuTitle),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
@@ -211,7 +211,8 @@ class OpdDataListView extends GetView<OpdDataListController> {
               const SizedBox(height: 12),
 
               // Department/SKPD
-              if (item.departmentNama != null && item.departmentNama!.isNotEmpty)
+              if (item.departmentNama != null &&
+                  item.departmentNama!.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(

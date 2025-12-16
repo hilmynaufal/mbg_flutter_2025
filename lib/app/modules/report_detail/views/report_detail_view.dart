@@ -294,7 +294,11 @@ class ReportDetailView extends GetView<ReportDetailController> {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildImageAnswer(qa.answer, qa.question),
+              // Use getImageUrl to prefer signed URL from list over unsigned URL from viewForm
+              _buildImageAnswer(
+                controller.getImageUrl(qa.question) ?? qa.answer,
+                qa.question,
+              ),
             ],
           ),
         ),
@@ -318,13 +322,16 @@ class ReportDetailView extends GetView<ReportDetailController> {
               questionLower.contains('dokumentasi foto')) {
             if (questionLower.contains('1')) {
               log('controller.fallbackImages.value?.dokumentasiFoto1Url: ${controller.fallbackImages.value?.dokumentasiFoto1Url}');
-              fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto1Url;
+              fallbackUrl =
+                  controller.fallbackImages.value?.dokumentasiFoto1Url;
             } else if (questionLower.contains('2')) {
               log('controller.fallbackImages.value?.dokumentasiFoto2Url: ${controller.fallbackImages.value?.dokumentasiFoto2Url}');
-              fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto2Url;
+              fallbackUrl =
+                  controller.fallbackImages.value?.dokumentasiFoto2Url;
             } else if (questionLower.contains('3')) {
               log('controller.fallbackImages.value?.dokumentasiFoto3Url: ${controller.fallbackImages.value?.dokumentasiFoto3Url}');
-              fallbackUrl = controller.fallbackImages.value?.dokumentasiFoto3Url;
+              fallbackUrl =
+                  controller.fallbackImages.value?.dokumentasiFoto3Url;
             }
           }
         }

@@ -41,6 +41,8 @@ import '../modules/opd_data_list/bindings/opd_data_list_binding.dart';
 import '../modules/opd_data_list/views/opd_data_list_view.dart';
 import '../modules/dynamic_filter/bindings/dynamic_filter_binding.dart';
 import '../modules/dynamic_filter/views/dynamic_filter_view.dart';
+import '../modules/webview/bindings/webview_binding.dart';
+import '../modules/webview/views/webview_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -149,6 +151,11 @@ class AppPages {
       name: Routes.DYNAMIC_FILTER,
       page: () => const DynamicFilterView(),
       binding: DynamicFilterBinding(),
+    ),
+    GetPage(
+      name: Routes.WEBVIEW,
+      page: () => const WebviewView(),
+      binding: WebviewBinding(),
     ),
   ];
 }

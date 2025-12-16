@@ -303,7 +303,22 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
                 icon: detail.iconData ?? FontAwesomeIcons.circle,
                 title: detail.menu,
                 description: detail.deskripsi,
-                onTap: () => _showMenuActionBottomSheet(context, detail),
+                onTap: () {
+                  // Check if menu kategori is "Webview"
+                  if (detail.kategori.toLowerCase() == 'webview') {
+                    // Navigate to webview with slug as URL
+                    Get.toNamed(
+                      Routes.WEBVIEW,
+                      arguments: {
+                        'url': detail.slug,
+                        'title': detail.menu,
+                      },
+                    );
+                  } else {
+                    // Show bottom sheet for normal menus
+                    _showMenuActionBottomSheet(context, detail);
+                  }
+                },
                 showDescription: false,
                 color: detail.backgroundColor,
               );
@@ -490,7 +505,8 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
 
                 // Check if menu has required_filter
                 if (menuDetail.requiredFilter != null &&
-                    menuDetail.requiredFilter.isNotEmpty) {
+                    menuDetail.requiredFilter.isNotEmpty &&
+                    menuDetail.requiredFilter != "0,0") {
                   // Navigate to filter page first
                   controller.navigateToFilterPage(menuDetail);
                 } else {

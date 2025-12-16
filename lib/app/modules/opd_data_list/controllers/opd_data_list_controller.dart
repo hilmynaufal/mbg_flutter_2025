@@ -83,6 +83,7 @@ class OpdDataListController extends GetxController {
       arguments: {
         'id': item.id,
         'slug': slug,
+        'item': item, // Pass full item with signed image URLs
       },
     )?.then((result) {
       // If result is true, it means the report was deleted or updated

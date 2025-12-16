@@ -18,9 +18,11 @@ class ReportDetailController extends GetxController {
   // Get report ID and slug from arguments
   late int reportId;
   String? reportSlug;
+  ReportListItemModel? listItem; // Item from list with signed image URLs
 
   // Observable states
-  final Rx<FormViewResponseModel?> reportDetail = Rx<FormViewResponseModel?>(null);
+  final Rx<FormViewResponseModel?> reportDetail =
+      Rx<FormViewResponseModel?>(null);
   final Rx<FallbackImageModel?> fallbackImages = Rx<FallbackImageModel?>(null);
   final RxBool isLoading = true.obs;
   final RxString errorMessage = ''.obs;
@@ -33,9 +35,11 @@ class ReportDetailController extends GetxController {
     final args = Get.arguments;
 
     if (args is Map<String, dynamic>) {
-      // New format: {id: int, slug: string}
+      // New format: {id: int, slug: string, item: ReportListItemModel?}
       reportId = args['id'] as int;
       reportSlug = args['slug'] as String?;
+      listItem =
+          args['item'] as ReportListItemModel?; // Get item with signed URLs
     } else {
       // Old format: just int (for backward compatibility)
       reportId = args as int;
@@ -146,7 +150,8 @@ class ReportDetailController extends GetxController {
       log('Report $reportId deleted from API successfully');
 
       // Remove from report IDs list
-      List<int> reportIds = _storage.readIntList(AppConstants.keyReportIds) ?? [];
+      List<int> reportIds =
+          _storage.readIntList(AppConstants.keyReportIds) ?? [];
       reportIds.remove(reportId);
       await _storage.writeIntList(AppConstants.keyReportIds, reportIds);
 
@@ -185,7 +190,8 @@ class ReportDetailController extends GetxController {
   Future<void> _removeFromLocalStorage() async {
     try {
       // Load existing reports from local storage
-      final existingData = _storage.readObjectList(AppConstants.keyPenerimaMbgReports);
+      final existingData =
+          _storage.readObjectList(AppConstants.keyPenerimaMbgReports);
 
       if (existingData != null) {
         // Parse to ReportListItemModel
@@ -198,7 +204,8 @@ class ReportDetailController extends GetxController {
 
         // Save back to local storage
         final reportsJson = reports.map((r) => r.toJson()).toList();
-        await _storage.writeObjectList(AppConstants.keyPenerimaMbgReports, reportsJson);
+        await _storage.writeObjectList(
+            AppConstants.keyPenerimaMbgReports, reportsJson);
 
         log('Report $reportId removed from local storage. Remaining: ${reports.length}');
       }
@@ -238,5 +245,61 @@ class ReportDetailController extends GetxController {
   /// Retry loading report detail
   void retryLoad() {
     loadReportDetail();
+  }
+
+  /// Convert display text to snake_case format
+  /// Example: "Foto Sekolah" -> "foto_sekolah"
+  String _toSnakeCase(String text) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'\s+'), '_') // Replace spaces with underscore
+        .replaceAll(RegExp(r'[^\w_]'),
+            ''); // Remove special characters except underscore
+  }
+
+  /// Get image URL for a question, preferring signed URL from listItem
+  ///
+  /// If we have listItem (came from list page), use the signed URL from there
+  /// Otherwise, use the unsigned URL from viewForm (might not work)
+  String? getImageUrl(String questionText) {
+    // Convert question text to snake_case for matching with API field names
+    final snakeCaseKey = _toSnakeCase(questionText);
+
+    // First try to get from listItem (signed URL)
+    if (listItem != null) {
+      log('listItem detail keys: ${listItem!.detail.keys.toList()}');
+      log('Looking for: $snakeCaseKey (from: $questionText)');
+
+      // Try snake_case key first
+      if (listItem!.detail.containsKey(snakeCaseKey)) {
+        final url = listItem!.detail[snakeCaseKey];
+        if (url != null && url.toString().isNotEmpty) {
+          log('Found signed URL with snake_case key: $snakeCaseKey');
+          return url.toString();
+        }
+      }
+
+      // Fallback: try original questionText
+      if (listItem!.detail.containsKey(questionText)) {
+        final url = listItem!.detail[questionText];
+        if (url != null && url.toString().isNotEmpty) {
+          log('Found signed URL with original key: $questionText');
+          return url.toString();
+        }
+      }
+    }
+
+    // Fallback to viewForm answer (unsigned URL)
+    if (reportDetail.value != null) {
+      for (var qa in reportDetail.value!.answers) {
+        if (qa.question == questionText && qa.answer.isNotEmpty) {
+          log('Using unsigned URL from viewForm');
+          return qa.answer;
+        }
+      }
+    }
+
+    return null;
   }
 }

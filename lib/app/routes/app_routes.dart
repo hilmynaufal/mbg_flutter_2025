@@ -24,6 +24,7 @@ class Routes {
   // OPD Data List
   static const OPD_DATA_LIST = '/opd-data-list';
   static const DYNAMIC_FILTER = '/dynamic-filter';
+  static const WEBVIEW = '/webview';
 
   // Initial route
   static const INITIAL = SPLASH;

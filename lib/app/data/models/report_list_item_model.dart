@@ -1,6 +1,6 @@
 class ReportListItemModel {
   final int id;
-  final String departmentId;
+  final dynamic departmentId; // Can be int or String (e.g., "Tamu")
   final String departmentNama;
   final String asistantNama;
   final String createdBy;
@@ -24,7 +24,8 @@ class ReportListItemModel {
   factory ReportListItemModel.fromJson(Map<String, dynamic> json) {
     return ReportListItemModel(
       id: json['id'] as int,
-      departmentId: json['department_id'] as String? ?? '',
+      // Handle both int and string for department_id
+      departmentId: json['department_id'] ?? 0,
       departmentNama: json['department_nama'] as String? ?? '',
       asistantNama: json['asistant_nama'] as String? ?? '',
       createdBy: json['created_by'] as String? ?? '',

@@ -5,7 +5,7 @@ import 'menu_opd_detail_model.dart';
 class MenuOpdItemModel {
   final int id;
   final String? status;
-  final int departmentId;
+  final dynamic departmentId; // Can be int or String (e.g., "Tamu")
   final String departmentNama;
   final String asistantNama;
   final String createdBy;
@@ -31,6 +31,7 @@ class MenuOpdItemModel {
     return MenuOpdItemModel(
       id: json['id'] ?? 0,
       status: json['status'],
+      // Handle both int and string for department_id
       departmentId: json['department_id'] ?? 0,
       departmentNama: json['department_nama'] ?? '',
       asistantNama: json['asistant_nama'] ?? '',

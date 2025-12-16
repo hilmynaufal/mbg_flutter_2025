@@ -190,6 +190,7 @@ class DynamicFilterController extends GetxController {
       arguments: {
         'id': item.id,
         'slug': slug,
+        'item': item, // Pass full item with signed image URLs
       },
     );
   }

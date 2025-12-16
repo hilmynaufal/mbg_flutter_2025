@@ -516,7 +516,7 @@ class DynamicFormController extends GetxController {
       // Create ReportListItemModel
       final report = ReportListItemModel(
         id: response.id,
-        departmentId: response.skpdId?.toString() ?? '',
+        departmentId: response.skpdId ?? 0,
         departmentNama: response.skpdNama ?? '',
         asistantNama: '', // Not available in response
         createdBy: currentUser?.nmLengkap ?? currentUser?.username ?? '',
