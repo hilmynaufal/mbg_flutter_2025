@@ -10,13 +10,21 @@ class FormSuccessView extends GetView<FormSuccessController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laporan Berhasil'),
-        automaticallyImplyLeading: false,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
+    return PopScope(
+      // Intercept back button and redirect to home
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          controller.backToHome();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Laporan Berhasil'),
+          automaticallyImplyLeading: false,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -185,19 +193,19 @@ class FormSuccessView extends GetView<FormSuccessController> {
                   const SizedBox(height: 12),
 
                   // Secondary Action: Create Another Report
-                  OutlinedButton.icon(
-                    onPressed: controller.createAnotherReport,
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Buat Laporan Lagi'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      side: BorderSide(color: AppColors.primary, width: 2),
-                      foregroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
+                  // OutlinedButton.icon(
+                  //   onPressed: controller.createAnotherReport,
+                  //   icon: const Icon(Icons.add_circle_outline),
+                  //   label: const Text('Buat Laporan Lagi'),
+                  //   style: OutlinedButton.styleFrom(
+                  //     minimumSize: const Size(double.infinity, 50),
+                  //     side: BorderSide(color: AppColors.primary, width: 2),
+                  //     foregroundColor: AppColors.primary,
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //     ),
+                  //   ),
+                  // ),
 
                   const SizedBox(height: 12),
 
@@ -218,6 +226,7 @@ class FormSuccessView extends GetView<FormSuccessController> {
             const SizedBox(height: 20),
           ],
         ),
+      ),
       ),
     );
   }

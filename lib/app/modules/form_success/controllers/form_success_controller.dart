@@ -49,15 +49,28 @@ class FormSuccessController extends GetxController {
 
   /// Create another report (back to form)
   void createAnotherReport() {
-    // Go back twice: success screen → form screen → home
-    // Then navigate to form again
+    // Use slug from report data if available
+    final slug = reportSlug;
+    
+    if (slug == null || slug.isEmpty) {
+      // Fallback: try to determine from previous route
+      final fallbackSlug = Get.previousRoute.contains('sppg')
+          ? 'pelaporan-tugas-satgas-mbg'
+          : 'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl';
+      
+      CustomSnackbar.info(
+        title: 'Informasi',
+        message: 'Menggunakan form default. Slug tidak tersedia.',
+      );
+      
+      Get.until((route) => route.settings.name == Routes.HOME);
+      Get.toNamed(Routes.DYNAMIC_FORM, arguments: fallbackSlug);
+      return;
+    }
+
+    // Navigate back to home first, then to form with slug
     Get.until((route) => route.settings.name == Routes.HOME);
-    Get.toNamed(
-      Routes.DYNAMIC_FORM,
-      arguments: Get.previousRoute.contains('sppg')
-        ? 'pelaporan-tugas-satgas-mbg'
-        : 'pelaporan-tugas-satgas-mbg---dinkes---laporan-ikl',
-    );
+    Get.toNamed(Routes.DYNAMIC_FORM, arguments: slug);
   }
 
   /// Go back to home

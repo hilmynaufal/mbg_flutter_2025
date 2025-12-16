@@ -6,8 +6,7 @@ class ServiceGridItem extends StatelessWidget {
   final String title;
   final String description;
   final VoidCallback onTap;
-  final Color? iconColor;
-  final Color? backgroundColor;
+  final Color? color; // Main color for icon and background tint
   final bool showDescription;
   final bool showNewBadge;
 
@@ -17,94 +16,69 @@ class ServiceGridItem extends StatelessWidget {
     required this.title,
     required this.description,
     required this.onTap,
-    this.iconColor,
-    this.backgroundColor,
+    this.color,
     this.showDescription = true,
     this.showNewBadge = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveIconColor = Colors.white;
-    final effectiveBgColor = iconColor ?? Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final mainColor = color ?? theme.colorScheme.primary;
 
-    return Card(
-      // elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Icon Container
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: effectiveBgColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: FaIcon(icon, size: 20, color: effectiveIconColor),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Title
-                  Text(
-                    title,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  // Description (conditional)
-                  // if (showDescription) ...[
-                  //   const SizedBox(height: 4),
-                  //   Text(
-                  //     description,
-                  //     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  //       color: AppColors.textSecondary,
-                  //     ),
-                  //     textAlign: TextAlign.center,
-                  //     maxLines: 2,
-                  //     overflow: TextOverflow.ellipsis,
-                  //   ),
-                  // ],
-                ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: mainColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: mainColor.withOpacity(0.2)),
+                ),
+                child: FaIcon(icon, color: mainColor, size: 24),
               ),
-            ),
-
-            // NEW Badge
-            if (showNewBadge)
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'NEW',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
+              if (showNewBadge)
+                Positioned(
+                  top: -6,
+                  right: -6,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: const Text(
+                      'NEW',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

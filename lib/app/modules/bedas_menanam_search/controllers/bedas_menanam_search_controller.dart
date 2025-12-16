@@ -176,11 +176,10 @@ class BedasMenanamSearchController extends GetxController {
         return itemPhone == searchPhone;
       }).toList();
 
-      // Update filtered list with all region data (for display purposes)
-      filteredList.value = response.data;
-
       // Handle search results
       if (results.isEmpty) {
+        // Clear filtered list when no results found
+        filteredList.clear();
         Get.snackbar(
           'Data Tidak Ditemukan',
           'Tidak ada data dengan nomor WhatsApp $phone untuk Kecamatan ${selectedKecamatan.value!.nmKec} - Desa ${selectedDesa.value!.nmDesa}',
@@ -189,9 +188,11 @@ class BedasMenanamSearchController extends GetxController {
         );
       } else if (results.length == 1) {
         // Single result, navigate directly
+        filteredList.clear(); // Clear list before navigation
         navigateToDetail(results.first);
       } else {
-        // Multiple results, show selection dialog
+        // Multiple results, show selection dialog and update filtered list
+        filteredList.value = results;
         _showMultipleResultsDialog(results);
       }
     } catch (e) {

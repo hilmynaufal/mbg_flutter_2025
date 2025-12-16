@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gradient_button.dart';
 import '../controllers/posyandu_edit_controller.dart';
+import 'widgets/posyandu_card.dart';
 
 class PosyanduEditView extends GetView<PosyanduEditController> {
   const PosyanduEditView({super.key});
@@ -91,7 +92,7 @@ class PosyanduEditView extends GetView<PosyanduEditController> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Masukkan nomor HP pelapor yang terdaftar untuk melihat detail posyandu Anda.',
+                    'Masukkan nomor HP pelapor yang terdaftar untuk mencari dan melihat daftar posyandu Anda.',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.primary,
                     ),
@@ -137,33 +138,108 @@ class PosyanduEditView extends GetView<PosyanduEditController> {
                   icon: Icons.search,
                 )),
 
-            const Spacer(),
+            const SizedBox(height: 24),
 
-            // Info footer
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.help_outline,
-                    size: 18,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Jika nomor HP ditemukan, Anda akan diarahkan ke halaman detail posyandu',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.grey[600],
+            // Search results section
+            Expanded(
+              child: Obx(() {
+                if (!controller.hasSearched.value) {
+                  // Show help info before search
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.help_outline,
+                          size: 18,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Masukkan nomor HP pelapor dan klik "Cari Posyandu" untuk melihat daftar posyandu yang terdaftar',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (controller.filteredPosyanduList.isEmpty) {
+                  // Empty state - no results found
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tidak ada hasil',
+                          style: AppTextStyles.h4.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tidak ditemukan posyandu dengan\nnomor HP yang Anda cari',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: Colors.grey[500],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // Show search results
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Results header
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        'Ditemukan ${controller.filteredPosyanduList.length} Posyandu',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 8),
+
+                    // Results list
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: controller.filteredPosyanduList.length,
+                        itemBuilder: (context, index) {
+                          final posyandu = controller.filteredPosyanduList[index];
+                          return PosyanduCard(
+                            posyandu: posyandu,
+                            onTap: () => controller.navigateToDetail(posyandu),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }),
             ),
           ],
         ),
