@@ -2,15 +2,15 @@ class UserModel {
   final int id;
   final String username;
   final String? firebaseToken;
-  final int idPegawai;
+  final dynamic idPegawai;
   final int level;
   final String nmLengkap;
   final String nip;
   final String? nik;
   final String? email;
   final String jabatan;
-  final int jabatanId;
-  final int idSkpdMaster;
+  final dynamic jabatanId;
+  final dynamic idSkpdMaster;
   final String skpdNama;
   final String userType; // "PNS", "NON_PNS", or "GUEST"
 
@@ -31,7 +31,7 @@ class UserModel {
     this.userType = 'PNS', // Default to PNS for backward compatibility
   });
 
-  // Factory constructor for Non-PNS users
+  // Factory constructor for Non-PNS users (Legacy/Local)
   factory UserModel.nonPns({
     required String nik,
     required String nama,
@@ -99,7 +99,28 @@ class UserModel {
       jabatanId: json['jabatan_id'] ?? 0,
       idSkpdMaster: json['id_skpd_master'] ?? 0,
       skpdNama: json['skpdnama'] ?? '',
-      userType: json['user_type'] ?? 'PNS', // Default to PNS for backward compatibility
+      userType: json['user_type'] ?? 'PNS',
+    );
+  }
+
+  // Factory for Non-ASN response from new endpoint
+  factory UserModel.fromJsonNonAsn(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] ?? 0,
+      username: json['username'] ?? json['no_induk'] ?? '',
+      firebaseToken: null,
+      idPegawai: json['pegawai_id'] ?? 0,
+      level: 0, // Default 0 for Non-ASN
+      nmLengkap: json['nama_lengkap'] ?? json['nama'] ?? '',
+      nip: json['npn'] ?? json['no_induk'] ?? '',
+      nik: json['no_induk'],
+      email: json['email'],
+      jabatan: json['jabatan'] ?? '',
+      jabatanId: json['jabatan_id'] ?? 0,
+      idSkpdMaster: json['satuan_kerja_id'] ?? 0,
+      // skpdNama: json['satuan_kerja'] ?? '',
+      skpdNama: "Kecamatan Soreang",
+      userType: 'NON_PNS',
     );
   }
 

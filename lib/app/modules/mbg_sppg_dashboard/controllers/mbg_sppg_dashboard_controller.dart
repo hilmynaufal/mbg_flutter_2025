@@ -6,11 +6,20 @@ import '../../../data/models/news_model.dart';
 import '../../../data/models/menu_opd_item_model.dart';
 import '../../../data/providers/content_provider.dart';
 import '../../../data/providers/form_provider.dart';
+import '../../../data/services/auth_service.dart';
+
+import '../../../core/values/constants.dart';
+import '../../../data/services/storage_service.dart';
 
 class MbgSppgDashboardController extends GetxController {
   // Services
   final ContentProvider _contentProvider = Get.find<ContentProvider>();
   final FormProvider _formProvider = Get.find<FormProvider>();
+  final AuthService _authService = Get.find<AuthService>();
+  final StorageService _storageService = Get.find<StorageService>();
+
+  // Keys for Showcase
+  final GlobalKey menuKey = GlobalKey();
 
   // Dashboard Data
   final RxList<BannerItem> banners = <BannerItem>[].obs;
@@ -27,6 +36,16 @@ class MbgSppgDashboardController extends GetxController {
   void onInit() {
     super.onInit();
     _loadDashboardData();
+  }
+
+  bool checkTourStatus() {
+    final hasShown =
+        _storageService.readBool(AppConstants.keyDashboardTourShown) ?? false;
+    return !hasShown;
+  }
+
+  void completeTour() {
+    _storageService.writeBool(AppConstants.keyDashboardTourShown, true);
   }
 
   void _loadDashboardData() async {
@@ -67,7 +86,12 @@ class MbgSppgDashboardController extends GetxController {
     // Load OPD menus from API
     try {
       final menuResponse = await _formProvider.getMenuOpdList();
-      opdMenus.value = menuResponse.data;
+
+      // Filter menus based on user access rights
+      final allMenus = menuResponse.data;
+      final filteredMenus = allMenus.where(_filterMenuByAccess).toList();
+
+      opdMenus.value = filteredMenus;
       _groupMenusByParent();
     } catch (e) {
       print('Error loading OPD menus: $e');
@@ -75,6 +99,37 @@ class MbgSppgDashboardController extends GetxController {
     }
 
     isLoadingData.value = false;
+  }
+
+  /// Filter menu based on user's SKPD/Satuan Kerja access rights
+  bool _filterMenuByAccess(MenuOpdItemModel menu) {
+    final hakAkses = menu.detail.hakAkses;
+
+    // If no access restriction is defined (empty or '-'), show the menu
+    if (hakAkses.isEmpty || hakAkses == '-') {
+      return true;
+    }
+
+    // New Rule: If access rights include "publik", allow everyone
+    if (hakAkses.toLowerCase().contains('publik')) {
+      return true;
+    }
+
+    final user = _authService.currentUser;
+    // If not logged in, hide restricted menus
+    if (user == null) {
+      return false;
+    }
+
+    // Get user's organization name
+    // skpdNama handles both PNS (SKPD Name) and Non-ASN (Satuan Kerja) via UserModel normalization
+    final userOrg = user.skpdNama.trim().toUpperCase();
+
+    // Split access list by ';' and check for match (case insensitive)
+    final allowedOrgs =
+        hakAkses.split(';').map((e) => e.trim().toUpperCase()).toList();
+
+    return allowedOrgs.contains(userOrg);
   }
 
   /// Group OPD menus by parent_menu field

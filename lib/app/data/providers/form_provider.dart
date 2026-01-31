@@ -318,7 +318,7 @@ class FormProvider {
   Future<MenuOpdListResponseModel> getMenuOpdList() async {
     try {
       final response = await _dio.get(
-        '/data/menu-aplikasi-satgas-mbg',
+        '/data/menu-aplikasi-satgas-mbg-v',
       );
 
       if (response.data != null) {

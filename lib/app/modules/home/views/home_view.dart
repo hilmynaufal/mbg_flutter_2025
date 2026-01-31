@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mbg_flutter_2025/app/core/utils/icon_mapper.dart';
 import '../controllers/home_controller.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
@@ -28,6 +31,8 @@ class HomeView extends GetView<HomeController> {
                   _buildBannerSection(),
                   const SizedBox(height: 20),
                   _buildServicesSection(context),
+                  const SizedBox(height: 24),
+                  _buildShortcutsSection(context),
                   const SizedBox(height: 24),
                   _buildNewsSection(context),
                   const SizedBox(height: 24),
@@ -268,6 +273,334 @@ class HomeView extends GetView<HomeController> {
         ],
       ),
     );
+  }
+
+  Widget _buildShortcutsSection(BuildContext context) {
+    return Obx(() {
+      if (controller.shortcuts.isEmpty) {
+        return const SizedBox.shrink(); // Hide section if no shortcuts
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Menu Pintas',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+              ),
+              if (controller.shortcuts.length > 3)
+                TextButton(
+                  onPressed: () {
+                    _showAllShortcutsDialog(context);
+                  },
+                  child: const Text('Lihat Semua'),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: controller.shortcuts
+                .take(6) // Show max 6 shortcuts
+                .map((shortcut) => _buildShortcutItem(context, shortcut))
+                .toList(),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildShortcutItem(BuildContext context, shortcut) {
+    log(shortcut.iconClass.toString());
+    // Parse icon from icon_class
+    final iconData = IconMapper.mapIcon(shortcut.iconClass);
+    // Parse color from color_hex
+    final color = _parseColor(shortcut.colorHex);
+
+    return GestureDetector(
+      onTap: () {
+        _showShortcutActionBottomSheet(context, shortcut);
+      },
+      child: Container(
+        width: (MediaQuery.of(context).size.width - 56) / 3, // 3 columns
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: FaIcon(iconData, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              shortcut.menu,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    height: 1.2,
+                  ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showShortcutActionBottomSheet(BuildContext context, dynamic shortcut) {
+    final iconData = IconMapper.mapIcon(shortcut.iconClass);
+    final color = _parseColor(shortcut.colorHex);
+
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header with icon and title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: FaIcon(iconData, color: color, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        shortcut.menu,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (shortcut.deskripsi != null &&
+                          shortcut.deskripsi!.isNotEmpty)
+                        Text(
+                          shortcut.deskripsi!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Divider(height: 1),
+            const SizedBox(height: 16),
+
+            // Tambah Data button
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.add, color: Colors.green),
+              ),
+              title: const Text(
+                'Tambah Data',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text('Buat data baru'),
+              onTap: () {
+                Get.back();
+                controller.navigateToDynamicFormFromShortcut(shortcut.slug);
+              },
+            ),
+            const SizedBox(height: 8),
+
+            // Lihat Data button
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.list_alt, color: Colors.blue),
+              ),
+              title: const Text(
+                'Lihat Data',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text('Lihat daftar data yang sudah ada'),
+              onTap: () {
+                Get.back(); // Close bottom sheet
+
+                // Check if menu has required_filter
+                if (shortcut.requiredFilter != null &&
+                    shortcut.requiredFilter.isNotEmpty &&
+                    shortcut.requiredFilter != "0,0") {
+                  // Navigate to filter page first
+                  controller.navigateToFilterPageFromShortcut(shortcut);
+                } else {
+                  // Direct to data list (existing flow)
+                  controller.navigateToDataListFromShortcut(
+                      shortcut.slug, shortcut.menu);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            // Remove from shortcuts button
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.push_pin_outlined, color: Colors.red),
+              ),
+              title: const Text(
+                'Hapus dari Menu Pintas',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text('Hapus shortcut dari halaman utama'),
+              onTap: () {
+                Get.back();
+                controller.removeShortcut(shortcut.slug);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      isDismissible: true,
+      enableDrag: true,
+    );
+  }
+
+  void _showAllShortcutsDialog(BuildContext context) {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(maxHeight: 600),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Semua Menu Pintas',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Obx(() => GridView.builder(
+                      shrinkWrap: true,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: controller.shortcuts.length,
+                      itemBuilder: (context, index) {
+                        final shortcut = controller.shortcuts[index];
+                        return _buildShortcutItem(context, shortcut);
+                      },
+                    )),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _parseIconData(String iconClass) {
+    // Import icon mapper utility
+    final Map<String, IconData> iconMap = {
+      'fa-university': FontAwesomeIcons.buildingColumns,
+      'fa-building': FontAwesomeIcons.building,
+      'fa-hospital': FontAwesomeIcons.hospital,
+      'fa-file-alt': FontAwesomeIcons.fileLines,
+      'fa-chart-bar': FontAwesomeIcons.chartBar,
+      'fa-users': FontAwesomeIcons.users,
+      'fa-cog': FontAwesomeIcons.gear,
+      'fa-bell': FontAwesomeIcons.bell,
+      'fa-envelope': FontAwesomeIcons.envelope,
+      'fa-home': FontAwesomeIcons.house,
+      'fa-search': FontAwesomeIcons.magnifyingGlass,
+      'fa-plus': FontAwesomeIcons.plus,
+      'fa-edit': FontAwesomeIcons.penToSquare,
+      'fa-trash': FontAwesomeIcons.trash,
+      'fa-check': FontAwesomeIcons.check,
+      'fa-times': FontAwesomeIcons.xmark,
+      'fa-arrow-left': FontAwesomeIcons.arrowLeft,
+      'fa-arrow-right': FontAwesomeIcons.arrowRight,
+      'fa-cutlery': FontAwesomeIcons.cutlery,
+    };
+
+    return iconMap[iconClass] ?? FontAwesomeIcons.circle;
+  }
+
+  Color _parseColor(String colorHex) {
+    try {
+      // Remove # if present
+      final hex = colorHex.replaceAll('#', '');
+      // Add FF for full opacity
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (e) {
+      return const Color(0xFF14B8A6); // Default teal
+    }
   }
 
   Widget _buildNewsSection(BuildContext context) {

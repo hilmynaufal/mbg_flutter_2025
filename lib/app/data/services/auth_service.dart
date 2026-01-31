@@ -1,12 +1,14 @@
 import 'package:get/get.dart';
 import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
+import '../providers/non_asn_auth_provider.dart';
 import 'storage_service.dart';
 import '../../core/values/constants.dart';
 
 class AuthService extends GetxService {
   final StorageService _storageService = Get.find<StorageService>();
   final AuthProvider _authProvider = AuthProvider();
+  final NonAsnAuthProvider _nonAsnAuthProvider = NonAsnAuthProvider();
 
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
   UserModel? get currentUser => _currentUser.value;
@@ -22,7 +24,8 @@ class AuthService extends GetxService {
 
   // Load user from storage on app start
   void _loadUserFromStorage() {
-    final isLoggedIn = _storageService.readBool(AppConstants.keyIsLoggedIn) ?? false;
+    final isLoggedIn =
+        _storageService.readBool(AppConstants.keyIsLoggedIn) ?? false;
     if (isLoggedIn) {
       final userData = _storageService.readObject(AppConstants.keyUser);
       if (userData != null) {
@@ -61,30 +64,39 @@ class AuthService extends GetxService {
     }
   }
 
-  // Login Non-PNS method (local storage only, no API call)
+  // Login Non-PNS method (Using endpoint)
   Future<bool> loginNonPns({
-    required String nik,
-    required String nama,
-    required String email,
+    required String username,
+    required String password,
   }) async {
     try {
-      // Create Non-PNS user model
-      final nonPnsUser = UserModel.nonPns(
-        nik: nik,
-        nama: nama,
-        email: email,
+      final response = await _nonAsnAuthProvider.login(
+        username: username,
+        password: password,
       );
 
-      // Save user data to local storage
-      _currentUser.value = nonPnsUser;
-      await _storageService.writeObject(
-        AppConstants.keyUser,
-        nonPnsUser.toJson(),
-      );
-      await _storageService.writeBool(AppConstants.keyIsLoggedIn, true);
-      _isLoggedIn.value = true;
+      if (response['code'] == 200 && response['status'] == 'success') {
+        final List data = response['data'];
+        if (data.isNotEmpty) {
+          final userData = data[0];
+          final user = UserModel.fromJsonNonAsn(userData);
 
-      return true;
+          // Save user data
+          _currentUser.value = user;
+          await _storageService.writeObject(
+            AppConstants.keyUser,
+            user.toJson(),
+          );
+          await _storageService.writeBool(AppConstants.keyIsLoggedIn, true);
+          _isLoggedIn.value = true;
+
+          return true;
+        } else {
+          throw Exception('Data user tidak ditemukan');
+        }
+      } else {
+        throw Exception(response['message'] ?? 'Login gagal');
+      }
     } catch (e) {
       rethrow;
     }

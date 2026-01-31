@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:mbg_flutter_2025/app/modules/home/controllers/home_controller.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../../../data/models/menu_opd_item_model.dart';
 import '../../../data/models/news_model.dart';
+import '../../../data/models/shortcut_model.dart';
 import '../../../data/providers/content_provider.dart';
 import '../../../data/providers/form_provider.dart';
+import '../../../data/services/auth_service.dart';
+import '../../../data/services/shortcut_service.dart';
 import '../../../routes/app_routes.dart';
 
 class DynamicOpdDashboardController extends GetxController {
   // Services
   final ContentProvider _contentProvider = Get.find<ContentProvider>();
   final FormProvider _formProvider = Get.find<FormProvider>();
+  final ShortcutService _shortcutService = ShortcutService();
+  final AuthService _authService = Get.find<AuthService>();
 
   // Arguments from route
   final String parentMenu;
@@ -83,14 +90,46 @@ class DynamicOpdDashboardController extends GetxController {
     try {
       final menuResponse = await _formProvider.getMenuOpdList();
 
-      // Filter menus by parent_menu
+      // Filter menus by parent_menu AND access rights
       menuItems.value = menuResponse.data
-          .where((menu) => menu.detail.parentMenu == parentMenu)
+          .where((menu) =>
+              menu.detail.parentMenu == parentMenu && _filterMenuByAccess(menu))
           .toList();
     } catch (e) {
       print('Error loading menu items: $e');
       // Silent failure - keep empty list
     }
+  }
+
+  /// Filter menu based on user's SKPD/Satuan Kerja access rights
+  bool _filterMenuByAccess(MenuOpdItemModel menu) {
+    final hakAkses = menu.detail.hakAkses;
+
+    // If no access restriction is defined (empty or '-'), show the menu
+    if (hakAkses.isEmpty || hakAkses == '-') {
+      return true;
+    }
+
+    // New Rule: If access rights include "publik", allow everyone
+    if (hakAkses.toLowerCase().contains('publik')) {
+      return true;
+    }
+
+    final user = _authService.currentUser;
+    // If not logged in, hide restricted menus
+    if (user == null) {
+      return false;
+    }
+
+    // Get user's organization name
+    // skpdNama handles both PNS (SKPD Name) and Non-ASN (Satuan Kerja) via UserModel normalization
+    final userOrg = user.skpdNama.trim().toUpperCase();
+
+    // Split access list by ';' and check for match (case insensitive)
+    final allowedOrgs =
+        hakAkses.split(';').map((e) => e.trim().toUpperCase()).toList();
+
+    return allowedOrgs.contains(userOrg);
   }
 
   Future<void> _loadStatistics() async {
@@ -156,5 +195,40 @@ class DynamicOpdDashboardController extends GetxController {
   IconData get themeIcon {
     if (menuItems.isEmpty) return FontAwesomeIcons.circle;
     return menuItems.first.detail.iconData ?? FontAwesomeIcons.circle;
+  }
+
+  /// Pin menu to home as shortcut
+  Future<void> pinToHome(dynamic menuDetail) async {
+    final shortcut = ShortcutModel(
+      slug: menuDetail.slug,
+      menu: menuDetail.menu,
+      deskripsi: menuDetail.deskripsi,
+      kategori: menuDetail.kategori,
+      iconClass: menuDetail.ikon,
+      colorHex: menuDetail.warnaBackground,
+      requiredFilter: menuDetail.requiredFilter,
+      parentMenu: parentMenu,
+    );
+
+    final success = await _shortcutService.addShortcut(shortcut);
+
+    if (success) {
+      CustomSnackbar.success(
+        title: 'Berhasil',
+        message:
+            'Menu "${menuDetail.menu}" berhasil ditambahkan ke Menu Pintas',
+      );
+      Get.find<HomeController>().loadShortcuts();
+    } else {
+      CustomSnackbar.warning(
+        title: 'Informasi',
+        message: 'Menu ini sudah ada di Menu Pintas',
+      );
+    }
+  }
+
+  /// Check if menu is already pinned
+  Future<bool> isMenuPinned(String slug) async {
+    return await _shortcutService.isShortcutExist(slug);
   }
 }

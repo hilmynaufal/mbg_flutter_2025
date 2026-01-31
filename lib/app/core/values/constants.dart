@@ -16,6 +16,7 @@ class AppConstants {
   static const String keyReportIds = 'report_ids';
   static const String keyPenerimaMbgReports = 'penerima_mbg_reports';
   static const String keyBedasMenanamPassword = 'bedas_menanam_password';
+  static const String keyDashboardTourShown = 'dashboard_tour_shown';
 
   // Timeouts
   static const int connectionTimeout = 30000; // 30 seconds

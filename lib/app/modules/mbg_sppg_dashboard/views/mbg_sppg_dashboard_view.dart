@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../controllers/mbg_sppg_dashboard_controller.dart';
 import '../../../routes/app_routes.dart';
@@ -13,34 +14,45 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(context),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildBannerSection(),
-                  const SizedBox(height: 24),
-                  // Statistics section hidden
-                  // _buildStatisticsSection(context),
-                  // const SizedBox(height: 24),
-                  _buildMenuSection(context),
-                  const SizedBox(height: 24),
-                  _buildOpdMenuSection(context),
-                  const SizedBox(height: 24),
-                  _buildNewsSection(context),
-                  const SizedBox(height: 24),
-                ],
+    return ShowCaseWidget(
+      builder: (context) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (controller.checkTourStatus()) {
+            ShowCaseWidget.of(context).startShowCase([controller.menuKey]);
+            controller.completeTour();
+          }
+        });
+
+        return Scaffold(
+          backgroundColor: Colors.grey[50],
+          body: CustomScrollView(
+            slivers: [
+              _buildSliverAppBar(context),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildBannerSection(),
+                      const SizedBox(height: 24),
+                      // Statistics section hidden
+                      // _buildStatisticsSection(context),
+                      // const SizedBox(height: 24),
+                      _buildMenuSection(context),
+                      const SizedBox(height: 24),
+                      _buildOpdMenuSection(context),
+                      const SizedBox(height: 24),
+                      _buildNewsSection(context),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -310,44 +322,70 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
         return const SizedBox.shrink();
       }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Layanan OPD',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-          ),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.85,
+      return Showcase(
+        key: controller.menuKey,
+        description:
+            'Menu layanan OPD sekarang disesuaikan dengan hak akses Anda.\nBeberapa menu mungkin tidak tampil jika Anda tidak memiliki akses.',
+        title: 'Penyesuaian Menu Layanan',
+        targetBorderRadius: BorderRadius.circular(20),
+        tooltipBackgroundColor: Get.theme.colorScheme.primary,
+        textColor: Get.theme.colorScheme.onPrimary,
+        titleAlignment: TextAlign.start,
+        descriptionAlignment: TextAlign.start,
+        tooltipPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        tooltipBorderRadius: BorderRadius.circular(16),
+        targetPadding: const EdgeInsets.all(8),
+        titleTextStyle: TextStyle(
+          color: Get.theme.colorScheme.onPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+        descTextStyle: TextStyle(
+          color: Get.theme.colorScheme.onPrimary,
+          fontSize: 14,
+          height: 1.5,
+        ),
+        overlayOpacity: 0.7,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Layanan OPD',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
             ),
-            itemCount: controller.groupedOpdMenus.length,
-            itemBuilder: (context, index) {
-              final parentMenu =
-                  controller.groupedOpdMenus.keys.elementAt(index);
-              final menus = controller.groupedOpdMenus[parentMenu]!;
-              final firstMenu = menus.first.detail;
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: controller.groupedOpdMenus.length,
+              itemBuilder: (context, index) {
+                final parentMenu =
+                    controller.groupedOpdMenus.keys.elementAt(index);
+                final menus = controller.groupedOpdMenus[parentMenu]!;
+                final firstMenu = menus.first.detail;
 
-              return ServiceGridItem(
-                icon: firstMenu.iconData ?? FontAwesomeIcons.circle,
-                title: parentMenu,
-                description: '${menus.length} menu',
-                onTap: () => controller.navigateToOpdDashboard(parentMenu),
-                showDescription: false,
-                color: firstMenu.backgroundColor,
-              );
-            },
-          ),
-        ],
+                return ServiceGridItem(
+                  icon: firstMenu.iconData ?? FontAwesomeIcons.circle,
+                  title: parentMenu,
+                  description: '${menus.length} menu',
+                  onTap: () => controller.navigateToOpdDashboard(parentMenu),
+                  showDescription: false,
+                  color: firstMenu.backgroundColor,
+                );
+              },
+            ),
+          ],
+        ),
       );
     });
   }

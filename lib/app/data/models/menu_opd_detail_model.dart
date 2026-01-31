@@ -12,6 +12,7 @@ class MenuOpdDetailModel {
   final String kategori;
   final String deskripsi;
   final String parentMenu;
+  final String hakAkses;
   final String requiredFilter;
 
   MenuOpdDetailModel({
@@ -23,6 +24,7 @@ class MenuOpdDetailModel {
     required this.kategori,
     required this.deskripsi,
     required this.parentMenu,
+    required this.hakAkses,
     required this.requiredFilter,
   });
 
@@ -36,6 +38,7 @@ class MenuOpdDetailModel {
       kategori: json['kategori'] ?? '',
       deskripsi: json['deskripsi'] ?? '',
       parentMenu: json['parent_menu'] ?? '',
+      hakAkses: json['hak_akses'] ?? '',
       requiredFilter: json['required_filter'] ?? '',
     );
   }
@@ -50,6 +53,7 @@ class MenuOpdDetailModel {
       'kategori': kategori,
       'deskripsi': deskripsi,
       'parent_menu': parentMenu,
+      'hak_akses': hakAkses,
       'required_filter': requiredFilter,
     };
   }

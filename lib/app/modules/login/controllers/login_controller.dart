@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/auth_service.dart';
-import '../../../data/providers/otp_provider.dart';
+
 import '../../../routes/app_routes.dart';
 
 class LoginController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
-  final OtpProvider _otpProvider = OtpProvider();
+  // final OtpProvider _otpProvider = OtpProvider();
 
   // Text editing controllers - PNS
   final usernameController = TextEditingController();
@@ -15,9 +15,6 @@ class LoginController extends GetxController {
 
   // Text editing controllers - Non-PNS
   final nikController = TextEditingController();
-  final namaController = TextEditingController();
-  final emailController = TextEditingController();
-  final otpController = TextEditingController();
 
   // Form key
   final formKey = GlobalKey<FormState>();
@@ -27,14 +24,6 @@ class LoginController extends GetxController {
   final RxBool isPasswordVisible = false.obs;
   final RxString errorMessage = ''.obs;
   final RxBool isPnsLogin = true.obs; // true = PNS login, false = Non-PNS login
-
-  // OTP states
-  final RxBool isOtpSent = false.obs;
-  final RxBool isOtpVerified = false.obs;
-  final RxBool isSendingOtp = false.obs;
-  final RxBool isVerifyingOtp = false.obs;
-  final RxInt resendTimer = 0.obs; // Countdown timer for resend OTP
-  Timer? _resendTimer;
 
   @override
   void onInit() {
@@ -55,11 +44,8 @@ class LoginController extends GetxController {
     passwordController.dispose();
     // Dispose Non-PNS controllers
     nikController.dispose();
-    namaController.dispose();
-    emailController.dispose();
-    otpController.dispose();
     // Cancel timer
-    _resendTimer?.cancel();
+
     super.onClose();
   }
 
@@ -68,32 +54,10 @@ class LoginController extends GetxController {
     isPnsLogin.value = !isPnsLogin.value;
     // Clear error message when switching
     errorMessage.value = '';
-    // Reset OTP states when switching
-    _resetOtpStates();
-  }
-
-  // Reset OTP states
-  void _resetOtpStates() {
-    isOtpSent.value = false;
-    isOtpVerified.value = false;
-    isSendingOtp.value = false;
-    isVerifyingOtp.value = false;
-    resendTimer.value = 0;
-    otpController.clear();
-    _resendTimer?.cancel();
-  }
-
-  // Start resend timer (60 seconds)
-  void _startResendTimer() {
-    resendTimer.value = 60;
-    _resendTimer?.cancel();
-    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (resendTimer.value > 0) {
-        resendTimer.value--;
-      } else {
-        timer.cancel();
-      }
-    });
+    // Clear controllers
+    usernameController.clear();
+    passwordController.clear();
+    nikController.clear();
   }
 
   // Toggle password visibility
@@ -117,7 +81,7 @@ class LoginController extends GetxController {
     return null;
   }
 
-  // Validate NIK (must be 16 digits)
+  // Validate NIK (must be 16 digits) - Used as username for Non-PNS
   String? validateNik(String? value) {
     if (value == null || value.isEmpty) {
       return 'NIK tidak boleh kosong';
@@ -133,202 +97,6 @@ class LoginController extends GetxController {
       return 'NIK harus berupa angka';
     }
     return null;
-  }
-
-  // Validate nama
-  String? validateNama(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Nama tidak boleh kosong';
-    }
-    if (value.trim().length < 3) {
-      return 'Nama minimal 3 karakter';
-    }
-    return null;
-  }
-
-  // Validate email
-  String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Email tidak boleh kosong';
-    }
-    // Basic email validation
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value.trim())) {
-      return 'Email tidak valid';
-    }
-    return null;
-  }
-
-  // Validate OTP (must be 6 digits)
-  String? validateOtp(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Kode OTP tidak boleh kosong';
-    }
-    // Remove any whitespace
-    final cleanedValue = value.trim();
-    // Check if it's exactly 6 digits
-    if (cleanedValue.length != 6) {
-      return 'Kode OTP harus 6 digit';
-    }
-    // Check if it contains only numbers
-    if (!RegExp(r'^[0-9]+$').hasMatch(cleanedValue)) {
-      return 'Kode OTP harus berupa angka';
-    }
-    return null;
-  }
-
-  // Send OTP to email
-  Future<void> sendOtp() async {
-    // Validate email, NIK, and nama first
-    if (emailController.text.trim().isEmpty ||
-        nikController.text.trim().isEmpty ||
-        namaController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Validasi Gagal',
-        'Mohon lengkapi Email, NIK, dan Nama terlebih dahulu',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
-    // Validate email format
-    if (validateEmail(emailController.text) != null) {
-      Get.snackbar(
-        'Validasi Gagal',
-        'Format email tidak valid',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
-    // Validate NIK
-    if (validateNik(nikController.text) != null) {
-      Get.snackbar(
-        'Validasi Gagal',
-        'NIK harus 16 digit angka',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
-    // Validate nama
-    if (validateNama(namaController.text) != null) {
-      Get.snackbar(
-        'Validasi Gagal',
-        'Nama minimal 3 karakter',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
-    isSendingOtp.value = true;
-
-    try {
-      final response = await _otpProvider.sendOtp(
-        email: emailController.text.trim(),
-      );
-
-      if (response.success) {
-        isOtpSent.value = true;
-        _startResendTimer();
-        Get.snackbar(
-          'OTP Terkirim',
-          'Kode OTP telah dikirim ke email ${emailController.text.trim()}',
-          backgroundColor: Get.theme.colorScheme.primary,
-          colorText: Get.theme.colorScheme.onPrimary,
-          snackPosition: SnackPosition.TOP,
-          duration: const Duration(seconds: 3),
-        );
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Gagal Mengirim OTP',
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-    } finally {
-      isSendingOtp.value = false;
-    }
-  }
-
-  // Verify OTP code
-  Future<void> verifyOtp() async {
-    // Validate OTP
-    if (validateOtp(otpController.text) != null) {
-      Get.snackbar(
-        'Validasi Gagal',
-        'Kode OTP harus 6 digit angka',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
-    isVerifyingOtp.value = true;
-
-    try {
-      final response = await _otpProvider.verifyOtp(
-        email: emailController.text.trim(),
-        otpCode: otpController.text.trim(),
-      );
-
-      if (response.success) {
-        isOtpVerified.value = true;
-        Get.snackbar(
-          'OTP Terverifikasi',
-          'Kode OTP berhasil diverifikasi. Silakan login.',
-          backgroundColor: Get.theme.colorScheme.primary,
-          colorText: Get.theme.colorScheme.onPrimary,
-          snackPosition: SnackPosition.TOP,
-          duration: const Duration(seconds: 2),
-        );
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Verifikasi Gagal',
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-    } finally {
-      isVerifyingOtp.value = false;
-    }
-  }
-
-  // Resend OTP
-  Future<void> resendOtp() async {
-    if (resendTimer.value > 0) {
-      Get.snackbar(
-        'Tunggu Sebentar',
-        'Silakan tunggu ${resendTimer.value} detik untuk kirim ulang OTP',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-
-    await sendOtp();
   }
 
   // Login method - unified for both PNS and Non-PNS
@@ -390,21 +158,8 @@ class LoginController extends GetxController {
     }
   }
 
-  // Login Non-PNS method (local storage only, requires OTP verification)
+  // Login Non-PNS method (Using endpoint)
   Future<void> loginNonPns() async {
-    // Check if OTP is verified
-    if (!isOtpVerified.value) {
-      Get.snackbar(
-        'OTP Belum Terverifikasi',
-        'Silakan verifikasi OTP terlebih dahulu',
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
     // Clear previous error
     errorMessage.value = '';
 
@@ -417,10 +172,15 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
+      // Verify NIK and Password are provided (using existing controllers or new ones)
+      // We reuse usernameController for NIK and passwordController for Password?
+      // Or use nikController?
+      // Let's use nikController for username involved in Non-PNS login to correspond with "NIK" label.
+      // And we need a password controller for Non-PNS. Reuse passwordController.
+
       final success = await _authService.loginNonPns(
-        nik: nikController.text.trim(),
-        nama: namaController.text.trim(),
-        email: emailController.text.trim(),
+        username: nikController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
       if (success) {

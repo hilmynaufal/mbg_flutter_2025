@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/storage_service.dart';
+import '../../../data/services/shortcut_service.dart';
 import '../../../data/providers/content_provider.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/models/shortcut_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../data/models/news_model.dart';
@@ -13,6 +15,7 @@ class HomeController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final StorageService _storageService = Get.find<StorageService>();
   final ContentProvider _contentProvider = Get.find<ContentProvider>();
+  final ShortcutService _shortcutService = ShortcutService();
 
   // Observable user
   Rx<UserModel?> user = Rx<UserModel?>(null);
@@ -28,6 +31,9 @@ class HomeController extends GetxController {
   RxList<NewsModel> latestNews = <NewsModel>[].obs;
   RxBool isLoadingNews = false.obs;
 
+  // Observable shortcuts
+  RxList<ShortcutModel> shortcuts = <ShortcutModel>[].obs;
+
   // Observable report statistics
   RxInt reportCount = 0.obs;
   RxInt pendingReports = 0.obs;
@@ -41,6 +47,22 @@ class HomeController extends GetxController {
     _loadBanners();
     _loadLatestNews();
     _loadReportCount();
+    _loadShortcuts();
+  }
+
+  Future<void> loadShortcuts() async {
+    _loadShortcuts();
+  }
+
+  // Load shortcuts from local storage
+  Future<void> _loadShortcuts() async {
+    try {
+      final loadedShortcuts = await _shortcutService.getShortcuts();
+      shortcuts.value = loadedShortcuts;
+    } catch (e) {
+      print('Error loading shortcuts: $e');
+      // Silent failure - keep empty list
+    }
   }
 
   // Load user data
@@ -123,6 +145,54 @@ class HomeController extends GetxController {
     _loadBanners();
     _loadLatestNews();
     _loadReportCount();
+    _loadShortcuts();
+  }
+
+  // Remove shortcut
+  Future<void> removeShortcut(String slug) async {
+    try {
+      final success = await _shortcutService.removeShortcut(slug);
+      if (success) {
+        await _loadShortcuts(); // Reload shortcuts
+        CustomSnackbar.success(
+          title: 'Berhasil',
+          message: 'Menu berhasil dihapus dari Menu Pintas',
+        );
+      }
+    } catch (e) {
+      print('Error removing shortcut: $e');
+      CustomSnackbar.error(
+        title: 'Gagal',
+        message: 'Tidak dapat menghapus menu dari Menu Pintas',
+      );
+    }
+  }
+
+  // Navigate to dynamic form from shortcut
+  void navigateToDynamicFormFromShortcut(String slug) {
+    Get.toNamed(Routes.DYNAMIC_FORM, arguments: slug);
+  }
+
+  // Navigate to data list from shortcut
+  void navigateToDataListFromShortcut(String slug, String menuTitle) {
+    Get.toNamed(
+      Routes.OPD_DATA_LIST,
+      arguments: {
+        'slug': slug,
+        'menuTitle': menuTitle,
+      },
+    );
+  }
+
+  void navigateToFilterPageFromShortcut(dynamic shortcut) {
+    Get.toNamed(
+      Routes.DYNAMIC_FILTER,
+      arguments: {
+        'slug': shortcut.slug,
+        'menuTitle': shortcut.menu,
+        'requiredFilter': shortcut.requiredFilter,
+      },
+    );
   }
 
   // Logout

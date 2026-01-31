@@ -516,6 +516,30 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
                 }
               },
             ),
+            const SizedBox(height: 8),
+
+            // Pin to Home button
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.push_pin, color: Colors.orange),
+              ),
+              title: const Text(
+                'Pin ke Home',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: const Text('Tambahkan ke Menu Pintas di halaman utama'),
+              onTap: () {
+                Get.back(); // Close bottom sheet
+                controller.pinToHome(menuDetail);
+              },
+            ),
             const SizedBox(height: 16),
           ],
         ),
