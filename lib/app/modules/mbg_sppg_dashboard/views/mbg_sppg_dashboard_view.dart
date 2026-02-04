@@ -86,7 +86,7 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
             ),
             const SizedBox(width: 12),
             const Text(
-              'MBG & SPPG',
+              'Satgas MBG',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -263,48 +263,55 @@ class MbgSppgDashboardView extends GetView<MbgSppgDashboardController> {
           mainAxisSpacing: 12,
           childAspectRatio: 0.85,
           children: [
-            ServiceGridItem(
-              icon: FontAwesomeIcons.fileCirclePlus,
-              title: 'Laporan\nHarian',
-              description: 'Buat laporan penerima MBG',
-              onTap: () =>
-                  controller.navigateToDynamicForm('pelaporan-penerima-mbg'),
-              showDescription: false,
-              color: Colors.blue,
-            ),
-            ServiceGridItem(
-              icon: FontAwesomeIcons.clipboardCheck,
-              title: 'Laporan\nSaya',
-              description: 'Daftar Laporan Penerima MBG',
-              onTap: () =>
-                  Get.toNamed(Routes.REPORT_LIST, arguments: 'penerima-mbg'),
-              showDescription: false,
-              color: Colors.blue,
-            ),
             // ServiceGridItem(
-            //   icon: FontAwesomeIcons.fileSignature,
-            //   title: 'Laporan\nLainnya',
-            //   description: 'Buat laporan baru',
-            //   onTap: controller.showReportTypeDialog,
+            //   icon: FontAwesomeIcons.fileCirclePlus,
+            //   title: 'Laporan\nHarian',
+            //   description: 'Buat laporan penerima MBG',
+            //   onTap: () =>
+            //       controller.navigateToDynamicForm('pelaporan-penerima-mbg'),
             //   showDescription: false,
             //   color: Colors.blue,
             // ),
             // ServiceGridItem(
-            //   icon: FontAwesomeIcons.notesMedical,
-            //   title: 'Laporan\nIKL',
-            //   description: 'Daftar Laporan IKL',
-            //   onTap: () => Get.toNamed(Routes.REPORT_LIST, arguments: 'ikl'),
+            //   icon: FontAwesomeIcons.clipboardCheck,
+            //   title: 'Laporan\nSaya',
+            //   description: 'Daftar Laporan Penerima MBG',
+            //   onTap: () =>
+            //       Get.toNamed(Routes.REPORT_LIST, arguments: 'penerima-mbg'),
             //   showDescription: false,
             //   color: Colors.blue,
             // ),
             ServiceGridItem(
-              icon: FontAwesomeIcons.buildingUser,
-              title: 'Daftar\nSPPG',
+              icon: FontAwesomeIcons.mapLocationDot,
+              title: 'Lokasi\nSPPG',
               description: 'Direktori SPPG Aktif',
               onTap: () => Get.toNamed(Routes.SPPG_LIST),
               showDescription: false,
-              showNewBadge: true,
-              color: Colors.blue,
+              color: Colors.red,
+            ),
+            ServiceGridItem(
+              icon: FontAwesomeIcons.chartLine,
+              title: 'Capaian',
+              description: 'Statistik Capaian',
+              onTap: () => Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url':
+                    'https://mbg-kabupaten-bandung-info-center.vercel.app/#capaian',
+                'title': 'Capaian'
+              }),
+              showDescription: false,
+              color: Colors.teal,
+            ),
+            ServiceGridItem(
+              icon: FontAwesomeIcons.users,
+              title: 'Penerima\nManfaat',
+              description: 'Data Penerima Manfaat',
+              onTap: () => Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url':
+                    'https://mbg-kabupaten-bandung-info-center.vercel.app/#penerima-manfaat',
+                'title': 'Penerima Manfaat'
+              }),
+              showDescription: false,
+              color: Colors.orange,
             ),
           ],
         ),

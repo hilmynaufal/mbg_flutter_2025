@@ -29,7 +29,9 @@ class HomeView extends GetView<HomeController> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildBannerSection(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
+                  _buildInfoSection(context),
+                  const SizedBox(height: 24),
                   _buildServicesSection(context),
                   const SizedBox(height: 24),
                   _buildShortcutsSection(context),
@@ -191,6 +193,98 @@ class HomeView extends GetView<HomeController> {
     });
   }
 
+  Widget _buildInfoSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Informasi',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.90,
+          children: [
+            _buildServiceItem(
+              context,
+              icon: FontAwesomeIcons.circleInfo,
+              title: 'Apa itu SPPG',
+              color: Colors.blue,
+              onTap: () => Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url': 'https://mbg-kabupaten-bandung-info-center.vercel.app/',
+                'title': 'Apa itu SPPG'
+              }),
+            ),
+            _buildServiceItem(
+              context,
+              icon: FontAwesomeIcons.chartPie,
+              title: 'Jumlah SPPG',
+              color: Colors.purple,
+              onTap: () => Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url':
+                    'https://mbg-kabupaten-bandung-info-center.vercel.app/#sppg',
+                'title': 'Jumlah SPPG'
+              }),
+            ),
+            _buildServiceItem(
+              context,
+              icon: FontAwesomeIcons.users,
+              title: 'Sasaran',
+              color: Colors.orange,
+              // onTap: () {
+              //   CustomSnackbar.info(
+              //     title: 'Info',
+              //     message: 'Fitur Sasaran akan segera hadir',
+              //   );
+              // },
+              onTap: () => Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url':
+                    'https://mbg-kabupaten-bandung-info-center.vercel.app/#penerima-manfaat',
+                'title': 'Sasaran'
+              }),
+            ),
+            _buildServiceItem(
+              context,
+              icon: FontAwesomeIcons.mapLocationDot,
+              title: 'Lokasi SPPG',
+              color: Colors.red,
+              onTap: () => Get.toNamed(Routes.SPPG_LIST),
+            ),
+            _buildServiceItem(
+              context,
+              icon: FontAwesomeIcons.chartLine,
+              title: 'Capaian',
+              color: Colors.teal,
+              onTap: () => Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url':
+                    'https://mbg-kabupaten-bandung-info-center.vercel.app/#capaian',
+                'title': 'Capaian'
+              }),
+            ),
+            _buildServiceItem(
+              context,
+              icon: FontAwesomeIcons.headset,
+              title: 'Kanal Pengaduan',
+              color: Colors.green,
+              onTap: () {
+                controller.navigateToDynamicForm(
+                    'kanal-pengaduan-mbg-kabupaten-bandung');
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildServicesSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +308,7 @@ class HomeView extends GetView<HomeController> {
             _buildServiceItem(
               context,
               icon: FontAwesomeIcons.layerGroup,
-              title: 'MBG & SPPG',
+              title: 'Satgas MBG',
               color: Colors.blue,
               onTap: () => Get.toNamed(Routes.DASHBOARD_MBG),
             ),

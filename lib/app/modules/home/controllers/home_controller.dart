@@ -184,6 +184,10 @@ class HomeController extends GetxController {
     );
   }
 
+  void navigateToDynamicForm(String slug) {
+    Get.toNamed(Routes.DYNAMIC_FORM, arguments: slug);
+  }
+
   void navigateToFilterPageFromShortcut(dynamic shortcut) {
     Get.toNamed(
       Routes.DYNAMIC_FILTER,
