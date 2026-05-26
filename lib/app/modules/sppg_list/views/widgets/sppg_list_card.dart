@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../routes/app_routes.dart';
@@ -162,6 +164,11 @@ class SppgListCard extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    log('[SPPG_DETAIL] nama: ${sppg.detail.namaSppg}');
+                    log('[SPPG_DETAIL] foto_depan: "${sppg.detail.fotoSppgTampakDepan}"');
+                    log('[SPPG_DETAIL] foto_dalam: "${sppg.detail.fotoSppgTampakDalam}"');
+                    log('[SPPG_DETAIL] foto_dapur: "${sppg.detail.fotoSppgTampakDapur}"');
+                    log('[SPPG_DETAIL] titik_lokasi: "${sppg.detail.titikLokasi}"');
                     Get.toNamed(Routes.SPPG_DETAIL, arguments: sppg);
                   },
                   style: ElevatedButton.styleFrom(

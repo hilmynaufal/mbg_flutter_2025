@@ -5,6 +5,7 @@ import '../models/form_response_model.dart';
 import '../models/form_submit_response_model.dart';
 import '../models/form_view_response_model.dart';
 import '../models/sppg_list_response_model.dart';
+import '../models/sppg_mbg_list_response_model.dart';
 import '../models/posyandu_list_response_model.dart';
 import '../models/bedas_menanam_list_response_model.dart';
 import '../models/menu_opd_list_response_model.dart';
@@ -166,7 +167,18 @@ class FormProvider {
     }
   }
 
-  /// Get SPPG list
+  /// Get complete SPPG list from MBG endpoint (512+ records, no photos/coordinates)
+  /// Endpoint: GET /data/mbg---sppg
+  Future<SppgMbgListResponseModel> getMbgSppgList() async {
+    final response = await _dio.get('/data/mbg---sppg');
+    if (response.data != null) {
+      return SppgMbgListResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('Failed to parse MBG SPPG list response');
+    }
+  }
+
+  /// Get SPPG list with photos/coordinates (used as enrichment source)
   /// Endpoint: GET /data/pendataan-profil-sppg-aktif-di-kabupaten-bandung-oleh-kecamatan
   /// Returns list of SPPG with details
   Future<SppgListResponseModel> getSppgList() async {

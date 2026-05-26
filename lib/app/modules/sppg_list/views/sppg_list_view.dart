@@ -78,13 +78,18 @@ class SppgListView extends GetView<SppgListController> {
                     color: Colors.black,
                   ),
                 ),
-                Text(
-                  'Daftar SPPG di Kabupaten Bandung',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
+                Obx(() {
+                  final total = controller.totalCount;
+                  return Text(
+                    total > 0
+                        ? '$total SPPG di Kabupaten Bandung'
+                        : 'Daftar SPPG di Kabupaten Bandung',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -217,6 +222,7 @@ class SppgListView extends GetView<SppgListController> {
       children: [
         _buildSearchField(),
         _buildFilters(),
+        _buildCountBar(),
         Expanded(
           child: Obx(() {
             if (controller.filteredSppgList.isEmpty) {
@@ -238,6 +244,78 @@ class SppgListView extends GetView<SppgListController> {
         ),
       ],
     );
+  }
+
+  Widget _buildCountBar() {
+    return Obx(() {
+      final filtered = controller.filteredCount;
+      final total = controller.totalCount;
+      final hasFilter = controller.hasActiveFilters;
+
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        child: Row(
+          children: [
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.restaurant,
+                      size: 14, color: Colors.indigo.shade400),
+                  const SizedBox(width: 6),
+                  Text(
+                    hasFilter
+                        ? '$filtered dari $total SPPG'
+                        : '$total SPPG',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasFilter) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: controller.clearFilters,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.close,
+                          size: 12, color: Colors.red.shade400),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Reset',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildFilters() {
