@@ -320,15 +320,48 @@ class _SppgMapViewState extends State<SppgMapView> {
                         const BorderRadius.vertical(top: Radius.circular(24)),
                     child: AspectRatio(
                       aspectRatio: 21 / 9,
-                      child: Image.network(
-                        sppg.detail.fotoSppgTampakDepan,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade100,
-                          child: Icon(Icons.image,
-                              color: Colors.grey.shade300, size: 40),
-                        ),
-                      ),
+                      child: sppg.detail.fotoSppgTampakDepan.isEmpty
+                          ? Container(
+                              color: Colors.grey.shade100,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_not_supported_outlined,
+                                      color: Colors.grey.shade400, size: 32),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Foto tidak tersedia',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade400,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Image.network(
+                              sppg.detail.fotoSppgTampakDepan,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                color: Colors.grey.shade100,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.broken_image_outlined,
+                                        color: Colors.grey.shade400, size: 32),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Gagal memuat foto',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade400,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                   Positioned(

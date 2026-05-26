@@ -39,15 +39,48 @@ class SppgListCard extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(24)),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: Image.network(
-                    sppg.detail.fotoSppgTampakDepan,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey.shade100,
-                      child: Icon(Icons.image,
-                          color: Colors.grey.shade300, size: 50),
-                    ),
-                  ),
+                  child: sppg.detail.fotoSppgTampakDepan.isEmpty
+                      ? Container(
+                          color: Colors.grey.shade100,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.image_not_supported_outlined,
+                                  color: Colors.grey.shade400, size: 36),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Foto tidak tersedia',
+                                style: TextStyle(
+                                  color: Colors.grey.shade400,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Image.network(
+                          sppg.detail.fotoSppgTampakDepan,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            color: Colors.grey.shade100,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.broken_image_outlined,
+                                    color: Colors.grey.shade400, size: 36),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Gagal memuat foto',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade400,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                 ),
               ),
               // Gradient Overlay
