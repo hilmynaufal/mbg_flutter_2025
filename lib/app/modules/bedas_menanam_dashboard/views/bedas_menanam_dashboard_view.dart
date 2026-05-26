@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../controllers/bedas_menanam_dashboard_controller.dart';
-import '../../../core/widgets/service_grid_item.dart';
-import '../../../core/widgets/banner_carousel_widget.dart';
 import '../../../core/widgets/news_card_widget.dart';
-import '../../../core/widgets/custom_snackbar.dart';
 import '../../../routes/app_routes.dart';
 
 class BedasMenanamDashboardView
@@ -15,27 +12,68 @@ class BedasMenanamDashboardView
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(context),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildBannerSection(),
-                  const SizedBox(height: 24),
-                  // Statistics section hidden
-                  // _buildStatisticsSection(context),
-                  // const SizedBox(height: 24),
-                  _buildMenuSection(context),
-                  const SizedBox(height: 24),
-                  _buildNewsSection(context),
-                  const SizedBox(height: 24),
-                ],
-              ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async => controller.onInit(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildHeader(context),
+                _buildBannerSection(context),
+                _buildMenuSection(context),
+                _buildNewsSection(context),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () => Get.back(),
+          ),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: FaIcon(FontAwesomeIcons.seedling,
+                color: Colors.green.shade700, size: 20),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dashboard',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  'Bedas Menanam',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -43,85 +81,15 @@ class BedasMenanamDashboardView
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 120.0,
-      floating: true,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: Colors.green.shade700,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(30),
-        ),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const FaIcon(
-                FontAwesomeIcons.seedling,
-                size: 20,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Bedas Menanam',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(30),
-            ),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.green.shade700,
-                Colors.green.shade500,
-              ],
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Icon(
-                  FontAwesomeIcons.leaf,
-                  size: 150,
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBannerSection() {
+  Widget _buildBannerSection(BuildContext context) {
     return Obx(() {
       if (controller.isLoadingData.value) {
         return Container(
           height: 180,
+          margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(20),
           ),
           child: const Center(child: CircularProgressIndicator()),
         );
@@ -132,100 +100,77 @@ class BedasMenanamDashboardView
       }
 
       return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BannerCarouselWidget(
-            banners: controller.banners,
-            height: 180,
-            onBannerTap: (banner) {
-              CustomSnackbar.info(
-                title: 'Info',
-                message: banner.title ?? 'Banner tapped',
-              );
-            },
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildStatisticsSection(BuildContext context) {
-    return Obx(() {
-      if (controller.statistics.isEmpty) return const SizedBox.shrink();
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Statistik Terkini',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 100,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: controller.statistics.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final key = controller.statistics.keys.elementAt(index);
-                final value = controller.statistics[key];
-                return Container(
-                  width: 140,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.green.withOpacity(0.1)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+        height: 180,
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        child: PageView.builder(
+          itemCount: controller.banners.length,
+          itemBuilder: (context, index) {
+            final banner = controller.banners[index];
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        value ?? '-',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
+                ],
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(
+                      banner.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.green.shade700,
+                        child: const Center(
+                          child:
+                              Icon(Icons.image, color: Colors.white, size: 50),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        key,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                );
-              },
-            ),
-          ),
-        ],
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.5),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (banner.title != null)
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            banner.title!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       );
     });
   }
@@ -234,112 +179,155 @@ class BedasMenanamDashboardView
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Layanan Utama',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 24, 20, 16),
+          child: Text(
+            'Layanan Utama',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 3,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.85,
-          children: [
-            ServiceGridItem(
-              icon: FontAwesomeIcons.seedling,
-              title: 'Bedas\nMenanam',
-              description: 'Gerakan Menanam Sayuran',
-              onTap: controller.showBedasMenanamPasswordDialog,
-              showDescription: false,
-              showNewBadge: true,
-              color: Colors.green,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 20,
+              childAspectRatio: 0.85,
             ),
-            ServiceGridItem(
-              icon: FontAwesomeIcons.magnifyingGlass,
-              title: 'Cari Data\nMenanam',
-              description: 'Cari Data Bedas Menanam',
-              onTap: controller.showBedasMenanamSearchPasswordDialog,
-              showDescription: false,
-              color: Colors.green,
-            ),
-          ],
+            children: [
+              _buildServiceItem(
+                context,
+                title: 'Bedas Menanam',
+                icon: FontAwesomeIcons.seedling,
+                color: Colors.green.shade50,
+                iconColor: Colors.green.shade700,
+                onTap: controller.showBedasMenanamPasswordDialog,
+              ),
+              _buildServiceItem(
+                context,
+                title: 'Cari Data',
+                icon: FontAwesomeIcons.magnifyingGlass,
+                color: Colors.blue.shade50,
+                iconColor: Colors.blue.shade700,
+                onTap: controller.showBedasMenanamSearchPasswordDialog,
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
+  Widget _buildServiceItem(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: FaIcon(icon, color: iconColor, size: 28),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNewsSection(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Berita & Kegiatan',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Berita Terbaru',
+                  style: TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('Lihat Semua'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                CustomSnackbar.info(
-                  title: 'Info',
-                  message: 'Fitur ini akan segera hadir',
+          ),
+          Obx(() {
+            if (controller.isLoadingData.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (controller.newsList.isEmpty) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Center(child: Text('Belum ada berita')),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: controller.newsList.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final news = controller.newsList[index];
+                return NewsCardWidget(
+                  news: news,
+                  onTap: () =>
+                      Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
                 );
               },
-              child: const Text('Lihat Semua'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Obx(() {
-          if (controller.isLoadingData.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (controller.newsList.isEmpty) {
-            return Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.newspaper, size: 48, color: Colors.grey[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Belum ada berita',
-                    style: TextStyle(color: Colors.grey[500]),
-                  ),
-                ],
-              ),
             );
-          }
-
-          return ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.newsList.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final news = controller.newsList[index];
-              return NewsCardWidget(
-                news: news,
-                onTap: () =>
-                    Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
-              );
-            },
-          );
-        }),
-      ],
+          }),
+        ],
+      ),
     );
   }
 }

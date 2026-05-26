@@ -70,7 +70,8 @@ class UserModel {
       jabatan: '',
       jabatanId: 0,
       idSkpdMaster: 0,
-      skpdNama: '',
+      //TODO: TEST
+      skpdNama: 'Sekretariat Daerah',
       userType: 'GUEST',
     );
   }

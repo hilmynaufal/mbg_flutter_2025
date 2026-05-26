@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import '../../../core/widgets/banner_carousel_widget.dart';
-import '../../../core/widgets/custom_snackbar.dart';
-import '../../../core/widgets/news_card_widget.dart';
-import '../../../core/widgets/service_grid_item.dart';
-import '../../../routes/app_routes.dart';
 import '../controllers/dynamic_opd_dashboard_controller.dart';
+import '../../../routes/app_routes.dart';
+import '../../../core/widgets/news_card_widget.dart';
 
 class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
   const DynamicOpdDashboardView({super.key});
@@ -14,121 +11,91 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(context),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildBannerSection(),
-                  const SizedBox(height: 24),
-                  _buildStatisticsSection(context),
-                  const SizedBox(height: 24),
-                  _buildMenuSection(context),
-                  const SizedBox(height: 24),
-                  _buildNewsSection(context),
-                  const SizedBox(height: 24),
-                ],
-              ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async => controller.onInit(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildHeader(context),
+                _buildBannerSection(context),
+                _buildStatisticsSection(context),
+                _buildMenuSection(context),
+                _buildNewsSection(context),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context) {
+  Widget _buildHeader(BuildContext context) {
     return Obx(() {
       final themeColor = controller.themeColor;
       final themeIcon = controller.themeIcon;
 
-      return SliverAppBar(
-        expandedHeight: 120.0,
-        floating: true,
-        pinned: true,
-        elevation: 0,
-        backgroundColor: themeColor,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(30),
-          ),
-        ),
-        flexibleSpace: FlexibleSpaceBar(
-          titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: FaIcon(
-                  themeIcon,
-                  size: 20,
-                  color: Colors.white,
-                ),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+              onPressed: () => Get.back(),
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: themeColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  controller.parentMenu,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              child: FaIcon(themeIcon, color: themeColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Dashboard Layanan',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          background: Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  themeColor,
-                  themeColor.withValues(alpha: 0.8),
+                  Text(
+                    controller.parentMenu,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -20,
-                  top: -20,
-                  child: Icon(
-                    themeIcon,
-                    size: 150,
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
       );
     });
   }
 
-  Widget _buildBannerSection() {
+  Widget _buildBannerSection(BuildContext context) {
     return Obx(() {
       if (controller.isLoadingData.value) {
         return Container(
           height: 180,
+          margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(20),
           ),
           child: const Center(child: CircularProgressIndicator()),
         );
@@ -139,28 +106,54 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
       }
 
       return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BannerCarouselWidget(
-            banners: controller.banners,
-            height: 180,
-            onBannerTap: (banner) {
-              CustomSnackbar.info(
-                title: 'Info',
-                message: banner.title ?? 'Banner tapped',
-              );
-            },
-          ),
+        height: 180,
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        child: PageView.builder(
+          itemCount: controller.banners.length,
+          itemBuilder: (context, index) {
+            final banner = controller.banners[index];
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(
+                      banner.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              controller.themeColor,
+                              controller.themeColor.withOpacity(0.8),
+                            ],
+                          ),
+                        ),
+                        child: const Center(
+                          child:
+                              Icon(Icons.image, color: Colors.white, size: 50),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       );
     });
@@ -173,73 +166,108 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Statistik Data',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Text(
+              'RINGKASAN AKTIVITAS',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+                letterSpacing: 1.1,
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 100,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: controller.statistics.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final key = controller.statistics.keys.elementAt(index);
-                final value = controller.statistics[key] ?? 0;
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: controller.statistics.entries.map((entry) {
+                final key = entry.key;
+                final value = entry.value;
+                final index = controller.statistics.keys.toList().indexOf(key);
 
-                // Get color from menu item
-                final menuItem = controller.menuItems.firstWhere(
-                  (menu) => menu.detail.menu == key,
-                  orElse: () => controller.menuItems.first,
-                );
-                final menuColor = menuItem.detail.backgroundColor;
+                // Color palette
+                final List<Color> bgColors = [
+                  Colors.blue.shade50.withOpacity(0.3),
+                  Colors.indigo.shade50.withOpacity(0.3),
+                  Colors.green.shade50.withOpacity(0.3),
+                ];
+                final List<Color> accentColors = [
+                  Colors.blue.shade700,
+                  Colors.indigo.shade700,
+                  Colors.green.shade700,
+                ];
+                final List<IconData> icons = [
+                  Icons.trending_up,
+                  Icons.credit_card,
+                  Icons.auto_awesome,
+                ];
 
-                return Container(
-                  width: 140,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: menuColor.withValues(alpha: 0.3)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: menuColor.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                final colorIndex = index % bgColors.length;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Container(
+                    width: (MediaQuery.of(context).size.width - 64) / 3,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: accentColors[colorIndex].withOpacity(0.2)),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            bottom: -15,
+                            right: -5,
+                            child: Icon(
+                              icons[colorIndex],
+                              size: 70,
+                              color: accentColors[colorIndex].withOpacity(0.08),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 16),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(width: double.infinity),
+                                Text(
+                                  key.toUpperCase(),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey.shade500,
+                                    letterSpacing: 0.8,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  value.toString(),
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColors[colorIndex],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        value.toString(),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: menuColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        key,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    ),
                   ),
                 );
-              },
+              }).toList(),
             ),
           ),
         ],
@@ -250,175 +278,241 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
   Widget _buildMenuSection(BuildContext context) {
     return Obx(() {
       if (controller.isLoadingData.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const SizedBox.shrink();
       }
 
       if (controller.menuItems.isEmpty) {
-        return Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.menu, size: 48, color: Colors.grey[300]),
-              const SizedBox(height: 16),
-              Text(
-                'Tidak ada menu tersedia',
-                style: TextStyle(color: Colors.grey[500]),
-              ),
-            ],
-          ),
-        );
+        return const SizedBox.shrink();
       }
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Menu ${controller.parentMenu}',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-          ),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.85,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+            child: Text(
+              'OPSI LAYANAN',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+                letterSpacing: 1.1,
+              ),
             ),
-            itemCount: controller.menuItems.length,
-            itemBuilder: (context, index) {
-              final menu = controller.menuItems[index];
-              final detail = menu.detail;
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 2.1,
+              ),
+              itemCount: controller.menuItems.length,
+              itemBuilder: (context, index) {
+                final menu = controller.menuItems[index];
+                final detail = menu.detail;
 
-              return ServiceGridItem(
-                icon: detail.iconData ?? FontAwesomeIcons.circle,
-                title: detail.menu,
-                description: detail.deskripsi,
-                onTap: () {
-                  // Check if menu kategori is "Webview"
-                  if (detail.kategori.toLowerCase() == 'webview') {
-                    // Navigate to webview with slug as URL
-                    Get.toNamed(
-                      Routes.WEBVIEW,
-                      arguments: {
-                        'url': detail.slug,
-                        'title': detail.menu,
-                      },
-                    );
-                  } else {
-                    // Show bottom sheet for normal menus
-                    _showMenuActionBottomSheet(context, detail);
-                  }
-                },
-                showDescription: false,
-                color: detail.backgroundColor,
-              );
-            },
+                return _buildServiceListItem(
+                  context,
+                  title: detail.menu,
+                  subtitle: detail.deskripsi ?? 'Proses cepat',
+                  icon: detail.iconData ?? FontAwesomeIcons.circle,
+                  color: detail.backgroundColor.withOpacity(0.1),
+                  iconColor: detail.backgroundColor,
+                  onTap: () {
+                    if (detail.kategori.toLowerCase() == 'webview') {
+                      Get.toNamed(
+                        Routes.WEBVIEW,
+                        arguments: {
+                          'url': detail.slug,
+                          'title': detail.menu,
+                        },
+                      );
+                    } else {
+                      _showMenuActionBottomSheet(context, detail);
+                    }
+                  },
+                );
+              },
+            ),
           ),
         ],
       );
     });
   }
 
-  Widget _buildNewsSection(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Berita & Kegiatan',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-            ),
-            TextButton(
-              onPressed: () {
-                CustomSnackbar.info(
-                  title: 'Info',
-                  message: 'Fitur ini akan segera hadir',
-                );
-              },
-              child: const Text('Lihat Semua'),
+  Widget _buildServiceListItem(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Obx(() {
-          if (controller.isLoadingData.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (controller.newsList.isEmpty) {
-            return Container(
-              padding: const EdgeInsets.all(32),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
+                color: color,
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: Center(
+                child: FaIcon(icon, color: iconColor, size: 20),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.newspaper, size: 48, color: Colors.grey[300]),
-                  const SizedBox(height: 16),
                   Text(
-                    'Belum ada berita',
-                    style: TextStyle(color: Colors.grey[500]),
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            );
-          }
-
-          return ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.newsList.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final news = controller.newsList[index];
-              return NewsCardWidget(
-                news: news,
-                onTap: () =>
-                    Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
-              );
-            },
-          );
-        }),
-      ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  /// Show bottom sheet with menu actions (Tambah/Lihat Data)
+  Widget _buildNewsSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'BERITA TERBARU',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('LIHAT SEMUA',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+          Obx(() {
+            if (controller.isLoadingData.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (controller.newsList.isEmpty) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Center(child: Text('Belum ada berita')),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: controller.newsList.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final news = controller.newsList[index];
+                return NewsCardWidget(
+                  news: news,
+                  onTap: () =>
+                      Get.toNamed(Routes.NEWS_DETAIL, arguments: news.url),
+                );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   void _showMenuActionBottomSheet(BuildContext context, dynamic menuDetail) {
     Get.bottomSheet(
       Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header with icon and title
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: menuDetail.backgroundColor.withValues(alpha: 0.1),
+                    color: menuDetail.backgroundColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: FaIcon(
@@ -445,7 +539,7 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
                           menuDetail.deskripsi!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: Colors.grey.shade500,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -456,96 +550,105 @@ class DynamicOpdDashboardView extends GetView<DynamicOpdDashboardController> {
               ],
             ),
             const SizedBox(height: 24),
-            const Divider(height: 1),
-            const SizedBox(height: 16),
-
-            // Tambah Data button
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.add, color: Colors.green),
-              ),
-              title: const Text(
-                'Tambah Data',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text('Buat data baru'),
+            _buildActionItem(
+              icon: Icons.add,
+              color: Colors.green,
+              title: 'Tambah Data',
+              subtitle: 'Buat entri data baru',
               onTap: () {
-                Get.back(); // Close bottom sheet
+                Get.back();
                 controller.navigateToDynamicForm(menuDetail.slug);
               },
             ),
-            const SizedBox(height: 8),
-
-            // Lihat Data button
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.list_alt, color: Colors.blue),
-              ),
-              title: const Text(
-                'Lihat Data',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text('Lihat daftar data yang sudah ada'),
+            const SizedBox(height: 12),
+            _buildActionItem(
+              icon: Icons.list_alt,
+              color: Colors.blue,
+              title: 'Lihat Data',
+              subtitle: 'Lihat rincian dan daftar data',
               onTap: () {
-                Get.back(); // Close bottom sheet
-
-                // Check if menu has required_filter
+                Get.back();
                 if (menuDetail.requiredFilter != null &&
                     menuDetail.requiredFilter.isNotEmpty &&
                     menuDetail.requiredFilter != "0,0") {
-                  // Navigate to filter page first
                   controller.navigateToFilterPage(menuDetail);
                 } else {
-                  // Direct to data list (existing flow)
                   controller.navigateToDataList(
                       menuDetail.slug, menuDetail.menu);
                 }
               },
             ),
-            const SizedBox(height: 8),
-
-            // Pin to Home button
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.push_pin, color: Colors.orange),
-              ),
-              title: const Text(
-                'Pin ke Home',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text('Tambahkan ke Menu Pintas di halaman utama'),
+            const SizedBox(height: 12),
+            _buildActionItem(
+              icon: Icons.push_pin_outlined,
+              color: Colors.orange,
+              title: 'Pin ke Beranda',
+              subtitle: 'Akses cepat dari menu pintas',
               onTap: () {
-                Get.back(); // Close bottom sheet
+                Get.back();
                 controller.pinToHome(menuDetail);
               },
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
       isDismissible: true,
       enableDrag: true,
+    );
+  }
+
+  Widget _buildActionItem({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade100),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -4,7 +4,7 @@ import '../modules/splash/views/splash_view.dart';
 import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/home/bindings/home_binding.dart';
-import '../modules/home/views/home_view.dart';
+import '../modules/home/views/home_alternative_view.dart';
 import '../modules/dynamic_form/bindings/dynamic_form_binding.dart';
 import '../modules/dynamic_form/views/dynamic_form_view.dart';
 import '../modules/report_list/bindings/report_list_binding.dart';
@@ -59,7 +59,7 @@ class AppPages {
     ),
     GetPage(
       name: Routes.HOME,
-      page: () => const HomeView(),
+      page: () => const HomeAlternativeView(),
       binding: HomeBinding(),
     ),
     GetPage(

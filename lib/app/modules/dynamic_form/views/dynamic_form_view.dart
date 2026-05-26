@@ -123,4 +123,3 @@ class DynamicFormView extends GetView<DynamicFormController> {
     );
   }
 }
-

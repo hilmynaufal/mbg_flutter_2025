@@ -10,11 +10,14 @@ class SppgListController extends GetxController {
   final RxList<SppgItemModel> filteredSppgList = <SppgItemModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
+  final RxInt viewMode = 1.obs; // 0 for Peta, 1 for List
 
   // Filter and search states
   final RxString selectedKecamatan = 'Semua'.obs;
+  final RxString selectedDesa = 'Semua'.obs;
   final RxString searchQuery = ''.obs;
   final RxList<String> kecamatanList = <String>['Semua'].obs;
+  final RxList<String> desaList = <String>['Semua'].obs;
 
   @override
   void onInit() {
@@ -43,6 +46,7 @@ class SppgListController extends GetxController {
         kecamatanList.value = ['Semua', ...kecamatanSet.toList()..sort()];
 
         // Apply initial filter
+        updateDesaList();
         applyFilter();
       } else {
         errorMessage.value = response.message;
@@ -70,6 +74,13 @@ class SppgListController extends GetxController {
           .toList();
     }
 
+    // Filter by Desa
+    if (selectedDesa.value != 'Semua') {
+      tempList = tempList
+          .where((sppg) => sppg.detail.desa == selectedDesa.value)
+          .toList();
+    }
+
     // Search by nama SPPG
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
@@ -87,7 +98,33 @@ class SppgListController extends GetxController {
   /// Set filter kecamatan
   void setKecamatanFilter(String kecamatan) {
     selectedKecamatan.value = kecamatan;
+    selectedDesa.value = 'Semua';
+    updateDesaList();
     applyFilter();
+  }
+
+  /// Set filter desa
+  void setDesaFilter(String desa) {
+    selectedDesa.value = desa;
+    applyFilter();
+  }
+
+  void updateDesaList() {
+    final desaSet = <String>{};
+    var sourceList = allSppgList.toList();
+
+    if (selectedKecamatan.value != 'Semua') {
+      sourceList = sourceList
+          .where((sppg) => sppg.detail.kecamatan == selectedKecamatan.value)
+          .toList();
+    }
+
+    for (var sppg in sourceList) {
+      if (sppg.detail.desa.isNotEmpty) {
+        desaSet.add(sppg.detail.desa);
+      }
+    }
+    desaList.value = ['Semua', ...desaSet.toList()..sort()];
   }
 
   /// Set search query
@@ -99,7 +136,9 @@ class SppgListController extends GetxController {
   /// Clear filters
   void clearFilters() {
     selectedKecamatan.value = 'Semua';
+    selectedDesa.value = 'Semua';
     searchQuery.value = '';
+    updateDesaList();
     applyFilter();
   }
 
@@ -111,5 +150,7 @@ class SppgListController extends GetxController {
 
   /// Check if filters are active
   bool get hasActiveFilters =>
-      selectedKecamatan.value != 'Semua' || searchQuery.value.isNotEmpty;
+      selectedKecamatan.value != 'Semua' ||
+      selectedDesa.value != 'Semua' ||
+      searchQuery.value.isNotEmpty;
 }
